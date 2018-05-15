@@ -69,6 +69,16 @@ osalEvt  TaskTmrEvtProcess(osalTid task_id, osalEvt task_event)
     */
     if( task_event & OS_EVT_TMR_MSEC ) {
    
+        //BSP_LED_Toggle(0);
+        static  u8 i,j = 10;
+        
+        if(j-- == 0){
+            i++;
+            j = 10;
+        }
+        
+        BSP_LED_Toggle(i%9);
+        
         return ( task_event ^ OS_EVT_TMR_MSEC );
     }
     return 0;

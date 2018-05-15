@@ -1,18 +1,17 @@
 /*******************************************************************************
-* Description  : 任务的头文件,进行函数声明
-* Author       : 2018/5/11 星期五, by redmorningcn
+* Description  : 驱动的头文件
+* Author       : 2018/5/15 星期二, by redmorningcn
 *******************************************************************************/
 
-#ifndef  TASKS_H_
-#define  TASKS_H_
+#ifndef  _DRIVER_H_
+#define  _DRIVER_H_
 
 #include <includes.h>
 
 
-//osal
-void  App_TaskOsalCreate(void);
-void TaskInitTmr(void);
-osalEvt  TaskTmrEvtProcess(osalTid task_id, osalEvt task_event);
+//mx25
+#include <mx25.h>
+
 
 #endif
 

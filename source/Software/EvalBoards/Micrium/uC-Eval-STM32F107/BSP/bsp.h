@@ -86,6 +86,18 @@
 *                                          GPIO PIN DEFINITIONS
 *********************************************************************************************************
 */
+/***********************************************
+* 描述： LED端口定义（LKJ接口信息在线）
+*/
+#define  BSP_GPIO_LED0                  314      //PD.14
+#define  BSP_GPIO_LED1                  315      //PD.15
+#define  BSP_GPIO_LED2                  300      //PD.00
+#define  BSP_GPIO_LED3                  301      //PD.01
+#define  BSP_GPIO_LED4                  407      //PE.07
+#define  BSP_GPIO_LED5                  408      //PE.08
+#define  BSP_GPIO_LED6                  409      //PE.09
+#define  BSP_GPIO_LED7                  410      //PE.10
+
 
                                                                 /* -------------------- GPIOA PINS -------------------- */
 #define  BSP_GPIOA_MII_CRS                       DEF_BIT_00
@@ -156,9 +168,13 @@
 #define  BSP_GPIOD_MII_RXD1                      DEF_BIT_10
 #define  BSP_GPIOD_MII_RXD2                      DEF_BIT_11
 #define  BSP_GPIOD_MII_RXD3                      DEF_BIT_12
+
+
 #define  BSP_GPIOD_LED1                          DEF_BIT_13
 #define  BSP_GPIOD_LED2                          DEF_BIT_14
 #define  BSP_GPIOD_LED3                          DEF_BIT_15
+
+
 
 #define  BSP_GPIOD_LEDS                         (BSP_GPIOD_LED1 | \
                                                  BSP_GPIOD_LED2 | \
@@ -448,6 +464,12 @@ void         BSP_LED_On                  (CPU_INT08U     led);
 void         BSP_LED_Off                 (CPU_INT08U     led);
 
 void         BSP_LED_Toggle              (CPU_INT08U     led);
+
+void	GPIO_Config(u16 GpioNum,u8 FuncNum);        //配置端口      （funNum = 0；端口输出；funNum = 1，端口输入）
+void	GPIO_Set(u32 GpioNum,u8 Val);               //设置端口值     
+u8	    GPIO_Read(u32 GpioNum);                     //读取端口值
+
+
 
 /*
 *********************************************************************************************************

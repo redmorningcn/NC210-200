@@ -131,6 +131,133 @@ static  void  BSP_StatusInit (void);
 #endif
 
 */
+
+/*******************************************************************************
+* Description  : 快速配置GPIO口
+* Author       : 2018/5/15 星期二, by redmorningcn
+*******************************************************************************/
+void	GPIO_Config(u16 GpioNum,u8 FuncNum)
+{
+    GPIO_InitTypeDef  gpio_init;
+    u8		PortNum;
+	u8		IoNum;
+    u32 RccBuf[] = {    RCC_APB2Periph_GPIOA,
+                        RCC_APB2Periph_GPIOB,
+                        RCC_APB2Periph_GPIOC,
+                        RCC_APB2Periph_GPIOD,
+                        RCC_APB2Periph_GPIOE,
+                        RCC_APB2Periph_GPIOF,
+                        RCC_APB2Periph_GPIOG
+                    };
+    
+    GPIO_TypeDef* PortBuf[] = {   GPIOA,
+                        GPIOB,
+                        GPIOC,
+                        GPIOD,
+                        GPIOE,
+                        GPIOF,
+                        GPIOG
+                    };
+    
+    PortNum 	= GpioNum/100;
+	IoNum	    = GpioNum%100;
+    
+    RCC_APB2PeriphClockCmd(RccBuf[PortNum], ENABLE);
+
+    gpio_init.GPIO_Pin   = (0x01<<IoNum);
+    gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
+    
+    if(FuncNum == 0)
+        gpio_init.GPIO_Mode  = GPIO_Mode_Out_PP;        //推拉输出
+    else
+        gpio_init.GPIO_Mode  = GPIO_Mode_IPU;           //上拉输入
+
+    GPIO_Init(PortBuf[PortNum], &gpio_init);
+}
+
+/*******************************************************************************
+* Description  : GPIO端口设值（pb01=101）
+* Author       : 2018/5/15 星期二, by redmorningcn
+*******************************************************************************/
+void	GPIO_Set(u32 GpioNum,u8 Val)
+{
+    GPIO_TypeDef* PortBuf[] = {   GPIOA,
+                        GPIOB,
+                        GPIOC,
+                        GPIOD,
+                        GPIOE,
+                        GPIOF,
+                        GPIOG
+                    };
+	u8		PortNum;
+	u8		IoNum;
+
+	PortNum 	= GpioNum/100;
+	IoNum	    = GpioNum%100;
+    
+    GPIO_Config(GpioNum,0);                           //将端口置为输出
+    
+    if(Val)
+        GPIO_SetBits(  PortBuf[PortNum],(0x01<<IoNum));     //将端口置1 
+    else
+        GPIO_ResetBits(PortBuf[PortNum],(0x01<<IoNum));     //将端口置0
+}
+
+/*******************************************************************************
+* Description  : 返回IO端口值
+* Author       : 2018/5/15 星期二, by redmorningcn
+*******************************************************************************/
+u8	GPIO_Read(u32 GpioNum)
+{
+    GPIO_TypeDef* PortBuf[] = {   GPIOA,
+                        GPIOB,
+                        GPIOC,
+                        GPIOD,
+                        GPIOE,
+                        GPIOF,
+                        GPIOG
+                    };
+	u8		PortNum;
+	u8		IoNum;
+
+	PortNum 	= GpioNum/100;
+	IoNum	    = GpioNum%100;
+    
+    GPIO_Config(GpioNum,1);                           //将端口置为输入
+
+    return GPIO_ReadInputDataBit(PortBuf[PortNum], (0x01<<IoNum));
+}
+
+/*******************************************************************************
+* Description  : GPIO端口设值（pb01=101）
+* Author       : 2018/5/15 星期二, by redmorningcn
+*******************************************************************************/
+void	GPIO_Toggle(u32 GpioNum)
+{
+    GPIO_TypeDef* PortBuf[] = {   
+                        GPIOA,
+                        GPIOB,
+                        GPIOC,
+                        GPIOD,
+                        GPIOE,
+                        GPIOF,
+                        GPIOG
+                    };
+	u8		PortNum;
+	u8		IoNum;
+    
+    PortNum 	= GpioNum/100;
+	IoNum	    = GpioNum%100;
+    
+    GPIO_Config(GpioNum,0);                     //将端口置为输出
+    
+    if(GPIO_ReadOutputDataBit(PortBuf[PortNum], (0x01<<IoNum)))
+        GPIO_Set(GpioNum,0);                    //如果端口为1，则将端口该写为0
+    else
+        GPIO_Set(GpioNum,1);
+}
+
+
 /*
 *********************************************************************************************************
 *                                               BSP_Init()
@@ -159,7 +286,6 @@ static  void  BSP_StatusInit (void);
 *                       requirements.
 *********************************************************************************************************
 */
-
 void  BSP_Init (void)
 {
     BSP_IntInit();
@@ -279,15 +405,14 @@ CPU_INT32U  BSP_CPU_ClkFreq (void)
 
 static  void  BSP_LED_Init (void)
 {
-    GPIO_InitTypeDef  gpio_init;
-
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
-
-    gpio_init.GPIO_Pin   = BSP_GPIOD_LEDS;
-    gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
-    gpio_init.GPIO_Mode  = GPIO_Mode_Out_PP;
-
-    GPIO_Init(GPIOD, &gpio_init);
+    GPIO_Config(BSP_GPIO_LED0,0);           //端口配置为输出
+    GPIO_Config(BSP_GPIO_LED1,0);           //端口配置为输出
+    GPIO_Config(BSP_GPIO_LED2,0);           //端口配置为输出
+    GPIO_Config(BSP_GPIO_LED3,0);           //端口配置为输出
+    GPIO_Config(BSP_GPIO_LED4,0);           //端口配置为输出
+    GPIO_Config(BSP_GPIO_LED5,0);           //端口配置为输出
+    GPIO_Config(BSP_GPIO_LED6,0);           //端口配置为输出
+    GPIO_Config(BSP_GPIO_LED7,0);           //端口配置为输出
 }
 
 
@@ -316,21 +441,47 @@ void  BSP_LED_On (CPU_INT08U led)
 {
     switch (led) {
         case 0:
-             GPIO_SetBits(GPIOD, BSP_GPIOD_LEDS);
+                GPIO_Set(BSP_GPIO_LED0,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED1,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED2,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED3,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED4,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED5,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED6,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED7,1);                  //端口置1
              break;
 
         case 1:
-             GPIO_SetBits(GPIOD, BSP_GPIOD_LED1);
+                GPIO_Set(BSP_GPIO_LED0,1);                  //端口置1
              break;
 
         case 2:
-             GPIO_SetBits(GPIOD, BSP_GPIOD_LED2);
+                GPIO_Set(BSP_GPIO_LED1,1);                  //端口置1
              break;
 
         case 3:
-             GPIO_SetBits(GPIOD, BSP_GPIOD_LED3);
+                GPIO_Set(BSP_GPIO_LED2,1);                  //端口置1
              break;
-
+             
+        case 4:
+                GPIO_Set(BSP_GPIO_LED3,1);                  //端口置1
+             break;     
+             
+        case 5:
+                GPIO_Set(BSP_GPIO_LED4,1);                  //端口置1
+             break;   
+             
+        case 6:
+                GPIO_Set(BSP_GPIO_LED5,1);                  //端口置1
+             break;
+             
+        case 7:
+                GPIO_Set(BSP_GPIO_LED6,1);                  //端口置1
+             break;
+        case 8:
+                GPIO_Set(BSP_GPIO_LED7,1);                  //端口置1
+             break;
+             
         default:
              break;
     }
@@ -357,26 +508,51 @@ void  BSP_LED_On (CPU_INT08U led)
 * Note(s)     : none.
 *********************************************************************************************************
 */
-
 void  BSP_LED_Off (CPU_INT08U led)
 {
     switch (led) {
         case 0:
-             GPIO_ResetBits(GPIOD, BSP_GPIOD_LEDS);
+                GPIO_Set(BSP_GPIO_LED0,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED1,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED2,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED3,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED4,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED5,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED6,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED7,0);                  //端口置0
              break;
 
         case 1:
-             GPIO_ResetBits(GPIOD, BSP_GPIOD_LED1);
+                GPIO_Set(BSP_GPIO_LED0,0);                  //端口置0
              break;
 
         case 2:
-             GPIO_ResetBits(GPIOD, BSP_GPIOD_LED2);
+                GPIO_Set(BSP_GPIO_LED1,0);                  //端口置0
              break;
 
         case 3:
-             GPIO_ResetBits(GPIOD, BSP_GPIOD_LED3);
+                GPIO_Set(BSP_GPIO_LED2,0);                  //端口置0
              break;
-
+             
+        case 4:
+                GPIO_Set(BSP_GPIO_LED3,0);                  //端口置0
+             break;     
+             
+        case 5:
+                GPIO_Set(BSP_GPIO_LED4,0);                  //端口置0
+             break;   
+             
+        case 6:
+                GPIO_Set(BSP_GPIO_LED5,0);                  //端口置0
+             break;
+             
+        case 7:
+                GPIO_Set(BSP_GPIO_LED6,0);                  //端口置0
+             break;
+        case 8:
+                GPIO_Set(BSP_GPIO_LED7,0);                  //端口置0
+             break;
+             
         default:
              break;
     }
@@ -406,33 +582,53 @@ void  BSP_LED_Off (CPU_INT08U led)
 
 void  BSP_LED_Toggle (CPU_INT08U led)
 {
-    CPU_INT32U  pins;
-
-
     switch (led) {
         case 0:
-             pins =  GPIO_ReadOutputData(GPIOD);
-             pins ^= BSP_GPIOD_LEDS;
-             GPIO_SetBits(  GPIOD,   pins  & BSP_GPIOD_LEDS);
-             GPIO_ResetBits(GPIOD, (~pins) & BSP_GPIOD_LEDS);
+                GPIO_Toggle(BSP_GPIO_LED0);                  //端口置0
+                GPIO_Toggle(BSP_GPIO_LED1);                  //端口置0
+                GPIO_Toggle(BSP_GPIO_LED2);                  //端口置0
+                GPIO_Toggle(BSP_GPIO_LED3);                  //端口置0
+                GPIO_Toggle(BSP_GPIO_LED4);                  //端口置0
+                GPIO_Toggle(BSP_GPIO_LED5);                  //端口置0
+                GPIO_Toggle(BSP_GPIO_LED6);                  //端口置0
+                GPIO_Toggle(BSP_GPIO_LED7);                  //端口置0
              break;
 
         case 1:
-        case 2:
-        case 3:
-            pins = GPIO_ReadOutputData(GPIOD);
-            if ((pins & (1 << (led + BSP_LED_START_BIT))) == 0) {
-                 GPIO_SetBits(  GPIOD, (1 << (led + BSP_LED_START_BIT)));
-             } else {
-                 GPIO_ResetBits(GPIOD, (1 << (led + BSP_LED_START_BIT)));
-             }
-            break;
+                GPIO_Toggle(BSP_GPIO_LED0);                  //端口置0
+             break;
 
+        case 2:
+                GPIO_Toggle(BSP_GPIO_LED1);                  //端口置0
+             break;
+
+        case 3:
+                GPIO_Toggle(BSP_GPIO_LED2);                  //端口置0
+             break;
+             
+        case 4:
+                GPIO_Toggle(BSP_GPIO_LED3);                  //端口置0
+             break;     
+             
+        case 5:
+                GPIO_Toggle(BSP_GPIO_LED4);                  //端口置0
+             break;   
+             
+        case 6:
+                GPIO_Toggle(BSP_GPIO_LED5);                  //端口置0
+             break;
+             
+        case 7:
+                GPIO_Toggle(BSP_GPIO_LED6);                  //端口置0
+             break;
+        case 8:
+                GPIO_Toggle(BSP_GPIO_LED7);                  //端口置0
+             break;
+             
         default:
              break;
     }
 }
-
 
 /*
 *********************************************************************************************************
@@ -449,18 +645,15 @@ void  BSP_LED_Toggle (CPU_INT08U led)
 * Note(s)     : none.
 *********************************************************************************************************
 */
-
 static  void  BSP_StatusInit (void)
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
-
 
     GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_5;             /* PB5 is used to read the status of the LM75 */
     GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN_FLOATING;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
-
 
 /*
 *********************************************************************************************************

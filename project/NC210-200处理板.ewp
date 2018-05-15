@@ -1017,6 +1017,9 @@
         <name>$PROJ_DIR$\..\source\task\app_task_osal.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\source\task\app_task_osal_led.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\task\app_task_osal_tmr.c</name>
       </file>
       <file>
@@ -1033,6 +1036,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\source\user\app_var.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\user\CrcCheck.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\user\CrcCheck.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\source\user\hook.c</name>
@@ -1052,6 +1061,9 @@
     <name>BSP</name>
     <group>
       <name>driver</name>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\drives.h</name>
+      </file>
       <file>
         <name>$PROJ_DIR$\..\source\driver\MX25.c</name>
       </file>

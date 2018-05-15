@@ -158,7 +158,6 @@ static  void  AppTaskStart (void *p_arg)
     BSP_LED_Off(0);
 
     while (DEF_TRUE) {                                          /* Task body, always written as an infinite loop.       */
-        BSP_LED_Toggle(0);
         
 //        char buf[4] = {0,1,2,3};
 //        

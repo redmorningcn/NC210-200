@@ -36,6 +36,7 @@ typedef volatile signed long  const vsc32;  /* Read Only */
 typedef volatile signed short const vsc16;  /* Read Only */
 typedef volatile signed char  const vsc8;   /* Read Only */
 
+typedef unsigned long long  u64;
 typedef unsigned long  u32;
 typedef unsigned short u16;
 typedef unsigned char  u8;
