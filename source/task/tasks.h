@@ -14,5 +14,10 @@ void  App_TaskOsalCreate(void);
 void TaskInitTmr(void);
 osalEvt  TaskTmrEvtProcess(osalTid task_id, osalEvt task_event);
 
+//osal led
+void TaskInitLed(void);
+osalEvt  TaskLedEvtProcess(osalTid task_id, osalEvt task_event);
+
+
 #endif
 

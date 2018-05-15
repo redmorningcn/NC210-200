@@ -441,45 +441,45 @@ void  BSP_LED_On (CPU_INT08U led)
 {
     switch (led) {
         case 0:
-                GPIO_Set(BSP_GPIO_LED0,1);                  //端口置1
-                GPIO_Set(BSP_GPIO_LED1,1);                  //端口置1
-                GPIO_Set(BSP_GPIO_LED2,1);                  //端口置1
-                GPIO_Set(BSP_GPIO_LED3,1);                  //端口置1
-                GPIO_Set(BSP_GPIO_LED4,1);                  //端口置1
-                GPIO_Set(BSP_GPIO_LED5,1);                  //端口置1
-                GPIO_Set(BSP_GPIO_LED6,1);                  //端口置1
-                GPIO_Set(BSP_GPIO_LED7,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED0,0);                  //端口置ON
+                GPIO_Set(BSP_GPIO_LED1,0);                  //端口置ON
+                GPIO_Set(BSP_GPIO_LED2,0);                  //端口置ON
+                GPIO_Set(BSP_GPIO_LED3,0);                  //端口置ON
+                GPIO_Set(BSP_GPIO_LED4,0);                  //端口置ON
+                GPIO_Set(BSP_GPIO_LED5,0);                  //端口置ON
+                GPIO_Set(BSP_GPIO_LED6,0);                  //端口置ON
+                GPIO_Set(BSP_GPIO_LED7,0);                  //端口置ON
              break;
 
         case 1:
-                GPIO_Set(BSP_GPIO_LED0,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED0,0);                  //端口置ON
              break;
 
         case 2:
-                GPIO_Set(BSP_GPIO_LED1,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED1,0);                  //端口置ON
              break;
 
         case 3:
-                GPIO_Set(BSP_GPIO_LED2,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED2,0);                  //端口置ON
              break;
              
         case 4:
-                GPIO_Set(BSP_GPIO_LED3,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED3,0);                  //端口置ON
              break;     
              
         case 5:
-                GPIO_Set(BSP_GPIO_LED4,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED4,0);                  //端口置ON
              break;   
              
         case 6:
-                GPIO_Set(BSP_GPIO_LED5,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED5,0);                  //端口置ON
              break;
              
         case 7:
-                GPIO_Set(BSP_GPIO_LED6,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED6,0);                  //端口置ON
              break;
         case 8:
-                GPIO_Set(BSP_GPIO_LED7,1);                  //端口置1
+                GPIO_Set(BSP_GPIO_LED7,0);                  //端口置ON
              break;
              
         default:
@@ -512,45 +512,45 @@ void  BSP_LED_Off (CPU_INT08U led)
 {
     switch (led) {
         case 0:
-                GPIO_Set(BSP_GPIO_LED0,0);                  //端口置0
-                GPIO_Set(BSP_GPIO_LED1,0);                  //端口置0
-                GPIO_Set(BSP_GPIO_LED2,0);                  //端口置0
-                GPIO_Set(BSP_GPIO_LED3,0);                  //端口置0
-                GPIO_Set(BSP_GPIO_LED4,0);                  //端口置0
-                GPIO_Set(BSP_GPIO_LED5,0);                  //端口置0
-                GPIO_Set(BSP_GPIO_LED6,0);                  //端口置0
-                GPIO_Set(BSP_GPIO_LED7,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED0,1);                  //端口置OFF
+                GPIO_Set(BSP_GPIO_LED1,1);                  //端口置OFF
+                GPIO_Set(BSP_GPIO_LED2,1);                  //端口置OFF
+                GPIO_Set(BSP_GPIO_LED3,1);                  //端口置OFF
+                GPIO_Set(BSP_GPIO_LED4,1);                  //端口置OFF
+                GPIO_Set(BSP_GPIO_LED5,1);                  //端口置OFF
+                GPIO_Set(BSP_GPIO_LED6,1);                  //端口置OFF
+                GPIO_Set(BSP_GPIO_LED7,1);                  //端口置OFF
              break;
 
         case 1:
-                GPIO_Set(BSP_GPIO_LED0,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED0,1);                  //端口置OFF
              break;
 
         case 2:
-                GPIO_Set(BSP_GPIO_LED1,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED1,1);                  //端口置OFF
              break;
 
         case 3:
-                GPIO_Set(BSP_GPIO_LED2,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED2,1);                  //端口置OFF
              break;
              
         case 4:
-                GPIO_Set(BSP_GPIO_LED3,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED3,1);                  //端口置OFF
              break;     
              
         case 5:
-                GPIO_Set(BSP_GPIO_LED4,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED4,1);                  //端口置OFF
              break;   
              
         case 6:
-                GPIO_Set(BSP_GPIO_LED5,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED5,1);                  //端口置OFF
              break;
              
         case 7:
-                GPIO_Set(BSP_GPIO_LED6,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED6,1);                  //端口置OFF
              break;
         case 8:
-                GPIO_Set(BSP_GPIO_LED7,0);                  //端口置0
+                GPIO_Set(BSP_GPIO_LED7,1);                  //端口置OFF
              break;
              
         default:

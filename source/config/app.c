@@ -85,7 +85,6 @@ static  void  AppTaskStart  (void *p_arg);
 * Returns     : none
 *********************************************************************************************************
 */
-
 int  main (void)
 {
     OS_ERR  err;
