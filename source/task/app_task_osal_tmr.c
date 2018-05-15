@@ -69,7 +69,7 @@ osalEvt  TaskTmrEvtProcess(osalTid task_id, osalEvt task_event)
     */
     if( task_event & OS_EVT_TMR_MSEC ) {
    
-
+         int8 temp =   BSP_RTC_ReadTemp();
         return ( task_event ^ OS_EVT_TMR_MSEC );
     }
     return 0;

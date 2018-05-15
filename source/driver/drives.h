@@ -11,7 +11,9 @@
 
 //mx25
 #include <mx25.h>
-
-
+#include <ds3231.h>
+#include <bsp_IIC.h>
+#include <bsp_time.h>
+#include <bsp_FRAM.h>
 #endif
 
