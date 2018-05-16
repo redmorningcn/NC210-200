@@ -20,6 +20,7 @@ const  CPU_CHAR  *app_task_led__c = "$Id: $";
 /*******************************************************************************
 * MACROS
 */
+//LED指示灯位定义
 #define     RUN_LED             1
 #define     X1_SPEED_LED        2
 #define     X2_DTU_LED          3

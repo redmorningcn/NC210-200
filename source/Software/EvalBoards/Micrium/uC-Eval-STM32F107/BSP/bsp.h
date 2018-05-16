@@ -465,9 +465,9 @@ void         BSP_LED_Off                 (CPU_INT08U     led);
 
 void         BSP_LED_Toggle              (CPU_INT08U     led);
 
-void	GPIO_Config(u16 GpioNum,u8 FuncNum);        //配置端口      （funNum = 0；端口输出；funNum = 1，端口输入）
-void	GPIO_Set(u32 GpioNum,u8 Val);               //设置端口值     
-u8	    GPIO_Read(u32 GpioNum);                     //读取端口值
+void	    GPIO_Config(u16 GpioNum,u8 FuncNum);        //配置端口      （funNum = 0；端口输出；funNum = 1，端口输入）
+void	    GPIO_Set(u32 GpioNum,u8 Val);               //设置端口值     
+u8	        GPIO_Read(u32 GpioNum);                     //读取端口值
 
 
 

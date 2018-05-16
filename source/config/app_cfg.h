@@ -119,6 +119,7 @@
 * 描述： OSAL任务优先级定义
 */
 #define	OS_TASK_PRO_TMR                 OS_TASK_PRIO_HIGHEST - 0
+#define	OS_TASK_PRO_DISP                OS_TASK_PRIO_HIGHEST - 1
 #define	OS_TASK_PRO_LED                 OS_TASK_PRIO_HIGHEST - 5
 
 
@@ -126,6 +127,7 @@
 * 描述： OSAL任务ID定义
 */
 #define OS_TASK_ID_TMR                  0x00
+#define OS_TASK_ID_DISP                 0x01
 #define OS_TASK_ID_LED		            0x05
 
 
@@ -151,4 +153,15 @@
 #define OS_EVT_LED_6                    0X00000040
 #define OS_EVT_LED_7                    0X00000080
 
+/***************************************************
+* 描述： OSAL事件定义：DISP任务事件
+*/
+#define OS_EVT_DISP_TICKS               0X00000001
+#define OS_EVT_DISP_ALARM               0X00000002
+#define OS_EVT_DISP_2                   0X00000004
+#define OS_EVT_DISP_3                   0X00000008
+#define OS_EVT_DISP_4                   0X00000010
+#define OS_EVT_DISP_5                   0X00000020
+#define OS_EVT_DISP_6                   0X00000040
+#define OS_EVT_DISP_7                   0X00000080
 #endif

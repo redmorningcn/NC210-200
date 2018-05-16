@@ -85,14 +85,14 @@ void App_ModbusInit(void)
                             USART_StopBits_1,           // ... Number of stop bits 1 or 2
                             MODBUS_WR_EN);              // ... Enable (_EN) or disable (_DIS) writes
 
-    sCtrl.ComCtrl[DTU].ConnCtrl[DTU_C0].MB_Node     = DTU_NODE;     //modbus编号 
-    sCtrl.ComCtrl[DTU].ConnCtrl[DTU_C0].COM_Num     = comnum;       //串口号
-    sCtrl.ComCtrl[DTU].ConnCtrl[DTU_C0].MasterAddr  = LKJ_MAINBOARD_ADDR;   //无线发送模块地址
-    sCtrl.ComCtrl[DTU].ConnCtrl[DTU_C0].SlaveAddr   = DTU_ADDR;             //LKJ接口板csnc地址
+    Ctrl.ComCtrl[DTU].ConnCtrl[DTU_C0].MB_Node     = DTU_NODE;     //modbus编号 
+    Ctrl.ComCtrl[DTU].ConnCtrl[DTU_C0].COM_Num     = comnum;       //串口号
+    Ctrl.ComCtrl[DTU].ConnCtrl[DTU_C0].MasterAddr  = LKJ_MAINBOARD_ADDR;   //无线发送模块地址
+    Ctrl.ComCtrl[DTU].ConnCtrl[DTU_C0].SlaveAddr   = DTU_ADDR;             //LKJ接口板csnc地址
     
-    sCtrl.ComCtrl[DTU].pch  = pch;                      // ... modbus控制块和全局结构体建立连接
+    Ctrl.ComCtrl[DTU].pch  = pch;                      // ... modbus控制块和全局结构体建立连接
     
-    DtuCom = &sCtrl.ComCtrl[DTU];                       //定义别名，在对应的任务中可用别名直接操作
+    DtuCom = &Ctrl.ComCtrl[DTU];                       //定义别名，在对应的任务中可用别名直接操作
 #endif
     
     
@@ -115,14 +115,14 @@ void App_ModbusInit(void)
                             USART_StopBits_1,           // ... Number of stop bits 1 or 2
                             MODBUS_WR_EN);              // ... Enable (_EN) or disable (_DIS) writes
 
-    sCtrl.ComCtrl[MTR].ConnCtrl[MTR_C0].MB_Node     = MTR_NODE;             //modbus编号 
-    sCtrl.ComCtrl[MTR].ConnCtrl[MTR_C0].COM_Num     = comnum;               //串口号
-    sCtrl.ComCtrl[MTR].ConnCtrl[MTR_C0].MasterAddr  = LKJ_MAINBOARD_ADDR;   //无线发送模块地址（对MTR无效）
-    sCtrl.ComCtrl[MTR].ConnCtrl[MTR_C0].SlaveAddr   = DTU_ADDR;             //LKJ接口板csnc地址（对MTR无效）
+    Ctrl.ComCtrl[MTR].ConnCtrl[MTR_C0].MB_Node     = MTR_NODE;             //modbus编号 
+    Ctrl.ComCtrl[MTR].ConnCtrl[MTR_C0].COM_Num     = comnum;               //串口号
+    Ctrl.ComCtrl[MTR].ConnCtrl[MTR_C0].MasterAddr  = LKJ_MAINBOARD_ADDR;   //无线发送模块地址（对MTR无效）
+    Ctrl.ComCtrl[MTR].ConnCtrl[MTR_C0].SlaveAddr   = DTU_ADDR;             //LKJ接口板csnc地址（对MTR无效）
     
-    sCtrl.ComCtrl[MTR].pch  = pch;                      // ... modbus控制块和全局结构体建立连接
+    Ctrl.ComCtrl[MTR].pch  = pch;                      // ... modbus控制块和全局结构体建立连接
     
-    MtrCom = &sCtrl.ComCtrl[MTR];                       //定义别名，在对应的任务中可用别名直接操作
+    MtrCom = &Ctrl.ComCtrl[MTR];                       //定义别名，在对应的任务中可用别名直接操作
 #endif    
 
 
@@ -146,14 +146,14 @@ void App_ModbusInit(void)
                             USART_StopBits_1,           // ... Number of stop bits 1 or 2
                             MODBUS_WR_EN);              // ... Enable (_EN) or disable (_DIS) writes
 
-    sCtrl.ComCtrl[TAX].ConnCtrl[TAX_C0].MB_Node     = TAX_NODE;             //modbus编号 
-    sCtrl.ComCtrl[TAX].ConnCtrl[TAX_C0].COM_Num     = comnum;               //串口号
-    sCtrl.ComCtrl[TAX].ConnCtrl[TAX_C0].MasterAddr  = LKJ_MAINBOARD_ADDR;   //无线发送模块地址（对MTR无效）
-    sCtrl.ComCtrl[TAX].ConnCtrl[TAX_C0].SlaveAddr   = DTU_ADDR;             //LKJ接口板csnc地址（对MTR无效）
+    Ctrl.ComCtrl[TAX].ConnCtrl[TAX_C0].MB_Node     = TAX_NODE;             //modbus编号 
+    Ctrl.ComCtrl[TAX].ConnCtrl[TAX_C0].COM_Num     = comnum;               //串口号
+    Ctrl.ComCtrl[TAX].ConnCtrl[TAX_C0].MasterAddr  = LKJ_MAINBOARD_ADDR;   //无线发送模块地址（对MTR无效）
+    Ctrl.ComCtrl[TAX].ConnCtrl[TAX_C0].SlaveAddr   = DTU_ADDR;             //LKJ接口板csnc地址（对MTR无效）
     
-    sCtrl.ComCtrl[TAX].pch  = pch;                      // ... modbus控制块和全局结构体建立连接
+    Ctrl.ComCtrl[TAX].pch  = pch;                      // ... modbus控制块和全局结构体建立连接
     
-    TaxCom = &sCtrl.ComCtrl[TAX];                       //定义别名，在对应的任务中可用别名直接操作
+    TaxCom = &Ctrl.ComCtrl[TAX];                       //定义别名，在对应的任务中可用别名直接操作
 #endif    
 
 

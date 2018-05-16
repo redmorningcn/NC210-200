@@ -166,7 +166,8 @@ static  void  AppTaskStart (void *p_arg)
 //            sCtrl.ComCtrl[i].pch->TxBufByteCtr = sizeof(buf);
 //            MB_Tx (sCtrl.ComCtrl[i].pch);
 //        }
-
+        static  int i = 0;
+        uprintf("%d",i++);
         OSTimeDlyHMSM(0, 0, 0, 500,
                       OS_OPT_TIME_HMSM_STRICT,
                       &err);

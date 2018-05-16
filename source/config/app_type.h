@@ -8,7 +8,14 @@
 #include    "stm32f10x_type.h"
 #include    <app_com_type.h>
 
-
+/*******************************************************************************
+* Description  : 控制结构体头部（程序识别）
+* Author       : 2018/5/16 星期三, by redmorningcn
+*******************************************************************************/
+typedef struct { 
+    u16                 Password;                       // 	2  	用于MODEBUS通讯确认密钥，默认为6237，防止非法改数据
+    u16   		        Rsv[7];				            //	2  	软件版本
+} StrRecHeadInfo;
 
 __packed
 typedef struct {     
@@ -47,29 +54,6 @@ typedef struct _StrProductInfo {
     u16                 RepairStaff;                //维修人员
     u8                  Rsv[12];                    //预留12个
 }StrProductInfo;
-
-
-
-typedef union _Unnctrl_ {
-   struct{
-//        /***************************************************
-//        * 描述： 系统参数：起始地址 = 000   通讯密码，软件版本，记录号，产品信息
-//        */ 
-//        StrRecHeadInfo      sHeadInfo;                      // 16
-//        /***************************************************
-//        * 描述：记录号管理地址：起始地址 = 016
-//        */
-//        StrRecNumMgr        sRecNumMgr;			            // 16
-//        /***************************************************
-//        * 描述：产品信息：起始地址 = 032
-//        */
-//        StrProductInfo	    sProductInfo;			        // 32
-// 
-        StrCOMCtrl      ComCtrl[4];
-    };
-    u16   buf[512];
-        
-}Unnctrl;
 
 
 //运行参数，装置运行相关，数据存储周期，显示参数，恢复出厂设置
@@ -231,11 +215,38 @@ typedef struct _stcRunPara_
 
 
 
+typedef union _Unnctrl_ {
+   struct{
+        /***************************************************
+        * 描述： 系统参数：起始地址 = 000   通讯密码，软件版本，记录号，产品信息
+        */ 
+        StrRecHeadInfo      sHeadInfo;                      // 16
+        /***************************************************
+        * 描述：记录号管理地址：起始地址 = 016
+        */
+        StrRecNumMgr        sRecNumMgr;			            // 16
+        /***************************************************
+        * 描述：产品信息：起始地址 = 032
+        */
+        StrProductInfo	    sProductInfo;			        // 32
+        /***************************************************
+        * 描述：系统运行参数：起始地址 = 064
+        */
+        stcRunPara	        sRunPara;				        // 32
+        
+        StrCOMCtrl          ComCtrl[4];                         //串控制字
+    };
+    u16   buf[512];
+        
+}Unnctrl;
+
+
+
 //变量声明
-extern   volatile Unnctrl     sCtrl;
-extern   volatile StrCOMCtrl  * DtuCom;
-extern   volatile StrCOMCtrl  * MtrCom;
-extern   volatile  StrCOMCtrl  * TaxCom;
+extern   volatile   Unnctrl     Ctrl;
+extern   volatile   StrCOMCtrl  * DtuCom;
+extern   volatile   StrCOMCtrl  * MtrCom;
+extern   volatile   StrCOMCtrl  * TaxCom;
 
 #endif                                                          /* End of  include.                       */
 

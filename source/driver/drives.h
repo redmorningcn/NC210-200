@@ -15,5 +15,7 @@
 #include <bsp_IIC.h>
 #include <bsp_time.h>
 #include <bsp_FRAM.h>
+#include <bsp_max7219.h>
+
 #endif
 
