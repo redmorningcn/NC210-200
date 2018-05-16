@@ -22,6 +22,7 @@ typedef struct _stcSpeed
     {
         u16 raise;
         u16 fail;
+        u16 ratio;    
         u16 hig;
         u16 low;    
     }ch[2];

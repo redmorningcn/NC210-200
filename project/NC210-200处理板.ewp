@@ -1017,6 +1017,9 @@
         <name>$PROJ_DIR$\..\source\task\app_task_osal.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\source\task\app_task_osal_disp.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\task\app_task_osal_led.c</name>
       </file>
       <file>
@@ -1052,6 +1055,12 @@
       <file>
         <name>$PROJ_DIR$\..\source\user\RecDataTypeDef.h</name>
       </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\user\sprintf.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\user\sprintf.h</name>
+      </file>
     </group>
     <file>
       <name>$PROJ_DIR$\..\source\config\app.c</name>
@@ -1062,7 +1071,37 @@
     <group>
       <name>driver</name>
       <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_FRAM.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_FRAM.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_IIC.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_IIC.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_max7219.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_max7219.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_time.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_time.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\driver\drives.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\DS3231.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\ds3231.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\source\driver\MX25.c</name>
@@ -1267,7 +1306,7 @@
   <group>
     <name>doc</name>
     <file>
-      <name>$PROJ_DIR$\..\doc\readme</name>
+      <name>$PROJ_DIR$\..\doc\readme.md</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\doc\&#x5De5;&#x7A0B;&#x6587;&#x4eF6;&#x8BF4;&#x660e;.txt</name>

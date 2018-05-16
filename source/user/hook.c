@@ -47,6 +47,11 @@ void OSAL_TaskCreateHook(void)
                   OS_TASK_PRO_TMR,                  // 任务优先级
                   OS_TASK_ID_TMR);                  // 任务ID
     
+    osal_add_Task(TaskInitDisp,                     // 任务初始化函数指针
+                  TaskDispEvtProcess,               // 任务事件处理函数指针
+                  OS_TASK_PRO_DISP,                 // 任务优先级
+                  OS_TASK_ID_DISP);                 // 任务ID 
+    
     osal_add_Task(TaskInitLed,                  // 任务初始化函数指针
                   TaskLedEvtProcess,                // 任务事件处理函数指针
                   OS_TASK_PRO_LED,                  // 任务优先级

@@ -18,6 +18,9 @@ osalEvt  TaskTmrEvtProcess(osalTid task_id, osalEvt task_event);
 void TaskInitLed(void);
 osalEvt  TaskLedEvtProcess(osalTid task_id, osalEvt task_event);
 
+//osal display
+void TaskInitDisp(void);
+osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event);
 
 #endif
 

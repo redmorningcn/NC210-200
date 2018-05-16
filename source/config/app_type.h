@@ -7,6 +7,7 @@
 
 #include    "stm32f10x_type.h"
 #include    <app_com_type.h>
+#include    <RecDataTypeDef.h>
 
 /*******************************************************************************
 * Description  : 控制结构体头部（程序识别）
@@ -233,6 +234,12 @@ typedef union _Unnctrl_ {
         * 描述：系统运行参数：起始地址 = 064
         */
         stcRunPara	        sRunPara;				        // 32
+        
+        /*******************************************************************************
+        * Description  : 数据记录
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        *******************************************************************************/
+        stcFlshRec          Rec;
         
         StrCOMCtrl          ComCtrl[4];                         //串控制字
     };

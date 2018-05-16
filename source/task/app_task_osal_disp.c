@@ -67,6 +67,81 @@ static  void                AppTaskDisp           (void *p_arg);
  * EXTERN VARIABLES
  */
 
+#define     DIS_INFO_NUM        9
+#define     DIS_MAX_ERR_NUM     3      
+/*******************************************************************************
+* Description  : 装置正常运行时，循环显示的内容。
+                 如果有故障，则显示故障代码。
+* Author       : 2018/5/16 星期三, by redmorningcn
+*******************************************************************************/
+void    LkjDisplayInfo(void)
+{
+    static  u8      times = 0;
+    u8              mod = DIS_INFO_NUM + DIS_MAX_ERR_NUM;
+    u8              groupstring[]= "ABC";
+    u8              groupunm;
+    u8              chnum;
+    u8              phasenum;
+    
+    //计算占空比的组及通道号
+    if(     times > (DIS_MAX_ERR_NUM-1) 
+       &&   times < DIS_MAX_ERR_NUM + 6){
+        groupunm = (times - (DIS_MAX_ERR_NUM  ))/2;     //DIS_MAX_ERR_NUM  +1 是由于 times++的
+        chnum    = (times - (DIS_MAX_ERR_NUM ))%2;
+        
+        if(groupunm > 2)        //防越界
+            groupunm = 0;
+        if(chnum > 1)
+            chnum = 0;
+
+    }
+    //计算相位差组号
+    if(times > (DIS_MAX_ERR_NUM + 6 -1)){
+        phasenum = (times - DIS_MAX_ERR_NUM -6);
+        
+        if(phasenum  > 2)      //防越界
+            phasenum = 0;
+    }
+
+    switch(times % mod)
+    {
+        case 0:
+            times++;
+            //if()      //有故障，显示故障
+            //break;
+        case 1:
+            times++;
+            //if()      //有故障，显示故障
+            //break;
+        case 2:
+            times++;
+            //if()      //有故障，显示故障
+            break;     
+        case 3:         //通道1，占空比
+        case 4:         //通道2，占空比
+        case 5:         //通道3，占空比
+        case 6:         //通道4，占空比
+        case 7:         //通道5，占空比 
+        case 8:         //通道5，占空比 
+            times++;
+            uprintf("CH%d-%2.2f",groupunm*2 + chnum +1,Ctrl.Rec.speed[groupunm].ch[chnum].ratio);
+            break;  
+            
+        case 9:         //A组，相位差
+        case 10:        //B组，相位差
+        case 11:        //C组，相位差
+            times++;
+            uprintf("CH%c-%3.1f",groupstring[phasenum],Ctrl.Rec.speed[phasenum].phase);
+            
+            if(times == mod)  //重新循环
+                times = 0;
+            break;  
+            
+        default:
+            times = 0;
+            break;
+    }
+}
 
 /*******************************************************************************
  * 名    称： TaskDispEvtProcess
@@ -144,6 +219,8 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
             break;
 
         default: 
+            
+            LkjDisplayInfo();       //正常运行时显示内容
             break;
         }
         /***********************************************
