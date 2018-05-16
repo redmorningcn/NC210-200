@@ -508,7 +508,7 @@ u8 MX25L3206_Erase(u32 sec1, u32 sec2)
 * Description  : FLASH写操作（写入非全1扇区前，需进行擦除操作）
 * Author       : 2018/5/15 星期二, by redmorningcn
 *******************************************************************************/
-u8 FLASH_Write(u32 adr,u8 *buf,u32 len)
+u8 WriteFlsh(u32 adr,u8 *buf,u32 len)
 {
     u32  i = 0;
         
@@ -534,7 +534,7 @@ u8 FLASH_Write(u32 adr,u8 *buf,u32 len)
 * Description  : FLASH读操作
 * Author       : 2018/5/15 星期二, by redmorningcn
 *******************************************************************************/
-void FLASH_Read(u32 adr,u8 *buf,u32 len)
+void ReadFlsh(u32 adr,u8 *buf,u32 len)
 {
 	MX25L3206_RD(adr, len,buf);
 }

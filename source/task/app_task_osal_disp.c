@@ -124,7 +124,7 @@ void    LkjDisplayInfo(void)
         case 7:         //通道5，占空比 
         case 8:         //通道5，占空比 
             times++;
-            uprintf("CH%d-%2.2f",groupunm*2 + chnum +1,Ctrl.Rec.speed[groupunm].ch[chnum].ratio);
+            uprintf("CH%d-%3.1f",(groupunm*2 + chnum +1),Ctrl.Rec.speed[groupunm].ch[chnum].ratio);
             break;  
             
         case 9:         //A组，相位差
@@ -210,8 +210,8 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
                     tm_now.tm_sec);  
             break;
             /*******************************************************************
-            * 描述： 显示硬件版本
-            *        第三版硬件
+            * 描述： 显示软件版本
+            *        
             */
         case 3: 
             dis_mode++;
@@ -227,10 +227,10 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
         * 描述： 2018/1/30,无名沈：增加亮度调节,亮度值改变，调整亮度。 
         */
         static  int displevel = 10;  
-        if(Ctrl.sRunPara.SysSts.Flag.DispLevel != displevel)
+        if(Ctrl.sRunPara.SysSts.DispLevel != displevel)
         {
-            BSP_DispSetBrightness(Ctrl.sRunPara.SysSts.Flag.DispLevel); 
-            displevel = Ctrl.sRunPara.SysSts.Flag.DispLevel;
+            BSP_DispSetBrightness(Ctrl.sRunPara.SysSts.DispLevel); 
+            displevel = Ctrl.sRunPara.SysSts.DispLevel;
         }
         /***********************************************
         * 描述： 去除任务运行的时间，等到一个控制周期里剩余需要延时的时间
@@ -292,12 +292,12 @@ void TaskInitDisp(void)
     /***********************************************
     * 描述： 2018/1/30,无名沈：增加亮度调节默认参数
     */
-    if ( Ctrl.sRunPara.SysSts.Flag.DispLevel == 0 )
-        Ctrl.sRunPara.SysSts.Flag.DispLevel = 10;
+    if ( Ctrl.sRunPara.SysSts.DispLevel == 0 )
+        Ctrl.sRunPara.SysSts.DispLevel = 10;
     /***********************************************
     * 描述： 2017/12/3,无名沈：设置显示亮度
     */
-    BSP_DispSetBrightness(Ctrl.sRunPara.SysSts.Flag.DispLevel);
+    BSP_DispSetBrightness(Ctrl.sRunPara.SysSts.DispLevel);
     /***********************************************
     * 描述： 2017/12/3,无名沈：清除所有显示
     */

@@ -128,6 +128,8 @@
 #include <hook.h>
 #include <drives.h>
 #include <RecDataTypeDef.h>
+#include <CrcCheck.h>
+
 
 /*
 *********************************************************************************************************

@@ -18,6 +18,7 @@ void    BSP_Init_Hook(void)
     
 }
 
+extern  void app_init_sctrl(void);
 /*******************************************************************************
 * Description  : 操作系统任务创建钩子函数
 * Author       : 2018/5/11 星期五, by redmorningcn
@@ -27,7 +28,10 @@ void OS_TaskCreateHook(void)
     //设备初始化
     BSP_Ds3231Init();                   //初始化时钟芯片
     BSP_DispInit();                     //初始化显示
+    //InitFlashIO();
+    BSP_FlashOsInit(); 
     
+    app_init_sctrl();                   //初始化全局变量
     /***********************************************
     * 描述： 设置UCOS钩子函数
     */
@@ -51,6 +55,11 @@ void OSAL_TaskCreateHook(void)
                   TaskDispEvtProcess,               // 任务事件处理函数指针
                   OS_TASK_PRO_DISP,                 // 任务优先级
                   OS_TASK_ID_DISP);                 // 任务ID 
+    
+    osal_add_Task(TaskInitStore,                    // 任务初始化函数指针
+                  TaskStoreEvtProcess,              // 任务事件处理函数指针
+                  OS_TASK_PRO_STORE,                // 任务优先级
+                  OS_TASK_ID_STORE);                // 任务ID
     
     osal_add_Task(TaskInitLed,                  // 任务初始化函数指针
                   TaskLedEvtProcess,                // 任务事件处理函数指针

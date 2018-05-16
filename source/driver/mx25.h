@@ -13,8 +13,8 @@
 
 extern void SPI_FLASH_Init(void) ;
 extern u32 MX25L3206_RdID(void);
-extern u8 FLASH_Write(u32 adr,u8 *buf,u32 len);
-extern void FLASH_Read(u32 adr,u8 *buf,u32 len);
+extern u8 WriteFlsh(u32 adr,u8 *buf,u32 len);
+extern void ReadFlsh(u32 adr,u8 *buf,u32 len);
 
 extern u8 Send_Byte(u8 byte);
 extern u8 Get_Byte(void);

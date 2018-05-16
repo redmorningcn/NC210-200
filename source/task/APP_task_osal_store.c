@@ -54,8 +54,78 @@ const  CPU_CHAR  *app_task_store__c = "$Id: $";
 */
 
 
+#if (UCOS_EN     == DEF_ENABLED)
+
+#if OS_VERSION > 30000U
+static  OS_SEM			Bsp_FlashSem;    	//信号量
+#else
+static  OS_EVENT      *Bsp_FlashSem;       //信号量
+#endif
+
+/*******************************************************************************
+* 名    称： BSP_FlashWaitEvent
+* 功    能： 等待信号量
+* 入口参数： 无
+* 出口参数： 0（操作有误），1（操作成功）
+* 作    者： redmorningcn
+* 创建日期： 2017-05-15
+* 修    改：
+* 修改日期：
+* 备    注： 仅在使用UCOS操作系统时使用
+*******************************************************************************/
+u8 BSP_FlashOsInit(void)
+{    
+    /***********************************************
+    * 描述： OS接口
+    */
+#if (UCOS_EN     == DEF_ENABLED)
+#if OS_VERSION > 30000U
+    BSP_OS_SemCreate(&Bsp_FlashSem,1, "Bsp_FlashSem");      // 创建信号量
+#else
+    Bsp_FramSem     = OSSemCreate(1);                       // 创建信号量
+#endif
+#endif 
+    return TRUE;
+}
+
+/*******************************************************************************
+* 名    称： BSP_FlashWaitEvent
+* 功    能： 等待信号量
+* 入口参数： 无
+* 出口参数： 0（操作有误），1（操作成功）
+* 作    者： redmorningcn
+* 创建日期： 2017-05-15
+* 修    改：
+* 修改日期：
+* 备    注： 仅在使用UCOS操作系统时使用
+*******************************************************************************/
+static u8 BSP_FlashWaitEvent(void)
+{
+    /***********************************************
+    * 描述： OS接口
+    */
+    return BSP_OS_SemWait(&Bsp_FlashSem,0); 
+}
+/*******************************************************************************
+* 名    称： FRAM_SendEvent
+* 功    能： 释放信号量
+* 入口参数： 无
+* 出口参数： 无
+* 作    者： redmorningcn
+* 创建日期： 2017-05-15
+* 修    改：
+* 修改日期：
+* 备    注： 仅在使用UCOS操作系统时使用
+*******************************************************************************/
+static void BSP_FlashSendEvent(void)
+{
+    BSP_OS_SemPost(&Bsp_FlashSem);                        	// 发送信号量
+}
+#endif
 /*******************************************************************************/
 
+u8	    WriteFlshRec(u32 FlshAddr,stcFlshRec *sFlshRec);
+void	ReadFlshRec(stcFlshRec * sFlshRec,u32 FlshRecNum);
 
 /*******************************************************************************
 * 名    称： GetRecFlashAddr
@@ -72,7 +142,7 @@ static u32  GetRecFlashAddr(u32 FlshRecNum)
     return  (u32)(((FlshRecNum * sizeof(stcFlshRec)) % FLSH_MAX_SIZE)); 			
 }
 
-
+stcFlshRec  sRectmp;        //数据记录，临时存储
 /*******************************************************************************
 * 名    称：RoadNum;        		StoreData
 * 功    能：RelRoadNum;     		数据存储。根据数据记录号将数据存储到指定
@@ -80,64 +150,49 @@ StationNum;    		flash地址;更新记录号等信息。大部分数据记录的
 E_StationNum;  		内容在其他任务直接对sCtrl.sRec 中更新。少部分数据内容在该函数中跟新。
 * 入口参数：SignalTyp;      	无
 * 出口参数：LocoSign;       	无
-* 作    者                 ： 	redmornigcn
+* 作    者        ： 	redmornigcn
 * 创建日期：LocoWorkState;  	2017-05-15
 * 修    改：LocoState;     
 * 修改日期：
 *******************************************************************************/
-u8 SaveOneREcord(u32 *id,u8 *buf,u32 len)
+u8 App_SaveRecord(void)
 {	
-    /***********************************************
-    * 描述： 2017/12/17,无名沈：计算数据记录地址
+    u32     addr ;	
+    u16     CRC_sum1;
+    u16     CRC_sum2;
+    u16     retrys;
+    u8      ret;
+    /*******************************************************************************
+    * Description  : 计算flash地址；循环存储
+    * Author       : 2018/5/16 星期三, by redmorningcn
     */
-    u32     FlshAddr    = GetRecFlashAddr( *id );		
-    u8      ret         = 0;
-    u32     size;
-    
-//    stcFlshRec sRec,gRec;
-//    /***********************************************
-//    * 描述： 2017/12/17,无名沈：
-//    */
+    addr = GetRecFlashAddr(Ctrl.sRecNumMgr.Current);
 
-//    /***********************************************
-//    * 描述： 2017/12/17,无名沈：
-//    */  
-//    u8     retrys      = 3;
-//    uint16_t    CRC_sum1;
-//    uint16_t    CRC_sum2;
-//    /***********************************************
-//    * 描述： 2017/12/17,无名沈：
-//    */
-//    do {
-//        // 数据存储到flash
-//        ret = WriteFlshRec(FlshAddr, (stcFlshRec *)&sRec);
-//        // 从FLASH中读取出来进行对比
-//        ReadFlshRec((stcFlshRec *)&gRec, Ctrl.sRecNumMgr.Current);
-//        /**************************************************
-//        * 描述： 数据校验
-//        */
-//        CRC_sum1 = GetCrc16Chk((u8*)&gRec,size-2);
-//        CRC_sum2 = gRec.CrcCheck; 
-//        if(CRC_sum1 == CRC_sum2) {
-//            u32 *p1 = (u32 *)&gRec;
-//            u32 *p2 = (u32 *)&sRec;
-//            for ( int i = 0; i < 128 / 4; i++) {
-//                if ( p1[i] != p2[i] ) {
-//                    //Ctrl.sRunPara.SysErr   = (2<<4) + (0<<2) + (1<<0);
-//                    goto next;
-//                }
-//            }
-//            //Ctrl.sRunPara.SysErr   &= ~((2<<4) + (0<<2) + (1<<0));
-//            // 	保存数据记录号
-//            (*id)++;
-//            FRAM_StoreRecNumMgr((StrRecNumMgr  *)&Ctrl.sRecNumMgr); //数据记录号加1，并保存
-//            ret = DEF_TRUE;
-//            break;
-//        } else {
-//        next:
-//            ret = DEF_FALSE;
-//        }
-//    } while ( --retrys );
+    retrys = 4096/128;                                              //扇区存储记录条数
+    
+    do {
+        // 数据存储到flash
+        ret = WriteFlshRec(addr, (stcFlshRec *)&Ctrl.Rec);
+        // 从FLASH中读取出来进行对比
+        ReadFlshRec((stcFlshRec *)&sRectmp, Ctrl.sRecNumMgr.Current);
+        /**************************************************
+        * 描述： 数据校验
+        */
+        CRC_sum1 = GetCrc16Chk((u8*)&sRectmp,sizeof(stcFlshRec)-2);
+        CRC_sum2 = sRectmp.CrcCheck; 
+        if(CRC_sum1 == CRC_sum2) {                                  //数据记录正确,记录编号增加
+            Ctrl.sRecNumMgr.Current++;          
+            Ctrl.sRecNumMgr.Record++;
+            Ctrl.Rec.RecordId = Ctrl.sRecNumMgr.Record;
+            
+            Ctrl.sRunPara.FramFlg.WrNumMgr = 1;         
+            osal_set_event( OS_TASK_ID_STORE, OS_EVT_STORE_FRAM);   //通知存参数FRAM
+        } 
+        else
+        {
+            Ctrl.sRecNumMgr.Current++;                              //换地址存储     
+        }
+    } while ( --retrys );
 //    
 //    
 //    if ( ret == DEF_FALSE ) {
@@ -164,18 +219,18 @@ u8 SaveOneREcord(u32 *id,u8 *buf,u32 len)
 * 修    改：
 * 修改日期：
 *******************************************************************************/
-u8	ReadFlshRec(stcFlshRec * sFlshRec,u32 FlshRecNum)
+void	ReadFlshRec(stcFlshRec * sFlshRec,u32 FlshRecNum)
 {
 	u32		FlshAddr;
 	BSP_FlashWaitEvent();
     
 	FlshAddr = GetRecFlashAddr( FlshRecNum );
 	
-	u8 ret = ReadFlsh(FlshAddr,(INT08U *)sFlshRec,sizeof(stcFlshRec));
+	ReadFlsh(FlshAddr,( INT08U * )sFlshRec,sizeof( stcFlshRec ));
 	
 	BSP_FlashSendEvent();
     
-	return	ret;
+	return	;
 }
 
 /*******************************************************************************
@@ -198,6 +253,7 @@ u8	WriteFlshRec(u32 FlshAddr,stcFlshRec *sFlshRec)
     
 	return	ret;
 }
+
 /*******************************************************************************
 * 名    称：  TaskInitStore
 * 功    能：  任务初始化
@@ -207,104 +263,117 @@ u8	WriteFlshRec(u32 FlshAddr,stcFlshRec *sFlshRec)
 * 创建日期： 	2017-05-15
 * 修    改：
 * 修改日期：
-*******************************************************************************/
+*/
 void    BSP_StoreInit(void)
 {    
-
-
+    SPI_FLASH_Init();           //初始化mx25 spi接口
 }
-
 
 /*******************************************************************************
- * 名    称： 首字母大写
- * 功    能： 
- * 入口参数： 无
- * 出口参数： 无
- * 作    者： 无名沈
- * 创建日期： 2017/12/20
- * 修    改： 
- * 修改日期： 
- * 备    注： 
- *******************************************************************************/
-void App_ParaSave(u8 type)
+* Description  : 保存参数
+* Author       : 2018/5/16 星期三, by redmorningcn
+*/
+void App_FramPara(void)
 {
-//    switch(type) {
-//    case 0:
-//        /***************************************************
-//        * 描述：记录号管理地址：起始地址 = 000
-//        */    
-//        FRAM_StoreHeadInfo((StrRecHeadInfo  *)&Ctrl.sHeadInfo);
-//    case 1:
-//        /***************************************************
-//        * 描述：记录号管理地址：起始地址 = 016
-//        */    
-//        FRAM_StoreRecNumMgr((StrRecNumMgr  *)&Ctrl.sRecNumMgr);
-//        break;
-//    case 2:
-//        /***************************************************
-//        * 描述：产品信息：起始地址 = 032
-//        */
-//        FRAM_StoreProductInfo((StrProductInfo  *)&Ctrl.sProductInfo);
-//        break;
-//    case 3:
-//        /***************************************************
-//        * 描述：系统运行参数：起始地址 = 064
-//        */
-//        FRAM_StoreRunPara((stcRunPara  *)&Ctrl.sRunPara); 
-//        break;
-//    case 4:
-//        /***************************************************
-//        * 描述：油量计算参数：起始地址 = 096
-//        */
-//        FRAM_StoreOilPara((StrOilPara  *)&Ctrl.sOilPara); 
-//        GetOilPara();
-//        break;
-//    case 5:
-//        /***************************************************
-//        * 描述：计算用油箱模型：起始地址 = 128
-//        */ 
-//        FRAM_StoreCalcModel((stcCalcModel  *)&Ctrl.sCalcModel); 
-//        break;
-//    case 6:
-//        /***************************************************
-//        * 描述：数据记录：起始地址 = 536，保存其中一个
-//        */
-//        FRAM_StoreCurRecord((stcFlshRec  *)&Ctrl.sRecB); 
-//        break;
-//    case 7:
-//        break;
-//    case 8:
-//        /***************************************************
-//        * 描述：测量模块1参数：起始地址 = 792
-//        */
-//        MBM_FC16_HoldingRegWrN((MODBUS_CH   *)Ctrl.Mtr.pch,
-//                               (CPU_INT08U   )1,
-//                               (CPU_INT16U   )0,
-//                               (CPU_INT16U  *)&Ctrl.MtrPara[0],
-//                               (CPU_INT16U   )60);
-//        break;
-//    case 9:
-//        /***************************************************
-//        * 描述：测量模块2参数：起始地址 = 1048
-//        */
-//        MBM_FC16_HoldingRegWrN((MODBUS_CH   *)Ctrl.Mtr.pch,
-//                               (CPU_INT08U   )2,
-//                               (CPU_INT16U   )0,
-//                               (CPU_INT16U  *)&Ctrl.MtrPara[1],
-//                               (CPU_INT16U   )60);
-//        break;
-//    default:
-//        FRAM_StoreHeadInfo((StrRecHeadInfo  *)&Ctrl.sHeadInfo);
-//        FRAM_StoreRecNumMgr((StrRecNumMgr  *)&Ctrl.sRecNumMgr); 
-//        FRAM_StoreProductInfo((StrProductInfo  *)&Ctrl.sProductInfo);
-//        FRAM_StoreRunPara((stcRunPara  *)&Ctrl.sRunPara); 
-//        FRAM_StoreOilPara((StrOilPara  *)&Ctrl.sOilPara); 
-//        FRAM_StoreCalcModel((stcCalcModel  *)&Ctrl.sCalcModel); 
-//        FRAM_StoreCurRecord((stcFlshRecNdp02B  *)&Ctrl.sRecB);
-//        break;
-//    }
+    int     add;
+    
+    if(Ctrl.sRunPara.FramFlg.Flags)                                        
+    {
+        /*******************************************************************************
+        * Description  : 存HEAD
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        */
+        if(Ctrl.sRunPara.FramFlg.WrHead == 1)                               
+        {
+            Ctrl.sRunPara.FramFlg.WrHead = 0;
+            add = (int)&Ctrl.sHeadInfo - (int)&Ctrl;                                
+            
+            WriteFM24CL64(add,(u8 *)&Ctrl.sHeadInfo,sizeof(Ctrl.sHeadInfo));  
+        }
+        /*******************************************************************************
+        * Description  : 读HEAD
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        */
+        if(Ctrl.sRunPara.FramFlg.RdHead == 1)                               
+        {
+            Ctrl.sRunPara.FramFlg.RdHead = 0;
+            add = (int)&Ctrl.sHeadInfo - (int)&Ctrl;                                
+            
+            ReadFM24CL64(add,(u8 *)&Ctrl.sHeadInfo,sizeof(Ctrl.sHeadInfo));  
+        }
+        
+        /***********************************************************************
+        * Description  : 存NumMgr
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        */
+        if(Ctrl.sRunPara.FramFlg.WrNumMgr == 1)
+        {
+            Ctrl.sRunPara.FramFlg.WrNumMgr = 0;
+            add = (int)&Ctrl.sRecNumMgr - (int)&Ctrl;
+            
+            WriteFM24CL64(add,(u8 *)&Ctrl.sRecNumMgr,sizeof(Ctrl.sRecNumMgr));
+        }
+        /*******************************************************************************
+        * Description  : 读NumMgr
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        */
+        if(Ctrl.sRunPara.FramFlg.RdNumMgr == 1)
+        {
+            Ctrl.sRunPara.FramFlg.RdNumMgr = 0;
+            add = (int)&Ctrl.sRecNumMgr - (int)&Ctrl;
+            
+            ReadFM24CL64(add,(u8 *)&Ctrl.sRecNumMgr,sizeof(Ctrl.sRecNumMgr));
+        }
+        
+        /***********************************************************************
+        * Description  : 存产品信息
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        */
+        if(Ctrl.sRunPara.FramFlg.WrProduct == 1)
+        {
+            Ctrl.sRunPara.FramFlg.WrProduct = 0;
+            add = (int)&Ctrl.sProductInfo - (int)&Ctrl;
+            
+            WriteFM24CL64(add,(u8 *)&Ctrl.sProductInfo,sizeof(Ctrl.sProductInfo));
+        }
+        /***********************************************************************
+        * Description  : 读产品信息
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        */
+        if(Ctrl.sRunPara.FramFlg.RdProduct == 1)
+        {
+            Ctrl.sRunPara.FramFlg.RdProduct = 0;
+            add = (int)&Ctrl.sProductInfo - (int)&Ctrl;
+            
+            ReadFM24CL64(add,(u8 *)&Ctrl.sProductInfo,sizeof(Ctrl.sProductInfo));
+        }        
+        
+        /***********************************************************************
+        * Description  : 存运行信息
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        */
+        if(Ctrl.sRunPara.FramFlg.WrRunPara == 1)
+        {
+            Ctrl.sRunPara.FramFlg.WrRunPara = 0;
+            add = (int)&Ctrl.sProductInfo - (int)&Ctrl;
+            
+            WriteFM24CL64(add,(u8 *)&Ctrl.sRunPara,sizeof(Ctrl.sRunPara));
+        } 
+        /***********************************************************************
+        * Description  : 存运行信息
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        */
+        if(Ctrl.sRunPara.FramFlg.RdRunPara == 1)
+        {
+            Ctrl.sRunPara.FramFlg.RdRunPara = 0;
+            add = (int)&Ctrl.sProductInfo - (int)&Ctrl;
+            
+            ReadFM24CL64(add,(u8 *)&Ctrl.sRunPara,sizeof(Ctrl.sRunPara));
+        }             
+    }
+        
+    Ctrl.sRunPara.FramFlg.Flags = 0;               //清标识
 }
-
 
 /*******************************************************************************
 * 名    称： 		AppTaskStore
@@ -327,43 +396,32 @@ osalEvt  TaskStoreEvtProcess(osalTid task_id, osalEvt task_event)
     * Description  : 保存数据记录（按Ctrl.sRunPara.StoreTime时间间隔进行数据保存）
     * Author       : 2018/5/15 星期二, by redmorningcn
     *******************************************************************************/
-//    if( task_event & OS_EVT_STORE_TICKS ) {
-//        osal_start_timerRl( OS_TASK_ID_STORE,
-//                            OS_EVT_STORE_TICKS,
-//                            OS_TICKS_PER_SEC * Ctrl.sRunPara.StoreTime);
-//        /***************************************************
-//        * 描述： 置位保存数据标志位，启动数据保存
-//        */
-//        App_SaveDataToHistory();
-//        
-//        return ( task_event ^ OS_EVT_STORE_TICKS );
-//    }
+    if( task_event & OS_EVT_STORE_TICKS ) {
+        osal_start_timerRl( OS_TASK_ID_STORE,
+                            OS_EVT_STORE_TICKS,
+                            OS_TICKS_PER_SEC * Ctrl.sRunPara.StoreTime);
+        /***************************************************
+        * 描述： 置位保存数据标志位，启动数据保存FLASH
+        */
+        App_SaveRecord();               //保存数据记录
+        
+        //osal_set_event( OS_TASK_ID_TMR, OS_EVT_TMR_DTU);      //通知DTU模块发送数据
+
+        return ( task_event ^ OS_EVT_STORE_TICKS );
+    }
     
     /*******************************************************************************
     * Description  : 保存参数（按标识位保存。标识位1，保存对应参数）
     * Author       : 2018/5/15 星期二, by redmorningcn
     *******************************************************************************/
-//    if( task_event & OS_EVT_STORE_INIT ) {
-//        /***************************************************
-//        * 描述： 保存参数
-//        */
-//        for ( u8 i = 0; i < MAX_STORE_TYPE; i++ ) {
-//            //查找当前参数是需要保存
-//            if ( SaveType[i] == TRUE ) {
-//                //将当前参数标志清零
-//                SaveType[i] = FALSE;
-//                //保存参数
-//                App_ParaSave(i);
-//                //稍加延时后再查询是否有其他参数需要保存，如果没有则不会再进入此处
-//                osal_start_timerEx( OS_TASK_ID_STORE,
-//                                    OS_EVT_STORE_INIT,
-//                                    100);
-//                break;
-//            }
-//        }
-//        
-//        return ( task_event ^ OS_EVT_STORE_INIT );
-//    }
+    if( task_event & OS_EVT_STORE_FRAM ) {
+        /***************************************************
+        * 描述： 铁电参数存储或读取
+        */
+        App_FramPara();
+        
+        return ( task_event ^ OS_EVT_STORE_FRAM );
+    }
     return 0;
 }
 
@@ -382,19 +440,19 @@ void TaskInitStore(void)
     /***********************************************
     * 描述： 初始化Flash底层相关函数
     */
-//    BSP_StoreInit();
-//    
+    BSP_StoreInit();
+    
 //    /***********************************************
 //    * 描述： 在看门狗标志组注册本任务的看门狗标志
 //    */
 //    OSRegWdtFlag(( OS_FLAGS     )WDT_FLAG_STORE );
 //    
-//    /***********************************************
-//    * 描述： 2017/12/3,无名沈：设置存储周期为60秒
-//    */
-//    osal_start_timerRl( OS_TASK_ID_STORE,
-//                        OS_EVT_STORE_TICKS,
-//                        OS_TICKS_PER_SEC * 60);
+    /***********************************************
+    * 描述： 2017/12/3,无名沈：设置存储周期为60秒
+    */
+    osal_start_timerRl( OS_TASK_ID_STORE,
+                        OS_EVT_STORE_TICKS,
+                        OS_TICKS_PER_SEC * 60);
 }
 
 /*******************************************************************************

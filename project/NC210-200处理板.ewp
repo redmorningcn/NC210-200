@@ -1023,6 +1023,9 @@
         <name>$PROJ_DIR$\..\source\task\app_task_osal_led.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\source\task\APP_task_osal_store.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\task\app_task_osal_tmr.c</name>
       </file>
       <file>

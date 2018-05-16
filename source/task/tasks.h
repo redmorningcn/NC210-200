@@ -22,5 +22,11 @@ osalEvt  TaskLedEvtProcess(osalTid task_id, osalEvt task_event);
 void TaskInitDisp(void);
 osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event);
 
+//osal store
+void TaskInitStore(void);
+osalEvt  TaskStoreEvtProcess(osalTid task_id, osalEvt task_event);
+u8 BSP_FlashOsInit(void);
+
+
 #endif
 

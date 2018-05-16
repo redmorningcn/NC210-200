@@ -120,6 +120,7 @@
 */
 #define	OS_TASK_PRO_TMR                 OS_TASK_PRIO_HIGHEST - 0
 #define	OS_TASK_PRO_DISP                OS_TASK_PRIO_HIGHEST - 1
+#define	OS_TASK_PRO_STORE               OS_TASK_PRIO_HIGHEST - 2
 #define	OS_TASK_PRO_LED                 OS_TASK_PRIO_HIGHEST - 5
 
 
@@ -128,6 +129,7 @@
 */
 #define OS_TASK_ID_TMR                  0x00
 #define OS_TASK_ID_DISP                 0x01
+#define OS_TASK_ID_STORE		        0x02
 #define OS_TASK_ID_LED		            0x05
 
 
@@ -164,4 +166,17 @@
 #define OS_EVT_DISP_5                   0X00000020
 #define OS_EVT_DISP_6                   0X00000040
 #define OS_EVT_DISP_7                   0X00000080
+
+/***************************************************
+* 描述： OSAL事件定义：STORE 任务事件
+*/
+#define OS_EVT_STORE_TICKS              0X00000001
+#define OS_EVT_STORE_FRAM               0X00000002
+#define OS_EVT_STORE_2                  0X00000004
+#define OS_EVT_STORE_3                  0X00000008
+#define OS_EVT_STORE_4                  0X00000010
+#define OS_EVT_STORE_5                  0X00000020
+#define OS_EVT_STORE_6                  0X00000040
+#define OS_EVT_STORE_7                  0X00000080
+
 #endif
