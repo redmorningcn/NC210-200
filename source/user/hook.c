@@ -29,6 +29,7 @@ void OS_TaskCreateHook(void)
     BSP_Ds3231Init();                   //初始化时钟芯片
     BSP_DispInit();                     //初始化显示
     //InitFlashIO();
+    GPIO_Fram_Init();
     BSP_FlashOsInit(); 
     
     app_init_sctrl();                   //初始化全局变量

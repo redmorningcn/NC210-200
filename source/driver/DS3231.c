@@ -234,11 +234,11 @@ s8  BSP_RTC_ReadTemp(void)
 {
     s8          TempMsb;
 
-    FRAM_WaitEvent();
+    RTC_WaitEvent();
     
     TempMsb     = ReadDS3231Byte(DS3231_TEMP_MSB);      //读高位
     
-    FRAM_SendEvent();
+    RTC_SendEvent();
     
     return  TempMsb;
 }
@@ -256,7 +256,7 @@ s8  BSP_RTC_ReadTemp(void)
  *******************************************************************************/
 uint8 BSP_RTC_ReadTime(stcTime  *sTime)  
 {    
-    FRAM_WaitEvent();
+    RTC_WaitEvent();
     
     sTime->Sec      = Bcd2Hex(ReadDS3231Byte(DS3231_SEC));
     sTime->Min      = Bcd2Hex(ReadDS3231Byte(DS3231_MIN));
@@ -265,7 +265,7 @@ uint8 BSP_RTC_ReadTime(stcTime  *sTime)
     sTime->Mon      = Bcd2Hex(ReadDS3231Byte(DS3231_MONTH)); 
     sTime->Year     = Bcd2Hex(ReadDS3231Byte(DS3231_YEAR));
     
-    FRAM_SendEvent();
+    RTC_SendEvent();
     
     return  1;
 }
@@ -283,7 +283,7 @@ uint8 BSP_RTC_ReadTime(stcTime  *sTime)
  *******************************************************************************/
 void BSP_RTC_WriteTime(stcTime  sTime)  
 {
-    FRAM_WaitEvent();
+    RTC_WaitEvent();
     
     WriteDS3231Byte(DS3231_SEC,     Hex2Bcd(sTime.Sec));     
     WriteDS3231Byte(DS3231_MIN,     Hex2Bcd(sTime.Min));        
@@ -292,7 +292,7 @@ void BSP_RTC_WriteTime(stcTime  sTime)
     WriteDS3231Byte(DS3231_MONTH,   Hex2Bcd(sTime.Mon));  
     WriteDS3231Byte(DS3231_YEAR,    Hex2Bcd(sTime.Year));
     
-    FRAM_SendEvent();
+    RTC_SendEvent();
 }
 
 /*******************************************************************************
@@ -310,6 +310,8 @@ void BSP_Ds3231Init(void)
 {
     //总线初始化在在bsp中完成。
     //
+    GPIO_RTC_Init();                //RtC实时时钟出事化
+    
     WriteDS3231Byte(DS3231_CONTROL,0); 
     //初始化状态寄存器
     WriteDS3231Byte(DS3231_STATUS,0);
@@ -347,7 +349,7 @@ BOOL BSP_SetTime(struct tm t_tm)
     INT08U  time[7];
     INT08U  i;
     
-    FRAM_WaitEvent();
+    RTC_WaitEvent();
     /***********************************************
     * 描述： 判断年是否合法
     */
@@ -371,7 +373,7 @@ BOOL BSP_SetTime(struct tm t_tm)
     for ( i = 0; i < 7; i++ ) {
         WriteDS3231Byte(i,time[i]);
     }  
-    FRAM_SendEvent();
+    RTC_SendEvent();
     return TRUE;
 }
 
@@ -389,7 +391,7 @@ BOOL BSP_GetTime(struct tm *t_tm)
 {
     u8 time[7];
     INT08U  i;
-    FRAM_WaitEvent();
+    RTC_WaitEvent();
     
     for ( i = 0; i < 7; i++ ) {
         time[i]    = ReadDS3231Byte(i);
@@ -402,7 +404,7 @@ BOOL BSP_GetTime(struct tm *t_tm)
     t_tm->tm_mon     = Bcd2Hex(time[5]);
     t_tm->tm_year    = Bcd2Hex(time[6]) + 2000;
     
-    FRAM_SendEvent();
+    RTC_SendEvent();
     
     return TRUE;
 }

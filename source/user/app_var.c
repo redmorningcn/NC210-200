@@ -4,6 +4,7 @@
 *******************************************************************************/
 
 #include <app_type.h>
+#include <tasks.h>
 
 /*******************************************************************************
 * Description  : 定义全局变量  sCtrl
@@ -43,8 +44,6 @@ volatile  StrCOMCtrl  * TaxCom;
  *******************************************************************************/
 void app_init_sctrl(void)
 { 
-
-    
     /***********************************************
     * 描述： 2017/12/23,无名沈：串1通信初始化
     */
@@ -62,20 +61,23 @@ void app_init_sctrl(void)
 //    Ctrl.Mtr.ConnCtrl[0].Stops              = UART_STOPBIT_1;
 //    
 
-    
-
     /***********************************************
     * 描述： 2017/12/20,无名沈：读Ctrl
     */
 
 //    WdtReset();
 
-    /***********************************************
-    * 描述： 2017/12/27,无名沈： 如果为第一次运行
-    */
-    CPU_INT08U   retrys  = 3;
-    CPU_INT08U   ret     = 0;
 
+    /*****************************************************************
+    * Description  : 从FRAM中分别读出head、NumMgr、Porduct、RunPara
+    * Author       : 2018/5/17 星期四, by redmorningcn
+    */
+    Ctrl.sRunPara.FramFlg.RdHead    = 1;
+    Ctrl.sRunPara.FramFlg.RdNumMgr  = 1;
+    Ctrl.sRunPara.FramFlg.RdProduct = 1;
+    Ctrl.sRunPara.FramFlg.RdRunPara = 1;
+    App_FramPara();
+    
     //通讯密码
     Ctrl.sHeadInfo.Password = 6237;
 

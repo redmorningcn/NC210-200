@@ -278,7 +278,8 @@ u8 MX25L3206_RD(u32 Dst, u32 NByte,u8* RcvBufPt)
     
     EEP_WaitEvent();
     
-	adr=Dst&MAX_ADDR ;
+	//adr=Dst&MAX_ADDR ;
+    adr=Dst ;
     CE_Low();            
     Send_Byte(0x0B);                                // 发送读命令
     Send_Byte(((adr & 0xFFFFFF) >> 16));            // 发送地址信息:该地址由3个字节组成
@@ -333,7 +334,8 @@ u8 MX25L3206_WR(u32 Dst, u8* SndbufPt, u32 NByte)
     
     EEP_WaitEvent();
     
-	adr=Dst&MAX_ADDR ;
+	//adr=Dst&MAX_ADDR ;
+    adr=Dst ;
     
     CE_Low();            
     Send_Byte(0x06);                                                    /* 发送写使能命令               */
@@ -407,7 +409,7 @@ u8 MX25L3206_Erase(u32 sec1, u32 sec2)
           CE_High();            
         do
         {
-              CE_Low();             
+            CE_Low();             
             Send_Byte(0x05);                        // 发送读状态寄存器命令
             StatRgVal = Get_Byte();                 // 保存读得的状态寄存器值
             CE_High();                                
@@ -536,7 +538,7 @@ u8 WriteFlsh(u32 adr,u8 *buf,u32 len)
 *******************************************************************************/
 void ReadFlsh(u32 adr,u8 *buf,u32 len)
 {
-	MX25L3206_RD(adr, len,buf);
+	MX25L3206_RD(adr,len,buf);
 }
 
 

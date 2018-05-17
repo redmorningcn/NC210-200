@@ -8,17 +8,17 @@
 */
 #if UCOS_EN     == DEF_ENABLED
 #if OS_VERSION > 30000U
-static  OS_SEM			Bsp_FramSem;//Bsp_FramSem;    	//信号量
+static  OS_SEM			Bsp_RtcSem;//Bsp_FramSem;    	//信号量
 #else
-static  OS_EVENT		*Bsp_FramSem;//Bsp_FramSem;       //信号量
+static  OS_EVENT		*Bsp_RtcSem;//Bsp_FramSem;       //信号量
 #endif
 #endif
 
 
 #if (UCOS_EN     == DEF_ENABLED)
-u8 FRAM_WaitEvent(void);
-void FRAM_SendEvent(void);
-void BSP_FramOsInit(void);
+u8 RTC_WaitEvent(void);
+void RTC_SendEvent(void);
+void BSP_RTCOsInit(void);
    
 #endif
 
@@ -28,7 +28,7 @@ void BSP_FramOsInit(void);
 // 入口参数：无
 // 出口参数：无
 //------------------------------------------------------------------------
-extern	void InitI2CIO(void);
+extern	void	GPIO_RTC_Init(void);
 
 //------------------------------------------------------------
 //函数名称:         StartI2C()

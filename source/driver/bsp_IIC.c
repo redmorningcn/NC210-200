@@ -22,12 +22,12 @@
 * 修改日期：
 * 备    注： 仅在使用UCOS操作系统时使用
 *******************************************************************************/
-u8 FRAM_WaitEvent(void)
+u8 RTC_WaitEvent(void)
 {
     /***********************************************
     * 描述： OS接口
     */
-    return BSP_OS_SemWait(&Bsp_FramSem,0);           	// 等待信号量
+    return BSP_OS_SemWait(&Bsp_RtcSem,0);           	// 等待信号量
 }
 
 /*******************************************************************************
@@ -41,9 +41,9 @@ u8 FRAM_WaitEvent(void)
 * 修改日期：
 * 备    注： 仅在使用UCOS操作系统时使用
 *******************************************************************************/
-void FRAM_SendEvent(void)
+void RTC_SendEvent(void)
 {
-    BSP_OS_SemPost(&Bsp_FramSem);                        	// 发送信号量
+    BSP_OS_SemPost(&Bsp_RtcSem);                        	// 发送信号量
 }
 
 /*******************************************************************************
@@ -57,16 +57,16 @@ void FRAM_SendEvent(void)
 * 修改日期：
 * 备    注： 仅在使用UCOS操作系统时使用
 *******************************************************************************/
-void BSP_FramOsInit(void)
+void BSP_RTCOsInit(void)
 {
     /***********************************************
     * 描述： OS接口
     */
 #if (UCOS_EN     == DEF_ENABLED)
 #if OS_VERSION > 30000U
-    BSP_OS_SemCreate(&Bsp_FramSem,1, "Bsp EepSem");      // 创建信号量
+    BSP_OS_SemCreate(&Bsp_RtcSem,1, "Bsp EepSem");      // 创建信号量
 #else
-    Bsp_FramSem     = OSSemCreate(1);                    // 创建信号量
+    Bsp_RtcSem     = OSSemCreate(1);                    // 创建信号量
 #endif
 #endif
 }
@@ -96,7 +96,7 @@ OPTIMIZE_NONE void I2C_delay(void)
 // 入口参数：	    无
 // 出口参数：	    无
 //------------------------------------------------------------------------
-void	GPIO_Fram_Init(void)
+void	GPIO_RTC_Init(void)
 {
 	GPIO_Config(SCL,0);
 	GPIO_Config(SCL,0);
@@ -104,7 +104,7 @@ void	GPIO_Fram_Init(void)
 	GPIO_Config(SDA,0);
     
 #if (UCOS_EN     == DEF_ENABLED)        //os接口
-    BSP_FramOsInit();
+    BSP_RTCOsInit();
 #endif
 }
 

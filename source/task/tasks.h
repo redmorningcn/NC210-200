@@ -26,6 +26,7 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event);
 void TaskInitStore(void);
 osalEvt  TaskStoreEvtProcess(osalTid task_id, osalEvt task_event);
 u8 BSP_FlashOsInit(void);
+void App_FramPara(void);
 
 
 #endif

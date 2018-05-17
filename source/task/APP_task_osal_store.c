@@ -8,7 +8,7 @@
 * INCLUDES
 */
 #include <includes.h>
-
+#include <string.h>
 
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *app_task_store__c = "$Id: $";
@@ -33,8 +33,6 @@ const  CPU_CHAR  *app_task_store__c = "$Id: $";
 /*******************************************************************************
 * LOCAL VARIABLES
 */
-/***********************************************
-
 
 /*******************************************************************************
 * GLOBAL VARIABLES
@@ -142,7 +140,7 @@ static u32  GetRecFlashAddr(u32 FlshRecNum)
     return  (u32)(((FlshRecNum * sizeof(stcFlshRec)) % FLSH_MAX_SIZE)); 			
 }
 
-stcFlshRec  sRectmp;        //数据记录，临时存储
+
 /*******************************************************************************
 * 名    称：RoadNum;        		StoreData
 * 功    能：RelRoadNum;     		数据存储。根据数据记录号将数据存储到指定
@@ -157,22 +155,28 @@ E_StationNum;  		内容在其他任务直接对sCtrl.sRec 中更新。少部分数据内容在该函数中
 *******************************************************************************/
 u8 App_SaveRecord(void)
 {	
-    u32     addr ;	
-    u16     CRC_sum1;
-    u16     CRC_sum2;
-    u16     retrys;
-    u8      ret;
+    u32         addr ;	
+    u16         CRC_sum1;
+    u16         CRC_sum2;
+    u16         retrys;
+    u8          ret;
+
+    stcFlshRec  sRectmp;        //数据记录，临时存储
+
     /*******************************************************************************
     * Description  : 计算flash地址；循环存储
     * Author       : 2018/5/16 星期三, by redmorningcn
     */
-    addr = GetRecFlashAddr(Ctrl.sRecNumMgr.Current);
 
-    retrys = 4096/128;                                              //扇区存储记录条数
+    retrys = 3;                                              //扇区存储记录条数
     
     do {
+        addr = GetRecFlashAddr(Ctrl.sRecNumMgr.Current);
+
+        memcpy((u8 *)&sRectmp,(u8 *)&Ctrl.Rec,sizeof(Ctrl.Rec));    //数据拷贝，全局数据变更
+        sRectmp.CrcCheck = GetCrc16Chk((u8*)&sRectmp,sizeof(stcFlshRec)-2);//计算校验
         // 数据存储到flash
-        ret = WriteFlshRec(addr, (stcFlshRec *)&Ctrl.Rec);
+        ret = WriteFlshRec(addr, (stcFlshRec *)&sRectmp);
         // 从FLASH中读取出来进行对比
         ReadFlshRec((stcFlshRec *)&sRectmp, Ctrl.sRecNumMgr.Current);
         /**************************************************
@@ -184,28 +188,26 @@ u8 App_SaveRecord(void)
             Ctrl.sRecNumMgr.Current++;          
             Ctrl.sRecNumMgr.Record++;
             Ctrl.Rec.RecordId = Ctrl.sRecNumMgr.Record;
-            
-            Ctrl.sRunPara.FramFlg.WrNumMgr = 1;         
-            osal_set_event( OS_TASK_ID_STORE, OS_EVT_STORE_FRAM);   //通知存参数FRAM
+            break;
         } 
         else
         {
-            Ctrl.sRecNumMgr.Current++;                              //换地址存储     
+            Ctrl.sRecNumMgr.Current++;                              //记录跳转  
+            if( retrys == 2 )                                       
+            {
+                if(Ctrl.sRecNumMgr.Current % (4096/128) != 0)       //翻转一页
+                    Ctrl.sRecNumMgr.Current++; 
+            }
         }
     } while ( --retrys );
-//    
-//    
-//    if ( ret == DEF_FALSE ) {
-//        Ctrl.sRunPara.Err.Flag.FlashErr     = TRUE & (~Ctrl.sRunPara.ErrMask.Flag.FlashErr);                  //D14=1：存储器故障
-//        do {
-//            (*id)++;
-//        } while ((*id) * 128 % 4096 != 0);
-//        //(*id)++;
-//        FRAM_StoreRecNumMgr((StrRecNumMgr  *)&Ctrl.sRecNumMgr);     //数据记录号加1，并保存
-//    } else {
-//        Ctrl.sRunPara.Err.Flag.FlashErr     = FALSE;                //D14=1：存储器故障
-//    }
-//    
+
+    if ( ret == DEF_FALSE ) {                                       //报flash错误
+        Ctrl.sRunPara.Err.FlashErr     = FALSE;                     //D14=1：存储器故障
+    }
+
+    Ctrl.sRunPara.FramFlg.WrNumMgr = 1;         
+    osal_set_event( OS_TASK_ID_STORE, OS_EVT_STORE_FRAM);   //通知存参数FRAM
+
     return ret;
 }
 
@@ -266,7 +268,7 @@ u8	WriteFlshRec(u32 FlshAddr,stcFlshRec *sFlshRec)
 */
 void    BSP_StoreInit(void)
 {    
-    SPI_FLASH_Init();           //初始化mx25 spi接口
+    SPI_FLASH_Init();                       //初始化mx25 spi接口
 }
 
 /*******************************************************************************
@@ -452,7 +454,8 @@ void TaskInitStore(void)
     */
     osal_start_timerRl( OS_TASK_ID_STORE,
                         OS_EVT_STORE_TICKS,
-                        OS_TICKS_PER_SEC * 60);
+                        //OS_TICKS_PER_SEC * 60);
+                        OS_TICKS_PER_SEC * 6);
 }
 
 /*******************************************************************************

@@ -13,6 +13,7 @@
 #include <mx25.h>
 #include <ds3231.h>
 #include <bsp_IIC.h>
+#include <bsp_IIC_2.h>
 #include <bsp_time.h>
 #include <bsp_FRAM.h>
 #include <bsp_max7219.h>

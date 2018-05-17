@@ -90,7 +90,7 @@ typedef struct _stcRunPara_
     } FramFlg;
     
     union ___u_init_flag {
-        struct ___init_flag {
+        struct  {
             u32                 ConnIcCardFlag  : 1;        // IC卡模块连接成功标志 成功后清零 
             u32                 SetLocoFlag     : 1;        // 机车号设置成功标志 成功后清零
             u32                 SetOilModFlag   : 1;        // 油箱模型设置成功标志 成功后清零
@@ -121,7 +121,7 @@ typedef struct _stcRunPara_
     } InitFlag;
     
     union ___u_err_mask_flag {
-        struct ___s_err_mask_flag {
+        struct  {
             u16   		        ALFlag          : 1;        //低油位报警禁止
             u16   		        AHFlag          : 1;        //高油位报警禁止
             u16   		        Mtr1Flag        : 1;        //测量模块1禁止
@@ -142,7 +142,7 @@ typedef struct _stcRunPara_
         u16                 Flags;
     }Mask;                                          // 故障屏蔽
     union ___u_dev_cfg {
-        struct ___s_dev_cfg {
+        struct  {
             u8   		        PwrEnFlag       : 1;        //
             u8   		        OtrEnFlag       : 1;        //
             u8   		        ExtComEnFlag    : 1;        //
@@ -156,7 +156,7 @@ typedef struct _stcRunPara_
         u8                      Flags;                      // 设备配置B0:电量模块;B1:扩展通讯模块；B2:显示模块1；B3显示模块2；B4:GPS模块；B5~B7预留
     } DevCfg; 
     union ___u_system_sts {
-        struct ___s_system_sts {
+        struct  {
             u16                 DispLevel       : 4;        // 4        显示亮度 1~15 
             u16                 Rsv1            : 4;        // 4 
             u16   		        StartFlg        : 1;        // 1    	首次运行
@@ -169,7 +169,7 @@ typedef struct _stcRunPara_
     } SysSts; 
     
     union _u_sys_err {
-        struct _s_sys_err {
+        struct  {
             u8              Sen1OpenErr     : 1;     //D0=1：一端传感器模块故障
             u8              Sen2OpenErr     : 1;     //D1=1：二端传感器模块故障 
             u8              Mtr1CommErr     : 1;     //D2=1：一端测量模块通信故障
@@ -199,7 +199,7 @@ typedef struct _stcRunPara_
         //u8   		        StoreType ;                 // 1   	    存储类型
     } Err;
     union _u_sys_err_mask {
-        struct _s_sys_err_mask {
+        struct  {
             u8                  Sen1OpenErr     : 1;     //D0=1：一端传感器模块故障
             u8                  Sen2OpenErr     : 1;     //D1=1：二端传感器模块故障 
             u8                  Mtr1CommErr     : 1;     //D2=1：一端测量模块通信故障

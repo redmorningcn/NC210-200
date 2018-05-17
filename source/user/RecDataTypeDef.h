@@ -69,7 +69,7 @@ typedef  struct _stcFlshRec                 //定义空检记录数据结构
     u16                 OffHightFlag   : 1  ;//高度调整标志
     u16   				Rsv            : 2  ;//保留           2
     u8                  Rssi                ;//信号强度       1
-    u8                  rsvbyte             ;//预留字节
+    u8                  rsvbyte[3]             ;//预留字节
     
     union __u_sys_err {
         struct __s_sys_err {

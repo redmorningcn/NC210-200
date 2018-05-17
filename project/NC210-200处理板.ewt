@@ -1158,6 +1158,12 @@
         <name>$PROJ_DIR$\..\source\driver\bsp_IIC.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_IIC_2.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_IIC_2.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\driver\bsp_max7219.c</name>
       </file>
       <file>
