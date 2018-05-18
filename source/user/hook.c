@@ -14,7 +14,7 @@ extern  void  App_OS_SetAllHooks (void);
 *******************************************************************************/
 void    BSP_Init_Hook(void)
 {
-    App_ModbusInit();                   //初始化串口及串口控制信息
+    App_ModbusInit();                   //初始化串口及串口控制信息（启动串口Modbus接收任务）
     
 }
 
@@ -34,11 +34,17 @@ void OS_TaskCreateHook(void)
     
     app_init_sctrl();                   //初始化全局变量
     /***********************************************
-    * 描述： 设置UCOS钩子函数
+    * 描述： 设置UCOS钩子函数，
     */
     App_OS_SetAllHooks();
     
-    App_TaskOsalCreate();               //创建osal任务。           
+    /**************************************************************
+    * Description  : 创建任务
+    * Author       : 2018/5/18 星期五, by redmorningcn
+    */
+    App_TaskOsalCreate();               //创建osal任务。     
+    
+    App_TaskCommCreate();               //创建串口通讯任务。
 }
 
 /*******************************************************************************

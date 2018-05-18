@@ -44,7 +44,7 @@ typedef struct _StrRecNumMgr {
     u32   		        IcDump;				        //IC卡转储
 }StrRecNumMgr;
 
-//产品信息:  型号+ 编号
+//产品信息:型号 + 编号
 //12 bytes
 __packed
 typedef struct _StrProductInfo {
@@ -232,7 +232,13 @@ typedef struct _stcRunPara_
     u8                  Rsv2[7];                    // 预留16个字节
 }stcRunPara;
 
-
+//OS 系统运行参数。
+//事件标示组。
+__packed
+typedef struct {
+    OS_FLAG_GRP             CommEvtFlagGrp;		// 串口通讯标示组
+    OS_FLAGS                CommEvtFlag;        // 串口通讯标示
+} StrCtrlOS;
 
 typedef union _Unnctrl_ {
    struct{
@@ -267,6 +273,12 @@ typedef union _Unnctrl_ {
         * Author       : 2018/5/16 星期三, by redmorningcn
         */
         StrCOMCtrl          ComCtrl[4];                         //串控制字
+        
+        /*******************************************************************************
+        * Description  : 操作系统参数
+        * Author       : 2018/5/18 星期五, by redmorningcn
+        */
+        StrCtrlOS           Os;                                 
     };
    
     u16   buf[512];

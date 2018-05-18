@@ -179,4 +179,12 @@
 #define OS_EVT_STORE_6                  0X00000040
 #define OS_EVT_STORE_7                  0X00000080
 
+/*******************************************************************************
+* Description  : 串口任务事件标识组
+* Author       : 2018/5/18 星期五, by redmorningcn
+*/
+#define COMM_EVT_FLAG_MTR_RX            (0x1 << 0)	/* MTR 接收事件                 *//
+#define COMM_EVT_FLAG_DTU_RX            (0x1 << 1)	/* DTU 接收事件                 */
+#define COMM_EVT_FLAG_TAX_RX            (0x1 << 2)	/* TAX 接收事件                 */
+
 #endif
