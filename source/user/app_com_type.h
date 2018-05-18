@@ -32,8 +32,8 @@
 #define     TAX_NODE            1               /* TAX modebus编号*/
 
 //csnc地址定义
-#define     LKJ_MAINBOARD_ADDR  0x84            /* LKJ接口在线处理处理板 CSNC 协议地址*/
-#define     DTU_ADDR            0xCA            /* 无线发送模块 CSNC 协议地址 */
+#define     LKJ_MAINBOARD_ADDR  (0x84)          /* LKJ接口在线处理处理板 CSNC 协议地址*/
+#define     DTU_ADDR            (0xCA)          /* 无线发送模块 CSNC 协议地址 */
 
 /*********************************************************************
 * CONSTANTS
@@ -79,7 +79,9 @@ typedef struct {
     u8      ConnFlg;            //连接控制,1，允许连接，0，不允许连接
     u8      RecvEndFlg;		    //接收标示，1，数据接收完成，0，无数据接收。
     u8      TimeOut;		    //超时时间，单位1s
-    u8      ErrFlg;		        //错误标示，连接正常，0；连接错误，1
+    u8      ErrFlg:4;           //错误标示，连接正常，0；连接错误，1
+    u8      protocol:4;         //通信协议。0，modbus；1，csnc；
+
     
     u8      SlaveAddr;          //接收地址          slave  =0xCA	   
     u8      MasterAddr;         //源地址           master   =0x80	   
@@ -99,13 +101,15 @@ typedef struct {
 
 //接收控制字
 typedef struct {     
-    u8                  DestAddr;       //接收地址      slave  =0xA1\A2	   
-    u8                  SourceAddr;     //源地址       master   =0x80	   
-    u8                  FramNum;        //帧序号
-    u8                  Len;			//接收有效数据长度
-    u8                  FrameCode;       
-    u8                  Tmp[3];
-    u32                 DataCode;			//接收控制字
+    u8      DestAddr;           //接收地址      slave  =0xA1\A2	   
+    u8      SourceAddr;         //源地址       master   =0x80	   
+    u8      FramNum;            //帧序号
+    u8      Len;                //接收有效数据长度
+    u8      FrameCode;       
+    u8      protocol;           //通信协议。0，modbus；1，csnc；
+    u8      Tmp[2];
+    u32     DataCode;           //接收控制字
+    
 } sCOMRecvCtrl;
 
 /*******************************************************************************

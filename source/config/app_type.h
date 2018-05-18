@@ -9,13 +9,14 @@
 #include    <app_com_type.h>
 #include    <RecDataTypeDef.h>
 
-#define     SOFT_VERSION                (0101)
+#define     SOFT_VERSION                (0101)          /* 软件版本         */
+#define     MODBUS_PASSWORD             (6237)          /* modbus通讯密码   */
 
 
 /*******************************************************************************
 * Description  : 控制结构体头部（程序识别）
 * Author       : 2018/5/16 星期三, by redmorningcn
-*******************************************************************************/
+*/
 typedef struct { 
     u16                 Password;                       // 	2  	用于MODEBUS通讯确认密钥，默认为6237，防止非法改数据
     u16   		        Rsv[7];				            //	2  	软件版本
@@ -47,7 +48,7 @@ typedef struct _StrRecNumMgr {
 //12 bytes
 __packed
 typedef struct _StrProductInfo {
-	u32   		        Type;			            //产品类别，0 :NDP02  ,1:NDP02-B
+	u32   		        Type;			            //产品类别
 	u32   		        Id;				            //产品编号	16110002
 	stcLocoId		    LocoId;		                //机车信息	104(DF4B) - 1000
     u16                 HwVer;                      //硬件版本
@@ -65,12 +66,12 @@ typedef struct _StrProductInfo {
 __packed
 typedef struct _stcRunPara_					
 {
-	u16   		        StoreTime;                      // 1    数据记录存储周期
+	u16   		        StoreTime;                  // 1    数据记录存储周期
 	//
-    u8   		        MtrErr[2];                      // 1    传感器错误代码
-    u8   		        SysErr;                         // 1    系统错误代码
-	u8   		        StoreType ;                     // 1    存储类型
-	u8                  AvgCnt;                         // 1    测量平均次数
+    u8   		        MtrErr[2];                  // 1    传感器错误代码
+    u8   		        SysErr;                     // 1    系统错误代码
+	u8   		        StoreType ;                 // 1    存储类型
+	u8                  AvgCnt;                     // 1    测量平均次数
 
     union ___u_Framflg {
         struct {
@@ -193,7 +194,7 @@ typedef struct _stcRunPara_
             u8              RsvErr          : 4;     //D23~20：预留
         } ;
         u8                  Flags[4];
-        u32                 Error;
+        u32                 Errors;
         //u8   		        MtrErr[2];                  // 1   	    传感器错误代码
         //u8   		        SysErr;                     // 1   	    系统错误代码
         //u8   		        StoreType ;                 // 1   	    存储类型

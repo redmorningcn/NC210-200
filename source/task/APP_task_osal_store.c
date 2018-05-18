@@ -140,6 +140,30 @@ static u32  GetRecFlashAddr(u32 FlshRecNum)
     return  (u32)(((FlshRecNum * sizeof(stcFlshRec)) % FLSH_MAX_SIZE)); 			
 }
 
+/*******************************************************************************
+* Description  : 数据记录赋值（部分数据在各任务中赋值）
+* Author       : 2018/5/17 星期四, by redmorningcn
+*/
+static  void    FmtRecord(void)
+{
+    Ctrl.Rec.CmdTpye    = 01;
+    Ctrl.Rec.EvtType    = 0;
+    
+    if(Ctrl.sRunPara.SysSts.StartFlg == 1){
+        Ctrl.Rec.EvtType =  START_EVT;                              //开机事件
+    }
+    
+    time_s t_tm  = TIME_GetCalendarTime();                          //取记录时间
+    
+    Ctrl.Rec.Year   = t_tm.tm_year-2000;
+    Ctrl.Rec.Mon    = t_tm.tm_mon;
+    Ctrl.Rec.Day    = t_tm.tm_mday;	
+    Ctrl.Rec.Hour   = t_tm.tm_hour;	
+    Ctrl.Rec.Min    = t_tm.tm_min;	
+    Ctrl.Rec.Sec    = t_tm.tm_sec;   
+    
+    memset((u8 *)Ctrl.Rec.rsvbyte,0,sizeof(Ctrl.Rec.rsvbyte));    //预留数值置零
+}
 
 /*******************************************************************************
 * 名    称：RoadNum;        		StoreData
@@ -164,16 +188,21 @@ u8 App_SaveRecord(void)
     stcFlshRec  sRectmp;        //数据记录，临时存储
 
     /*******************************************************************************
-    * Description  : 计算flash地址；循环存储
-    * Author       : 2018/5/16 星期三, by redmorningcn
+    * Description  : 设置记录值
+    * Author       : 2018/5/17 星期四, by redmorningcn
     */
-
-    retrys = 3;                                              //扇区存储记录条数
+    FmtRecord();
+    
+    retrys = 3;                                                             //错误允许错误次数
     
     do {
+        /*******************************************************************************
+        * Description  : 计算flash地址；循环存储
+        * Author       : 2018/5/16 星期三, by redmorningcn
+        */
         addr = GetRecFlashAddr(Ctrl.sRecNumMgr.Current);
 
-        memcpy((u8 *)&sRectmp,(u8 *)&Ctrl.Rec,sizeof(Ctrl.Rec));    //数据拷贝，全局数据变更
+        memcpy((u8 *)&sRectmp,(u8 *)&Ctrl.Rec,sizeof(Ctrl.Rec));        //数据拷贝，全局数据变更
         sRectmp.CrcCheck = GetCrc16Chk((u8*)&sRectmp,sizeof(stcFlshRec)-2);//计算校验
         // 数据存储到flash
         ret = WriteFlshRec(addr, (stcFlshRec *)&sRectmp);
@@ -184,7 +213,7 @@ u8 App_SaveRecord(void)
         */
         CRC_sum1 = GetCrc16Chk((u8*)&sRectmp,sizeof(stcFlshRec)-2);
         CRC_sum2 = sRectmp.CrcCheck; 
-        if(CRC_sum1 == CRC_sum2) {                                  //数据记录正确,记录编号增加
+        if(CRC_sum1 == CRC_sum2) {                                      //数据记录正确,记录编号增加
             Ctrl.sRecNumMgr.Current++;          
             Ctrl.sRecNumMgr.Record++;
             Ctrl.Rec.RecordId = Ctrl.sRecNumMgr.Record;

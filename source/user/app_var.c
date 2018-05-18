@@ -2,7 +2,6 @@
 * Description  : 定义及初始化全局变量
 * Author       : 2018/5/10 星期四, by redmorningcn
 *******************************************************************************/
-
 #include <app_type.h>
 #include <tasks.h>
 
@@ -32,41 +31,39 @@ volatile  StrCOMCtrl  * TaxCom;
 
 
 /*******************************************************************************
- * 名    称： app_init_sctrl
- * 功    能： 
- * 入口参数： 无
- * 出口参数： 无
- * 作    者： 无名沈
- * 创建日期： 2017/12/27
- * 修    改： 
- * 修改日期： 
- * 备    注： 
- *******************************************************************************/
+* Description  : 全局变量初始化
+* Author       : 2018/5/18 星期五, by redmorningcn
+*/
 void app_init_sctrl(void)
 { 
-    /***********************************************
-    * 描述： 2017/12/23,无名沈：串1通信初始化
-    */
-//    //测量装置1 初始化    
-//    Ctrl.Mtr.ConnCtrl[0].ConnFlg            = 1;
-//    Ctrl.Mtr.ConnCtrl[0].ErrFlg             = 0;
-//    Ctrl.Mtr.ConnCtrl[0].MasterAddr         = 0x80;
-//    Ctrl.Mtr.ConnCtrl[0].SlaveAddr          = SLAVE_ADDR_DIP1;
-//    Ctrl.Mtr.ConnCtrl[0].SendFlg            = 0;
-//    Ctrl.Mtr.ConnCtrl[0].SendFramNum        = 1;
-//    Ctrl.Mtr.ConnCtrl[0].TimeOut            = 10;
-//    Ctrl.Mtr.ConnCtrl[0].Baud               = 9600;
-//    Ctrl.Mtr.ConnCtrl[0].Bits               = UART_DATABIT_8;
-//    Ctrl.Mtr.ConnCtrl[0].Parity             = UART_PARITY_NONE;
-//    Ctrl.Mtr.ConnCtrl[0].Stops              = UART_STOPBIT_1;
-//    
-
-    /***********************************************
-    * 描述： 2017/12/20,无名沈：读Ctrl
-    */
-
 //    WdtReset();
-
+    
+    /*******************************************************************************
+    * Description  : 初始化串口连接参数默认值
+    * Author       : 2018/5/18 星期五, by redmorningcn
+    */    
+    u8  i,j;
+    for(i = 0;i <sizeof(Ctrl.ComCtrl)/sizeof(StrCOMCtrl);i++ )
+    {
+        Ctrl.ComCtrl[i].ConnectFlag     = 0;            //连接标识：0，该串口无连接；1，有连接。
+        Ctrl.ComCtrl[i].ConnectTimeOut  = 5;            //超时时间：5秒内，该串口无连接（数据接收），则串口断开。
+        
+        for(j = 0;j< COM_CONN_NUM;j++){                 //该串口最多支持的连接数（地址或协议区别）；
+            Ctrl.ComCtrl[i].ConnCtrl[j].Baud        = 57600;
+            Ctrl.ComCtrl[i].ConnCtrl[j].Bits        = USART_WordLength_8b;
+            Ctrl.ComCtrl[i].ConnCtrl[j].Parity      = USART_Parity_No;
+            Ctrl.ComCtrl[i].ConnCtrl[j].Stops       = USART_StopBits_1;
+            
+            Ctrl.ComCtrl[i].ConnCtrl[j].TimeOut     = 5;            //连接超时时间。（超过该时间，认为连接断开）
+            Ctrl.ComCtrl[i].ConnCtrl[j].ConnFlg     = 1;            //该连接允许
+            Ctrl.ComCtrl[i].ConnCtrl[j].ErrFlg      = 0;            //连接正常
+            Ctrl.ComCtrl[i].ConnCtrl[j].MasterAddr  = LKJ_MAINBOARD_ADDR;     //本机地址
+            Ctrl.ComCtrl[i].ConnCtrl[j].SlaveAddr   = DTU_ADDR;     //数据接收服务器地址
+            Ctrl.ComCtrl[i].ConnCtrl[j].SendFlg     = 0;
+            Ctrl.ComCtrl[i].ConnCtrl[j].RecvEndFlg  = 0;
+            Ctrl.ComCtrl[i].ConnCtrl[j].SendFramNum = 1;
+        }
+    }
 
     /*****************************************************************
     * Description  : 从FRAM中分别读出head、NumMgr、Porduct、RunPara
@@ -78,26 +75,17 @@ void app_init_sctrl(void)
     Ctrl.sRunPara.FramFlg.RdRunPara = 1;
     App_FramPara();
     
-    //通讯密码
-    Ctrl.sHeadInfo.Password = 6237;
-
-    //软件版本YYMMX
-    Ctrl.sProductInfo.SwVer         = SOFT_VERSION;
-    /***********************************************
-    * 描述： 2017/12/27,无名沈： 读产品编号
-    */
-    //开始标示 
-    Ctrl.sRunPara.SysSts.StartFlg              = 1;
+    Ctrl.sRunPara.Err.Errors        = 0;                //清零故障代码
     
-    if ( ( Ctrl.sRunPara.StoreTime < 5 ) || 
+    if(Ctrl.sHeadInfo.Password != MODBUS_PASSWORD){     //通讯密码
+        Ctrl.sHeadInfo.Password = MODBUS_PASSWORD;
+        Ctrl.sRunPara.Err.FramErr = 1;                  //铁电故障（指定地址读出的值错误）
+    }
+   
+    Ctrl.sRunPara.SysSts.StartFlg   = 1;                //开始标示 
+    
+    if ( ( Ctrl.sRunPara.StoreTime < 5 ) ||             //数据存储周期
          ( Ctrl.sRunPara.StoreTime > 10*60 ) ) {
         Ctrl.sRunPara.StoreTime    = 60;
     }
-    
-    /***********************************************
-    * 描述： 2017/12/20,无名沈：
-    */
-    Ctrl.sRunPara.StoreType         = 0x00;
-    //清零故障代码
-    Ctrl.sRunPara.Err.Error         = 0;
 }

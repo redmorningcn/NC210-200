@@ -170,7 +170,6 @@ void  MB_Init (CPU_INT32U freq)
 * Note(s)     : none.
 *********************************************************************************************************
 */
-
 void  MB_Exit (void)
 {
 #if (MODBUS_CFG_RTU_EN == DEF_ENABLED)
