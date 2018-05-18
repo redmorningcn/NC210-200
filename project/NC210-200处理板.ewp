@@ -1014,6 +1014,9 @@
     <group>
       <name>task</name>
       <file>
+        <name>$PROJ_DIR$\..\source\task\app_task_com.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\task\app_task_osal.c</name>
       </file>
       <file>
