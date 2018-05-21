@@ -1855,7 +1855,10 @@ static  void  MBS_RTU_Task (MODBUS_CH  *pch)
         //redmorningcn 20180424  MB_RTU_RX（）完成MODBUS数据读取，数据存在于 pch->RxFrameData（不含crc校验）中，数据数据长度
         //pch->RxFrameNDataBytes（不含CRC校验），为适应扩展为非MODBUS协议，在此，将CRC也存放到pch->RxFrameData，长度pch->RxFrameNDataBytes+2
 #if (MODBUS_CFG_NOMODBUS_EN == DEF_ENABLED)
+        extern  CPU_BOOLEAN  MBN_FCxx_Handler (MODBUS_CH  *pch);
 		send_reply = MBN_FCxx_Handler(pch);    /* 非MODBUS数据接收操作，数据=pch->RxFrameData+pch->RxFrameCRC，数据长度 = pch->RxFrameNDataBytes+2 */
+        if( send_reply )                       //协议解析正确，后续不执行。                  
+            return;
 #endif
 	//redmorningcn 20180424
 		

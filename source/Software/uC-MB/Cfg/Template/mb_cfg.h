@@ -32,12 +32,7 @@
 *********************************************************************************************************
 */
 
-#define  MB_AES_EN                        DEF_DISABLED          /* Enable or Disable  Modbus Slave                    */
-#define  MB_NONMODBUS_EN                  DEF_ENABLED           /* Enable or Disable  非Modbus 通信                    */
-#define  MB_IAPMODBUS_EN                  DEF_ENABLED           /* Enable or Disable  IAP升级                          */
-#define  MBM_STAT_CTR_AUTO_CLR_EN         DEF_ENABLED           /* 自动清除计数器  pch->StatNoRespCtr    = 0;
-                                                                                   pch->StatCRCErrCtr    = 0;
-                                                                                   pch->StatExceptCtr    = 0;         */
+
 /*
 *********************************************************************************************************
 *                                  MODBUS MODULES CONFIGURATION
@@ -46,6 +41,8 @@
 
 #define  MODBUS_CFG_SLAVE_EN              DEF_ENABLED           /* Enable or Disable  Modbus Slave                    */
 #define  MODBUS_CFG_MASTER_EN             DEF_ENABLED           /* Enable or Disable  Modbus Master                   */
+
+#define  MODBUS_CFG_NOMODBUS_EN           DEF_ENABLED           /* 允许非modbus的接收函数在modbus接收任务中调用       */
 
 /*
 *********************************************************************************************************

@@ -704,22 +704,22 @@ void  MB_CommTxIntEn (MODBUS_CH  *pch)
 
     switch (pch->PortNbr) {                       /* Just enable the receiver interrupt                */
     case 0:
-        USART_ITConfig(USART1, USART_IT_TC, ENABLE);
+        USART_ITConfig(USART1, USART_IT_TC,  ENABLE);
         USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
         break;
         
     case 1:
-        USART_ITConfig(USART2, USART_IT_TC, ENABLE);
+        USART_ITConfig(USART2, USART_IT_TC,  ENABLE);
         USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
         break;
         
     case 2:
-        USART_ITConfig(USART3, USART_IT_TC, ENABLE);
+        USART_ITConfig(USART3, USART_IT_TC,  ENABLE);
         USART_ITConfig(USART3, USART_IT_TXE, ENABLE);
         break;
         
     case 3:
-        USART_ITConfig(UART4, USART_IT_TC, ENABLE);
+        USART_ITConfig(UART4, USART_IT_TC,  ENABLE);
         USART_ITConfig(UART4, USART_IT_TXE, ENABLE);
         break;
     }

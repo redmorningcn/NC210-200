@@ -42,28 +42,27 @@ void app_init_sctrl(void)
     * Description  : 初始化串口连接参数默认值
     * Author       : 2018/5/18 星期五, by redmorningcn
     */    
-    u8  i,j;
+    u8  i;
     for(i = 0;i <sizeof(Ctrl.ComCtrl)/sizeof(StrCOMCtrl);i++ )
     {
         Ctrl.ComCtrl[i].ConnectFlag     = 0;            //连接标识：0，该串口无连接；1，有连接。
         Ctrl.ComCtrl[i].ConnectTimeOut  = 5;            //超时时间：5秒内，该串口无连接（数据接收），则串口断开。
         Ctrl.ComCtrl[i].TimeoutEn       = 0;            //超时计数停止。（发送数据时启动）
         
-        for(j = 0;j< COM_CONN_NUM;j++){                 //该串口最多支持的连接数（地址或协议区别）；
-            Ctrl.ComCtrl[i].ConnCtrl[j].Baud        = 57600;
-            Ctrl.ComCtrl[i].ConnCtrl[j].Bits        = USART_WordLength_8b;
-            Ctrl.ComCtrl[i].ConnCtrl[j].Parity      = USART_Parity_No;
-            Ctrl.ComCtrl[i].ConnCtrl[j].Stops       = USART_StopBits_1;
-            
-            Ctrl.ComCtrl[i].ConnCtrl[j].TimeOut     = 5;            //连接超时时间。（超过该时间，认为连接断开）
-            Ctrl.ComCtrl[i].ConnCtrl[j].EnableFlg   = 1;            //该连接允许
-            Ctrl.ComCtrl[i].ConnCtrl[j].ErrFlg      = 0;            //连接正常
-            Ctrl.ComCtrl[i].ConnCtrl[j].MasterAddr  = LKJ_MAINBOARD_ADDR;     //本机地址
-            Ctrl.ComCtrl[i].ConnCtrl[j].SlaveAddr   = DTU_ADDR;     //数据接收服务器地址
-            Ctrl.ComCtrl[i].ConnCtrl[j].SendFlg     = 0;
-            Ctrl.ComCtrl[i].ConnCtrl[j].RecvEndFlg  = 0;
-            Ctrl.ComCtrl[i].ConnCtrl[j].SendFramNum = 1;
-        }
+        Ctrl.ComCtrl[i].ConnCtrl.Baud        = 57600;
+        Ctrl.ComCtrl[i].ConnCtrl.Bits        = USART_WordLength_8b;
+        Ctrl.ComCtrl[i].ConnCtrl.Parity      = USART_Parity_No;
+        Ctrl.ComCtrl[i].ConnCtrl.Stops       = USART_StopBits_1;
+        
+        Ctrl.ComCtrl[i].ConnCtrl.TimeOut     = 5;            //连接超时时间。（超过该时间，认为连接断开）
+        Ctrl.ComCtrl[i].ConnCtrl.EnableFlg   = 1;            //该连接允许
+        Ctrl.ComCtrl[i].ConnCtrl.ErrFlg      = 0;            //连接正常
+        Ctrl.ComCtrl[i].ConnCtrl.SourceAddr  = LKJ_MAINBOARD_ADDR;     //本机地址
+        Ctrl.ComCtrl[i].ConnCtrl.DestAddr    = DTU_ADDR;     //数据接收服务器地址
+        Ctrl.ComCtrl[i].ConnCtrl.SendFlg     = 0;
+        Ctrl.ComCtrl[i].ConnCtrl.RecvEndFlg  = 0;
+        Ctrl.ComCtrl[i].ConnCtrl.FramNum     = 1;
+        
     }
 
     /*****************************************************************

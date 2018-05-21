@@ -102,10 +102,10 @@ void    App_CommIdle(void)
             * Description  : 超时后，连接状态置默认值
             * Author       : 2018/5/21 星期一, by redmorningcn
             */
-            DtuCom->ConnCtrl[0].EnableFlg   = 1;        //允许连接    
-            DtuCom->ConnCtrl[0].RecvEndFlg  = 0;        //无数据接收
-            DtuCom->ConnCtrl[0].SendFlg     = 0;        //无数发送
-            DtuCom->ConnCtrl[0].ConnType    = DATA_COMM;//传输数据  
+            DtuCom->ConnCtrl.EnableFlg   = 1;        //允许连接    
+            DtuCom->ConnCtrl.RecvEndFlg  = 0;        //无数据接收
+            DtuCom->ConnCtrl.SendFlg     = 0;        //无数发送
+            DtuCom->ConnCtrl.ConnType    = DATA_COMM;//传输数据  
         }
     }
     
@@ -116,7 +116,7 @@ void    App_CommIdle(void)
     */
     if(     Ctrl.sRecNumMgr.GrsRead < Ctrl.sRecNumMgr.Current
        //&&   DtuCom->ConnCtrl[0].SendFlg     == 0  //(状态不好判断)
-       &&   DtuCom->ConnCtrl[0].ConnType    == DATA_COMM
+       &&   DtuCom->ConnCtrl.ConnType    == DATA_COMM
       )       
     {
         OS_ERR      err;
@@ -154,6 +154,9 @@ void  App_TaskCommCreate(void)
                  (OS_ERR     *)&err);                               // 指向错误代码的指针，用于创建结果处理
 }
 
+void NMB_Tx(MODBUS_CH    *pch,
+            CPU_INT08U   *p_reg_tbl,
+            CPU_INT16U   nbr_bytes);
 /*******************************************************************************
 * 名    称： AppTaskComm
 * 功    能： 控制任务
@@ -212,8 +215,10 @@ static  void  AppTaskComm (void *p_arg)
             if( flags   & COMM_EVT_FLAG_DTU_RX  ) {     //60秒内无通讯，强制启动通讯
                 //app_comm_dtu(flags); 
                 
+                DtuCom->ConnCtrl.Connflg = 1;           //连接成功
+                
                 if( flags &      COMM_EVT_FLAG_DTU_RX ) { 
-                    flagClr |=  COMM_EVT_FLAG_DTU_RX;   
+                    flagClr |=   COMM_EVT_FLAG_DTU_RX;   
                 }
             }
             
@@ -223,6 +228,9 @@ static  void  AppTaskComm (void *p_arg)
             */
             if(    flags & COMM_EVT_FLAG_TAX_RX ) {
                 //app_comm_tax(flags);
+                //发送数据
+                NMB_Tx(TaxCom->pch,(u8 *)&TaxCom->Rd,TaxCom->RxCtrl.Len);
+                TaxCom->ConnCtrl.Connflg = 1;           //连接成功
                 
                 if(flags &      COMM_EVT_FLAG_TAX_RX) {      
                     flagClr |=  COMM_EVT_FLAG_TAX_RX;   

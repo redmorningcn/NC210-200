@@ -42,6 +42,10 @@
 #define     SET_COMM            1
 #define     IAP_COMM            2
 
+//通讯协议类型
+#define     MODBUS_PROTOCOL     0
+#define     CSNC_PROTOCOL       1
+
 //定义通讯超时时间
 #define     DTU_TIMEOUT         60
 #define     MTR_TIMEOUT         5
@@ -102,36 +106,43 @@ typedef struct {
     u8      TimeOut     :7;     //超时时间，单位1s。
     union {
         struct{
-            u8      MasterAddr;         //源地址        master = 0x80	   
-            u8      SlaveAddr;          //接收地址      slave  = 0xCA	   
-            u8      SendFramNum;        //帧序号   
-            u8      FrameCode;          //帧控制字
+            u8      DestAddr;       //源地址        master = 0x80	   
+            u8      SourceAddr;     //接收地址      slave  = 0xCA	   
+            u8      FramNum;        //帧序号   
+            u8      FrameCode;      //帧控制字
         };
         
-        strCsnrProtocolPara sCsnc;      //CSNC协议结构体
+        strCsnrProtocolPara sCsnc;  //CSNC协议结构体
     };
-    u8      MB_Node     :5;     //modbus连接编号
-    u8      COM_Num     :3;     //串口编号
+    u8      MB_Node     :5;         //modbus连接编号
+    u8      COM_Num     :3;         //串口编号
 
     u8      Bits        :4;
     u8      Parity      :2;
     u8      Stops       :2;
     
     u32     Baud;
-    u32     DataCode;           //控制字（数据区内部）
+    u32     DataCode;               //控制字（数据区内部）
 } sCOMConnCtrl;		
 
 
 //接收控制字
 typedef struct {     
-    u8      DestAddr;           //接收地址      slave  =0xA1\A2	   
-    u8      SourceAddr;         //源地址       master   =0x80	   
-    u8      FramNum;            //帧序号
-    u8      Len;                //接收有效数据长度
-    u8      FrameCode;       
-    u8      protocol;           //通信协议。0，modbus；1，csnc；
-    u8      Tmp[2];
-    u32     DataCode;           //接收控制字
+    union {
+        struct{
+            u8      DestAddr;     //源地址        master = 0x80	   
+            u8      SourceAddr;      //接收地址      slave  = 0xCA	   
+            u8      FramNum;        //帧序号   
+            u8      FrameCode;      //帧控制字
+        };
+        
+        strCsnrProtocolPara sCsnc;  //CSNC协议结构体
+    };
+    u8      Len;                    //接收有效数据长度
+    u8      protocol;               //通信协议。0，modbus；1，csnc；
+    u8      EvtFlag;                //时间标识组
+    u8      Tmp[1];
+    u32     DataCode;               //接收控制字
     
 } sCOMRecvCtrl;
 
@@ -153,8 +164,8 @@ typedef struct {
     /***************************************************
     * 描述： 串口控制组
     */
-	sCOMRecvCtrl    	RxCtrl;				            //接收控制，包含当前接收到的控制信息
-	sCOMConnCtrl		ConnCtrl[COM_CONN_NUM];         //连接控制，对每个地址作为单独的数据连接。
+	sCOMRecvCtrl    	RxCtrl;				            //接收控制，包含当前接收到的控制信息 
+	sCOMConnCtrl		ConnCtrl;                       //连接控制，对每个地址作为单独的数据连接，在APP运用端处理。
 	
 } StrCOMCtrl;
 
