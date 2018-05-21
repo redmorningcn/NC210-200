@@ -14,7 +14,7 @@ TraceBufferSize=0x00010000
 TraceStallIfFIFOFull=0x00000000
 TracePortSize=0x00000004
 [DebugChecksum]
-Checksum=1658975496
+Checksum=-362901251
 [CodeCoverage]
 Enabled=_ 0
 [Exceptions]
@@ -45,6 +45,10 @@ ITMlogFile=$PROJ_DIR$\ITM.log
 Fmt0=OS_FLAG_GRP-Flags	1	0
 Fmt1=OS_FLAG_GRP-TS	1	0
 Fmt2=StrCtrlOS-CommEvtFlag	1	0
+Fmt3=struct <Unnamed 6>-destaddr	4	0
+Fmt4=struct <Unnamed 6>-sourceaddr	4	0
+[array_types]
+Fmt0=CPU_INT08U[256]	4	0
 [Trace1]
 Enabled=0
 ShowSource=1
@@ -96,6 +100,13 @@ ShowTimeLog=1
 SumEnabled=0
 ShowTimeSum=1
 SumSortOrder=0
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\APP_task_osal_store.c}.227.17" 0 0 1 "" 0 "" 0
+Bp1=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\APP_task_osal_store.c}.234.9" 0 0 1 "" 0 "" 0
+Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.86.1" 0 0 1 "" 0 "" 0
+Count=3
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -103,6 +114,9 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
+[Aliases]
+Count=0
+SuppressDialog=0
 [DriverProfiling]
 Enabled=0
 Mode=1
@@ -117,16 +131,3 @@ ShowTiming=1
 Frequency=10000
 Probe0=I0
 ProbeSetup0=2 1 1 2 0 0
-[Disassemble mode]
-mode=0
-[Breakpoints2]
-Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\APP_task_osal_store.c}.227.17" 0 0 1 "" 0 "" 0
-Bp1=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\APP_task_osal_store.c}.234.9" 0 0 1 "" 0 "" 0
-Bp2=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\APP_task_osal_store.c}.442.9" 0 0 1 "" 0 "" 0
-Bp3=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_task_com.c}.210.13" 0 0 1 "" 0 "" 0
-Bp4=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_task_com.c}.79.5" 0 0 1 "" 0 "" 0
-Bp5=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.86.1" 0 0 1 "" 0 "" 0
-Count=6
-[Aliases]
-Count=0
-SuppressDialog=0
