@@ -287,10 +287,10 @@ typedef union _Unnctrl_ {
 
 
 //±äÁ¿ÉùÃ÷
-extern   volatile   Unnctrl     Ctrl;
-extern   volatile   StrCOMCtrl  * DtuCom;
-extern   volatile   StrCOMCtrl  * MtrCom;
-extern   volatile   StrCOMCtrl  * TaxCom;
+extern      Unnctrl     Ctrl;
+extern      StrCOMCtrl  * DtuCom;
+extern      StrCOMCtrl  * MtrCom;
+extern      StrCOMCtrl  * TaxCom;
 
 #endif                                                          /* End of  include.                       */
 

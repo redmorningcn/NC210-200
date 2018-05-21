@@ -29,7 +29,8 @@ u8 BSP_FlashOsInit(void);
 void App_FramPara(void);
 
 //comm task
-void  App_TaskCommCreate(void);
+void    App_TaskCommCreate(void);
+void    App_CommIdle(void);
 
 #endif
 

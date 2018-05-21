@@ -9,25 +9,25 @@
 * Description  : 定义全局变量  sCtrl
 * Author       : 2018/5/10 星期四, by redmorningcn
 *******************************************************************************/
-volatile    Unnctrl     Ctrl;              //
+Unnctrl     Ctrl;              //
     
 /*******************************************************************************
 * Description  : 无线发送模块控制指针
 * Author       : 2018/5/14 星期一, by redmorningcn
 *******************************************************************************/
-volatile  StrCOMCtrl  * DtuCom;
+StrCOMCtrl  * DtuCom;
 
 /*******************************************************************************
 * Description  : 和检测板串口控制指针
 * Author       : 2018/5/14 星期一, by redmorningcn
 *******************************************************************************/
-volatile  StrCOMCtrl  * MtrCom;
+StrCOMCtrl  * MtrCom;
 
 /*******************************************************************************
 * Description  : 和检测板串口控制指针
 * Author       : 2018/5/14 星期一, by redmorningcn
 *******************************************************************************/
-volatile  StrCOMCtrl  * TaxCom;
+StrCOMCtrl  * TaxCom;
 
 
 /*******************************************************************************
@@ -47,6 +47,7 @@ void app_init_sctrl(void)
     {
         Ctrl.ComCtrl[i].ConnectFlag     = 0;            //连接标识：0，该串口无连接；1，有连接。
         Ctrl.ComCtrl[i].ConnectTimeOut  = 5;            //超时时间：5秒内，该串口无连接（数据接收），则串口断开。
+        Ctrl.ComCtrl[i].TimeoutEn       = 0;            //超时计数停止。（发送数据时启动）
         
         for(j = 0;j< COM_CONN_NUM;j++){                 //该串口最多支持的连接数（地址或协议区别）；
             Ctrl.ComCtrl[i].ConnCtrl[j].Baud        = 57600;
@@ -55,7 +56,7 @@ void app_init_sctrl(void)
             Ctrl.ComCtrl[i].ConnCtrl[j].Stops       = USART_StopBits_1;
             
             Ctrl.ComCtrl[i].ConnCtrl[j].TimeOut     = 5;            //连接超时时间。（超过该时间，认为连接断开）
-            Ctrl.ComCtrl[i].ConnCtrl[j].ConnFlg     = 1;            //该连接允许
+            Ctrl.ComCtrl[i].ConnCtrl[j].EnableFlg   = 1;            //该连接允许
             Ctrl.ComCtrl[i].ConnCtrl[j].ErrFlg      = 0;            //连接正常
             Ctrl.ComCtrl[i].ConnCtrl[j].MasterAddr  = LKJ_MAINBOARD_ADDR;     //本机地址
             Ctrl.ComCtrl[i].ConnCtrl[j].SlaveAddr   = DTU_ADDR;     //数据接收服务器地址

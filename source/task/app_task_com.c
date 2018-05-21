@@ -66,18 +66,71 @@ void APP_CommInit(void);
 
 
 /*******************************************************************************/
+/**************************************************************
+* Description  : App_CommIdle(void)串口的每秒周期处理程序，
+* Author       : 2018/5/18 星期五, by redmorningcn
+*/
+void    App_CommIdle(void)
+{
+    /**************************************************************
+    * Description  : 连接状态判断
+    * Author       : 2018/5/18 星期五, by redmorningcn
+    */
+    if( TaxCom->ConnectTimeOut){
+        TaxCom->ConnectTimeOut--;
+        if(TaxCom->ConnectTimeOut == 0)         //串口超时
+        {
+            TaxCom->ConnectFlag   = 0;          //连接失效
+        }
+    }
+    
+    if( MtrCom->ConnectTimeOut){
+        MtrCom->ConnectTimeOut--;
+        if(MtrCom->ConnectTimeOut == 0)         //串口超时
+        {
+            MtrCom->ConnectFlag   = 0;          //连接失效
+        }
+    }
+    
+    if( DtuCom->ConnectTimeOut){
+        DtuCom->ConnectTimeOut--;
+        if(DtuCom->ConnectTimeOut == 0)         //串口超时
+        {
+            DtuCom->ConnectFlag   = 0;          //连接失效
+            
+            /**************************************************************
+            * Description  : 超时后，连接状态置默认值
+            * Author       : 2018/5/21 星期一, by redmorningcn
+            */
+            DtuCom->ConnCtrl[0].EnableFlg   = 1;        //允许连接    
+            DtuCom->ConnCtrl[0].RecvEndFlg  = 0;        //无数据接收
+            DtuCom->ConnCtrl[0].SendFlg     = 0;        //无数发送
+            DtuCom->ConnCtrl[0].ConnType    = DATA_COMM;//传输数据  
+        }
+    }
+    
+    /**************************************************************
+    * Description  : 数据发送判断（DTU）
+    有数据没有发送。且串口不在发送状态，且串口在数据通讯状态。
+    * Author       : 2018/5/18 星期五, by redmorningcn
+    */
+    if(     Ctrl.sRecNumMgr.GrsRead < Ctrl.sRecNumMgr.Current
+       //&&   DtuCom->ConnCtrl[0].SendFlg     == 0  //(状态不好判断)
+       &&   DtuCom->ConnCtrl[0].ConnType    == DATA_COMM
+      )       
+    {
+        OS_ERR      err;
+        OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,   //通知DTU，可以进行数据发送
+                   ( OS_FLAGS      )COMM_EVT_FLAG_DTU_TX,
+                   ( OS_OPT        )OS_OPT_POST_FLAG_SET,
+                   ( OS_ERR       *)&err);
+    }
+}
 
-/*******************************************************************************
-* 名    称： App_TaskCommCreate
-* 功    能： **任务创建
-* 入口参数： 无
-* 出口参数： 无
-* 作    者： wumingshen.
-* 创建日期： 2015-02-05
-* 修    改：
-* 修改日期：
-* 备    注： 任务创建函数需要在app.h文件中声明
-*******************************************************************************/
+/**************************************************************
+* Description  : commTask任务
+* Author       : 2018/5/18 星期五, by redmorningcn
+*/
 void  App_TaskCommCreate(void)
 {
     OS_ERR  err;
@@ -125,8 +178,6 @@ static  void  AppTaskComm (void *p_arg)
     * 描述： Task body, always written as an infinite loop.
     */
     while (DEF_TRUE) { 
-        OS_ERR      terr;
-        ticks       = OSTimeGet(&terr);                     // 获取当前OSTick
 
         /***********************************************
         * 描述： 本任务看门狗标志置位
@@ -141,9 +192,12 @@ static  void  AppTaskComm (void *p_arg)
                        ( OS_FLAGS     ) Ctrl.Os.CommEvtFlag,
                        ( OS_TICK      ) dly,
                        ( OS_OPT       ) OS_OPT_PEND_FLAG_SET_ANY | 
-                                        OS_OPT_PEND_NON_BLOCKING,
+                                        OS_OPT_PEND_BLOCKING,
                        ( CPU_TS      *) NULL,
                        ( OS_ERR      *)&err);
+        
+        OS_ERR      terr;
+        ticks       = OSTimeGet(&terr);                     // 获取当前OSTick
         
         /***********************************************
         * 描述： 没有错误,有事件发生
@@ -152,28 +206,66 @@ static  void  AppTaskComm (void *p_arg)
             OS_FLAGS    flagClr = 0;
             
             /**************************************************************
-            * Description  : DTU通讯
+            * Description  : DTU通讯 接收
             * Author       : 2018/5/18 星期五, by redmorningcn
             */
-            if( flags   & COMM_EVT_FLAG_DTU_RX  ) {         //60秒内无通讯，强制启动通讯
+            if( flags   & COMM_EVT_FLAG_DTU_RX  ) {     //60秒内无通讯，强制启动通讯
                 //app_comm_dtu(flags); 
                 
                 if( flags &      COMM_EVT_FLAG_DTU_RX ) { 
-                    flagClr |=  COMM_EVT_FLAG_DTU_RX;        //接收到数据，清接收数据标示
-                    
+                    flagClr |=  COMM_EVT_FLAG_DTU_RX;   
                 }
             }
             
             /**************************************************************
-            * Description  : 扩展通讯口通讯
+            * Description  : 扩展通讯口（TAX）接收
             * Author       : 2018/5/18 星期五, by redmorningcn
             */
             if(    flags & COMM_EVT_FLAG_TAX_RX ) {
-                //调用DTU通讯处理函数
                 //app_comm_tax(flags);
                 
                 if(flags &      COMM_EVT_FLAG_TAX_RX) {      
-                    flagClr |=  COMM_EVT_FLAG_TAX_RX;        //接收到数据，清接收数据标示
+                    flagClr |=  COMM_EVT_FLAG_TAX_RX;   
+                }                
+            }
+            
+            /**************************************************************
+            * Description  : DTU发送
+            * Author       : 2018/5/18 星期五, by redmorningcn
+            */
+            if(    flags & COMM_EVT_FLAG_DTU_TX ) {
+                //app_comm_tax(flags);
+                
+                
+                if(flags &      COMM_EVT_FLAG_DTU_TX) {      
+                    flagClr |=  COMM_EVT_FLAG_DTU_TX;   
+                }                
+            }
+            
+            /**************************************************************
+            * Description  : MTR发送
+            * Author       : 2018/5/18 星期五, by redmorningcn
+            */
+            if(    flags & COMM_EVT_FLAG_MTR_TX ) {
+                DtuCom->ConnectFlag     = 1;                //接收到数据
+                DtuCom->ConnectTimeOut  = DTU_TIMEOUT;      //DTU超时计数器重新启动
+                //DtuCom->TimeoutEn       = 0;                //关超时标识。发送时启动。
+                    
+                
+                if(flags &      COMM_EVT_FLAG_MTR_TX) {      
+                    flagClr |=  COMM_EVT_FLAG_MTR_TX;   
+                }                
+            }
+            
+            /**************************************************************
+            * Description  : TAX发送
+            * Author       : 2018/5/18 星期五, by redmorningcn
+            */
+            if(    flags & COMM_EVT_FLAG_TAX_TX ) {
+                //app_comm_tax(flags);
+                
+                if(flags &      COMM_EVT_FLAG_TAX_TX) {      
+                    flagClr |=  COMM_EVT_FLAG_TAX_TX;   
                 }                
             }
             
@@ -220,7 +312,7 @@ void APP_CommInit(void)
 {
     OS_ERR err;
     
-    /***********************************************
+        /***********************************************
     * 描述： 创建事件标志组,协调comm收发
     */
     OSFlagCreate(( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,
@@ -228,10 +320,13 @@ void APP_CommInit(void)
                  ( OS_FLAGS      )0,
                  ( OS_ERR       *)&err);
     
-    Ctrl.Os.CommEvtFlag=    COMM_EVT_FLAG_MTR_RX                // MTR 接收事件
-                        +   COMM_EVT_FLAG_DTU_RX                // DTU 接收事件
-                        +   COMM_EVT_FLAG_TAX_RX                // OTR 接收事件
-                        ;    
+    Ctrl.Os.CommEvtFlag =     COMM_EVT_FLAG_MTR_RX              // MTR 接收事件
+                            + COMM_EVT_FLAG_DTU_RX              // DTU 接收事件
+                            + COMM_EVT_FLAG_TAX_RX              // OTR 接收事件
+                            + COMM_EVT_FLAG_MTR_TX              
+                            + COMM_EVT_FLAG_DTU_TX              
+                            + COMM_EVT_FLAG_TAX_TX              
+                            ;
     
 
     /***********************************************

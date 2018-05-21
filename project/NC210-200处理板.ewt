@@ -1125,6 +1125,12 @@
         <name>$PROJ_DIR$\..\source\user\CrcCheck.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\source\user\csnr_package_deal.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\user\csnr_package_deal.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\user\hook.c</name>
       </file>
       <file>

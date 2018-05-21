@@ -216,26 +216,26 @@ u8 App_SaveRecord(void)
         if(CRC_sum1 == CRC_sum2) {                                      //数据记录正确,记录编号增加
             Ctrl.sRecNumMgr.Current++;          
             Ctrl.sRecNumMgr.Record++;
-            Ctrl.Rec.RecordId = Ctrl.sRecNumMgr.Record;
+            Ctrl.Rec.RecordId = Ctrl.sRecNumMgr.Current;                
             break;
         } 
         else
         {
-            Ctrl.sRecNumMgr.Current++;                              //记录跳转  
+            Ctrl.sRecNumMgr.Current++;                                  //记录跳转  
             if( retrys == 2 )                                       
             {
-                if(Ctrl.sRecNumMgr.Current % (4096/128) != 0)       //翻转一页
+                if(Ctrl.sRecNumMgr.Current % (4096/128) != 0)           //翻转一页，再试一次。
                     Ctrl.sRecNumMgr.Current++; 
             }
         }
     } while ( --retrys );
 
-    if ( ret == DEF_FALSE ) {                                       //报flash错误
-        Ctrl.sRunPara.Err.FlashErr     = FALSE;                     //D14=1：存储器故障
+    if ( ret == DEF_FALSE || retrys == 0) {                             //报flash错误
+        Ctrl.sRunPara.Err.FlashErr     = FALSE;                         //D14=1：存储器故障
     }
 
     Ctrl.sRunPara.FramFlg.WrNumMgr = 1;         
-    osal_set_event( OS_TASK_ID_STORE, OS_EVT_STORE_FRAM);   //通知存参数FRAM
+    osal_set_event( OS_TASK_ID_STORE, OS_EVT_STORE_FRAM);               //通知存参数FRAM
 
     return ret;
 }
@@ -310,7 +310,7 @@ void App_FramPara(void)
     
     if(Ctrl.sRunPara.FramFlg.Flags)                                        
     {
-        /*******************************************************************************
+        /***********************************************************************
         * Description  : 存HEAD
         * Author       : 2018/5/16 星期三, by redmorningcn
         */
@@ -321,7 +321,7 @@ void App_FramPara(void)
             
             WriteFM24CL64(add,(u8 *)&Ctrl.sHeadInfo,sizeof(Ctrl.sHeadInfo));  
         }
-        /*******************************************************************************
+        /***********************************************************************
         * Description  : 读HEAD
         * Author       : 2018/5/16 星期三, by redmorningcn
         */
@@ -344,7 +344,7 @@ void App_FramPara(void)
             
             WriteFM24CL64(add,(u8 *)&Ctrl.sRecNumMgr,sizeof(Ctrl.sRecNumMgr));
         }
-        /*******************************************************************************
+        /***********************************************************************
         * Description  : 读NumMgr
         * Author       : 2018/5/16 星期三, by redmorningcn
         */
@@ -367,6 +367,7 @@ void App_FramPara(void)
             
             WriteFM24CL64(add,(u8 *)&Ctrl.sProductInfo,sizeof(Ctrl.sProductInfo));
         }
+        
         /***********************************************************************
         * Description  : 读产品信息
         * Author       : 2018/5/16 星期三, by redmorningcn
@@ -390,8 +391,9 @@ void App_FramPara(void)
             
             WriteFM24CL64(add,(u8 *)&Ctrl.sRunPara,sizeof(Ctrl.sRunPara));
         } 
+        
         /***********************************************************************
-        * Description  : 存运行信息
+        * Description  : 读运行信息
         * Author       : 2018/5/16 星期三, by redmorningcn
         */
         if(Ctrl.sRunPara.FramFlg.RdRunPara == 1)
@@ -434,10 +436,14 @@ osalEvt  TaskStoreEvtProcess(osalTid task_id, osalEvt task_event)
         /***************************************************
         * 描述： 置位保存数据标志位，启动数据保存FLASH
         */
-        App_SaveRecord();               //保存数据记录
+        App_SaveRecord();                                       //保存数据记录
+                                                
+        OS_ERR      err;
+        OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,   //通知DTU，可以进行数据发送
+                   ( OS_FLAGS      )COMM_EVT_FLAG_DTU_TX,
+                   ( OS_OPT        )OS_OPT_POST_FLAG_SET,
+                   ( OS_ERR       *)&err);
         
-        //osal_set_event( OS_TASK_ID_TMR, OS_EVT_TMR_DTU);      //通知DTU模块发送数据
-
         return ( task_event ^ OS_EVT_STORE_TICKS );
     }
     

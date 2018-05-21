@@ -6,6 +6,7 @@
 #ifndef	__APP_COM_TYPE_H__
 #define	__APP_COM_TYPE_H__
 #include <includes.h>
+#include <csnr_package_deal.h>
 
 /*********************************************************************
 * INCLUDES
@@ -34,6 +35,18 @@
 //csnc地址定义
 #define     LKJ_MAINBOARD_ADDR  (0x84)          /* LKJ接口在线处理处理板 CSNC 协议地址*/
 #define     DTU_ADDR            (0xCA)          /* 无线发送模块 CSNC 协议地址 */
+
+
+//通讯连接类型
+#define     DATA_COMM           0
+#define     SET_COMM            1
+#define     IAP_COMM            2
+
+//定义通讯超时时间
+#define     DTU_TIMEOUT         60
+#define     MTR_TIMEOUT         5
+#define     TAX_TIMEOUT         5
+
 
 /*********************************************************************
 * CONSTANTS
@@ -75,27 +88,37 @@ typedef union {
 * Description  : 连接控制字
 * Author       : 2018/5/11 星期五, by redmorningcn
 *******************************************************************************/
+__packed
 typedef struct {     
-    u8      ConnFlg;            //连接控制,1，允许连接，0，不允许连接
-    u8      RecvEndFlg;		    //接收标示，1，数据接收完成，0，无数据接收。
-    u8      TimeOut;		    //超时时间，单位1s
-    u8      ErrFlg:4;           //错误标示，连接正常，0；连接错误，1
-    u8      protocol:4;         //通信协议。0，modbus；1，csnc；
+    u8      EnableFlg   :1;     //连接控制：1，允许连接，0，不允许连接
+    u8      RecvEndFlg  :1;		//接收标示：1，数据接收完成，0，无数据接收。
+    u8      ConnType    :2;     //连接类型：0，数据传输；1，参数设置；2，IAP传输；
+    u8      SendFlg     :1;     //发送标示：有数据发送，1；无数据发送，0
+    u8      ErrFlg      :1;     //错误标示，连接正常，0；连接错误，1
+    u8      protocol    :2;     //通信协议。0，modbus；1，csnc；
 
-    
-    u8      SlaveAddr;          //接收地址          slave  =0xCA	   
-    u8      MasterAddr;         //源地址           master   =0x80	   
-    u8      SendFramNum;        //帧序号   
-    u8      SendFlg;            //发送标示，     有数据发送，1；无数据发送，0
+    u8      TimeOutEn   :1;     //超时计数器允许标识。
+    u8      Connflg     :1;     //连接状态：1，有连接，0，无连接。
+    u8      TimeOut     :7;     //超时时间，单位1s。
+    union {
+        struct{
+            u8      MasterAddr;         //源地址        master = 0x80	   
+            u8      SlaveAddr;          //接收地址      slave  = 0xCA	   
+            u8      SendFramNum;        //帧序号   
+            u8      FrameCode;          //帧控制字
+        };
+        
+        strCsnrProtocolPara sCsnc;      //CSNC协议结构体
+    };
+    u8      MB_Node     :5;     //modbus连接编号
+    u8      COM_Num     :3;     //串口编号
+
+    u8      Bits        :4;
+    u8      Parity      :2;
+    u8      Stops       :2;
     
     u32     Baud;
-    u8      Bits;
-    u8      Parity;
-    u8      Stops;
-    
-    u8      MB_Node: 5;        //modbus连接编号
-    u8      COM_Num: 3;        //串口编号
-
+    u32     DataCode;           //控制字（数据区内部）
 } sCOMConnCtrl;		
 
 
@@ -123,7 +146,8 @@ typedef struct {
     
     MODBUS_CH           *pch;                   		// MODBUS句柄
     
-    u16                 ConnectTimeOut  : 15;     	    // 连接超时计数器，秒为单位
+    u16                 ConnectTimeOut  : 14;     	    // 连接超时计数器，秒为单位
+    u16                 TimeoutEn       : 1;         	// 计算器启动
     u16                 ConnectFlag     : 1;         	// 连接标志
 
     /***************************************************

@@ -3,14 +3,14 @@
 *                                               uC/MODBUS
 *                                         Embedded Modbus Stack
 *
-*                          (c) Copyright 2004-2009; Micrium, Inc.; Weston, FL
+*                          (c) Copyright 2004-2009; Micrium, Inc.; Weston, FL          
 *
 *               All rights reserved.  Protected by international copyright laws.
 *
 *               uC/Modbus is provided in source form for FREE evaluation, for educational
-*               use or peaceful research.  If you plan on using uC/Modbus in a commercial
+*               use or peaceful research.  If you plan on using uC/Modbus in a commercial   
 *               product you need to contact Micrium to properly license its use in your
-*               product.  We provide ALL the source code for your convenience and to
+*               product.  We provide ALL the source code for your convenience and to   
 *               help you experience uC/Modbus.  The fact that the source code is provided
 *               does NOT mean that you can use it without paying a licensing fee.
 *
@@ -25,7 +25,7 @@
 *********************************************************************************************************
 *
 *                                     MODBUS uC/OS-II LAYER INTERFACE
-*
+* 
 * Filename      : mb_os.c
 * Version       : V2.12
 * Programmer(s) : JJL
@@ -41,11 +41,7 @@
 */
 
 #include <mb_os.h>
-#include <app_cfg.h>
-#include <os_cfg_app.h>
-#if OS_VERSION > 30000U
-#include <bsp_os.h>
-#endif
+
 
 /*
 *********************************************************************************************************
@@ -67,16 +63,15 @@
 *********************************************************************************************************
 */
 
-#if (MODBUS_CFG_SLAVE_EN  == DEF_ENABLED)
-static  CPU_STK             MB_OS_RxTaskStk[MB_OS_CFG_RX_TASK_STK_SIZE];
-#if OS_VERSION > 30000u
-static  OS_TCB              MB_OS_RxTaskTCB;
-static  OS_Q                MB_OS_RxQ;
-//static  void               *MB_OS_RxQTbl[MODBUS_CFG_MAX_CH];
-#else
-static  OS_Q               *MB_OS_RxQ;
-static  void               *MB_OS_RxQTbl[MODBUS_CFG_MAX_CH];
+#if (MODBUS_CFG_MASTER_EN == DEF_ENABLED)
+static  OS_EVENT            *MB_OS_RxSemTbl[MODBUS_CFG_MAX_CH];
 #endif
+
+#if (MODBUS_CFG_SLAVE_EN  == DEF_ENABLED)
+static  OS_STK               MB_OS_RxTaskStk[MB_OS_CFG_RX_TASK_STK_SIZE];
+
+static  OS_EVENT            *MB_OS_RxQ;
+static  void                *MB_OS_RxQTbl[MODBUS_CFG_MAX_CH];
 #endif
 
 /*
@@ -148,52 +143,37 @@ void  MB_OS_Init (void)
 
 #if (MODBUS_CFG_MASTER_EN == DEF_ENABLED)
 static  void  MB_OS_InitMaster (void)
-{
-#if OS_VERSION > 30000U
-#else
+{    
     OS_EVENT    *pevent;
-#endif
     CPU_INT08U   i;
-#if (OS_VERSION         < 287)
-#if (OS_EVENT_NAME_EN > 0) && (OS_EVENT_NAME_SIZE >  16)
     CPU_INT08U   err;
-#endif
-#endif
+
 
     for (i = 0; i < MODBUS_CFG_MAX_CH; i++) {                             /* Create a semaphore for each channel   */
-#if OS_VERSION > 30000U
-        BSP_OS_SemCreate(&MB_OS_RxSemTbl[i], 0, "uC/Modbus Rx Sem");
-#else
         pevent = OSSemCreate(0);
-        if (pevent != (OS_EVENT *)0) {                                    /* Assign a name to the semaphore        */
-#endif
-#if (OS_VERSION         < 287)
-#if (OS_EVENT_NAME_EN > 0) && (OS_EVENT_NAME_SIZE >  16)
-            OSEventNameSet((OS_EVENT *)pevent,
-                           (INT8U    *)"uC/Modbus Rx Sem",
-                           (INT8U    *)&err);
-            (void)&err;
-#endif
-            MB_OS_RxSemTbl[i] = pevent;
-        }
-#endif
-#if OS_VERSION > 30000U
-        BSP_OS_SemCreate(&MB_OS_TxSemTbl[i], 1, "uC/Modbus Tx Sem");
 
-#else
-        pevent = OSSemCreate(1);
-        if (pevent != (OS_EVENT *)0) {                                    /* Assign a name to the semaphore        */
-#endif
 #if (OS_VERSION         < 287)
-#if (OS_EVENT_NAME_EN > 0) && (OS_EVENT_NAME_SIZE >  16)
-            OSEventNameSet((OS_EVENT *)pevent,
-                           (INT8U    *)"uC/Modbus Tx Sem",
+#if (OS_EVENT_NAME_SIZE >  16)
+        if (pevent != (OS_EVENT *)0) {                                    /* Assign a name to the semaphore        */
+
+            OSEventNameSet((OS_EVENT *)pevent, 
+                           (INT8U    *)"uC/Modbus Rx Sem", 
+                           (INT8U    *)&err);
+            (void)&err;            
+        }
+#endif        
+#else
+#if (OS_EVENT_NAME_EN > 0) 
+        if (pevent != (OS_EVENT *)0) { 
+
+            OSEventNameSet((OS_EVENT *)pevent, 
+                           (INT8U    *)"uC/Modbus Rx Sem", 
                            (INT8U    *)&err);
             (void)&err;
-#endif
-            MB_OS_TxSemTbl[i] = pevent;
         }
+        MB_OS_RxSemTbl[i] = pevent;
 #endif
+#endif        
     }
 }
 #endif
@@ -218,63 +198,52 @@ static  void  MB_OS_InitMaster (void)
 #if (MODBUS_CFG_SLAVE_EN == DEF_ENABLED)
 static  void  MB_OS_InitSlave (void)
 {
-#if OS_VERSION > 30000u
-    OS_ERR      err;
-    OSQCreate ( (OS_Q        *)&MB_OS_RxQ,
-                (CPU_CHAR    *)"RxQ",
-                (OS_MSG_QTY   )OS_CFG_INT_Q_SIZE,
-                (OS_ERR      *)&err);
-#else
     CPU_INT08U  err;
+
+
     MB_OS_RxQ = OSQCreate(&MB_OS_RxQTbl[0],                              /* Create Rx Task message queue           */
-                          MODBUS_CFG_MAX_CH);
-#endif
+                          MODBUS_CFG_MAX_CH);          
 
 #if (OS_VERSION         < 287)
-#if (OS_EVENT_NAME_EN   > 0) && (OS_EVENT_NAME_SIZE >  14)
-    if (MB_OS_RxQ != (OS_EVENT *)0) {                                    /* Assign a name to the message queue     */
-        OSEventNameSet((OS_EVENT *)MB_OS_RxQ,
-                       (INT8U    *)"uC/Modbus Rx Q",
+#if (OS_EVENT_NAME_SIZE >  14)
+    if (MB_OS_RxQ != (OS_EVENT *)0) {                                    /* Assign a name to the message queue     */    
+        OSEventNameSet((OS_EVENT *)MB_OS_RxQ, 
+                       (INT8U    *)"uC/Modbus Rx Q", 
                        (INT8U    *)&err);
        (void)&err;
     }
 #endif
-#endif
-#if OS_VERSION         > 30000u
-    (void)OSTaskCreate((OS_TCB     *)&MB_OS_RxTaskTCB,                /* Create the start task                                */
-                       (CPU_CHAR   *)"App Task Start",
-                       (OS_TASK_PTR ) MB_OS_RxTask,
-                       (void       *) 0,
-                       (OS_PRIO     ) MB_OS_CFG_RX_TASK_PRIO,
-                       (CPU_STK    *)&MB_OS_RxTaskStk[0],
-                       (CPU_STK_SIZE) MB_OS_CFG_RX_TASK_STK_SIZE / 10,
-                       (CPU_STK_SIZE) MB_OS_CFG_RX_TASK_STK_SIZE,
-                       (OS_MSG_QTY  ) 0u,
-                       (OS_TICK     ) 0u,
-                       (void       *) 0,
-                       (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-                       (OS_ERR     *)&err);
-#else
+#else     
+#if (OS_EVENT_NAME_EN   > 0)    
+    if (MB_OS_RxQ != (OS_EVENT *)0) {       
+        OSEventNameSet((OS_EVENT *)MB_OS_RxQ, 
+                       (INT8U    *)"uC/Modbus Rx Q", 
+                       (INT8U    *)&err);
+       (void)&err;        
+    }
+#endif        
+#endif    
+
 #if (OS_TASK_CREATE_EXT_EN > 0)
-    #if (OS_STK_GROWTH == 1)
+    #if (OS_STK_GROWTH == 1)    
     (void)OSTaskCreateExt((void (*)(void *)) MB_OS_RxTask,
-                          (void           *) 0,
+                          (void           *) 0,                            
                           (OS_STK         *)&MB_OS_RxTaskStk[MB_OS_CFG_RX_TASK_STK_SIZE - 1],
                           (INT8U           ) MB_OS_CFG_RX_TASK_PRIO,
                           (INT16U          ) MB_OS_CFG_RX_TASK_ID,
-                          (OS_STK         *)&MB_OS_RxTaskStk[0],
+                          (OS_STK         *)&MB_OS_RxTaskStk[0],   
                           (INT32U          ) MB_OS_CFG_RX_TASK_STK_SIZE,
-                          (void           *) 0,
-                          (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+                          (void           *) 0,  
+                          (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR)); 
     #else
     (void)OSTaskCreateExt((void (*)(void *)) MB_OS_RxTask,
-                          (void           *) 0,
-                          (OS_STK         *)&MB_OS_RxTaskStk[0],
-                          (INT8U           ) MB_OS_CFG_RX_TASK_PRIO,
+                          (void           *) 0,        
+                          (OS_STK         *)&MB_OS_RxTaskStk[0],    
+                          (INT8U           ) MB_OS_CFG_RX_TASK_PRIO,                            
                           (INT16U          ) MB_OS_CFG_RX_TASK_ID,
-                          (OS_STK         *)&MB_OS_RxTaskStk[MB_OS_CFG_RX_TASK_STK_SIZE - 1],
+                          (OS_STK         *)&MB_OS_RxTaskStk[MB_OS_CFG_RX_TASK_STK_SIZE - 1],   
                           (INT32U          ) MB_OS_CFG_RX_TASK_STK_SIZE,
-                          (void           *) 0,
+                          (void           *) 0,                                     
                           (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
     #endif
 #else
@@ -290,25 +259,24 @@ static  void  MB_OS_InitSlave (void)
                        (INT8U           ) MB_OS_CFG_RX_TASK_PRIO);
     #endif
 #endif
-#endif
-
+     
 #if (OS_VERSION         < 287)
 #if (OS_EVENT_NAME_SIZE >  12)
-
+     
     OSTaskNameSet((INT8U  )MB_OS_CFG_RX_TASK_PRIO,                       /* Assign a name to the event flag group  */
-                  (INT8U *)"uC/Modbus Rx",
-                  (INT8U *)&err);
-#endif
+                  (INT8U *)"uC/Modbus Rx", 
+                  (INT8U *)&err);         
+#endif    
 #else
-#if (OS_EVENT_NAME_EN   > 0)
-    OSTaskNameSet((INT8U  )MB_OS_CFG_RX_TASK_PRIO,
-                  (INT8U *)"uC/Modbus Rx",
-                  (INT8U *)&err);
+#if (OS_EVENT_NAME_EN   > 0)   
+    OSTaskNameSet((INT8U  )MB_OS_CFG_RX_TASK_PRIO,      
+                  (INT8U *)"uC/Modbus Rx", 
+                  (INT8U *)&err);         
 
 #endif
 #endif
-
-
+    
+    
 }
 #endif
 
@@ -367,21 +335,12 @@ static  void  MB_OS_ExitMaster (void)
 {
     CPU_INT08U  i;
     CPU_INT08U  err;
-
-
+    
+    
     for (i = 0; i < MODBUS_CFG_MAX_CH; i++) {                 /* Create a semaphore for each channel   */
-#if OS_VERSION > 30000U
-        OSSemDel((OS_SEM *)&MB_OS_RxSemTbl[i],
-                 (OS_OPT  )OS_OPT_DEL_ALWAYS,
-                 (OS_ERR *)&err);
-#else
-        OSSemDel(MB_OS_RxSemTbl[i],
-                 OS_DEL_ALWAYS,
+        OSSemDel(MB_OS_RxSemTbl[i], 
+                 OS_DEL_ALWAYS, 
                  &err);
-        OSSemDel(MB_OS_TxSemTbl[i],
-                 OS_DEL_ALWAYS,
-                 &err);
-#endif
     }
 }
 #endif
@@ -390,8 +349,8 @@ static  void  MB_OS_ExitMaster (void)
 *********************************************************************************************************
 *                                          MB_OS_ExitSlave()
 *
-* Description : This function is called to terminate the RTOS interface for Modbus Salve channels.
-*               The following objects are deleted.
+* Description : This function is called to terminate the RTOS interface for Modbus Salve channels.  
+*               The following objects are deleted. 
 *
 *               (1) A task that waits for packets to be received.
 *               (2) A message queue to signal the reception of a packet.
@@ -410,18 +369,11 @@ static  void  MB_OS_ExitMaster (void)
 void  MB_OS_ExitSlave (void)
 {
     CPU_INT08U  err;
-
-#if OS_VERSION  > 30000u
-    OSTaskDel   ( (OS_TCB  *)&MB_OS_RxTaskTCB,
-                  (OS_ERR  *)&err);                           /* Delete Modbus Rx Task                 */
-    OSQDel      ( (OS_Q    *)&MB_OS_RxQ,
-                  (OS_OPT   )OS_OPT_DEL_ALWAYS,
-                  (OS_ERR  *)&err);                           /* Delete the Queue                      */
-#else
+    
+    
     OSTaskDel(MB_OS_CFG_RX_TASK_PRIO);                        /* Delete Modbus Rx Task                 */
     OSQDel(MB_OS_RxQ, OS_DEL_ALWAYS,                          /* Delete the Queue                      */
-           &err);
-#endif
+           &err);                   
 }
 #endif
 
@@ -447,33 +399,19 @@ void  MB_OS_ExitSlave (void)
 
 void  MB_OS_RxSignal (MODBUS_CH *pch)
 {
-    OS_ERR  err;
-
     if (pch != (MODBUS_CH *)0) {
         switch (pch->MasterSlave) {
 #if (MODBUS_CFG_MASTER_EN == DEF_ENABLED)
             case MODBUS_MASTER:
-#if OS_VERSION > 30000U
-                 BSP_OS_SemPost (pch->RxSem);
-#else
-                 (void)OSSemPost(pch->RxSem);
-#endif
+                 (void)OSSemPost(MB_OS_RxSemTbl[pch->Ch]);
                  break;
 #endif
 
 #if (MODBUS_CFG_SLAVE_EN == DEF_ENABLED)
             case MODBUS_SLAVE:
             default:
-#if OS_VERSION  > 30000u
-                 (void)OSQPost ( (OS_Q         *)&MB_OS_RxQ,
-                                 (void         *)pch,
-                                 (OS_MSG_SIZE   )1,
-                                 (OS_OPT        )OS_OPT_POST_FIFO,
-                                 (OS_ERR       *)&err);
-#else
-                 (void)OSQPost(MB_OS_RxQ,
+                 (void)OSQPost(MB_OS_RxQ, 
                                (void *)pch);
-#endif
                  break;
 #endif
         }
@@ -502,52 +440,32 @@ void  MB_OS_RxSignal (MODBUS_CH *pch)
 *********************************************************************************************************
 */
 
-void  MB_OS_RxWait (MODBUS_CH   *pch,
+void  MB_OS_RxWait (MODBUS_CH   *pch, 
                     CPU_INT16U  *perr)
 {
 #if (MODBUS_CFG_MASTER_EN == DEF_ENABLED)
-    CPU_INT08U  err;
+    CPU_INT16U  err;
+
 
     if (pch != (MODBUS_CH *)0) {
         if (pch->MasterSlave == MODBUS_MASTER) {
-#if OS_VERSION > 30000U
-            OSSemPend((OS_SEM *)pch->RxSem,
-                      (OS_TICK )pch->RxTimeout,
-                      (OS_OPT  )OS_OPT_PEND_BLOCKING,
-                      (CPU_TS  )0,
-                      (OS_ERR *)&err);
-#else
-            OSSemPend(pch->RxSem,
-                      pch->RxTimeout,
-                      &err);
-#endif
+            OSSemPend((OS_EVENT   *)MB_OS_RxSemTbl[pch->Ch], 
+                      (INT16U      )pch->RxTimeout, 
+                      (CPU_INT08U *)&err);
             switch (err) {
-                //case OS_ERR_EVENT_TYPE:
+                case OS_ERR_EVENT_TYPE:
                 case OS_ERR_PEND_ISR:
                 case OS_ERR_PEND_LOCKED:
                      *perr = MODBUS_ERR_INVALID;
                      break;
 
-                case OS_ERR_TIMEOUT:
+                case OS_TIMEOUT:
                      *perr = MODBUS_ERR_TIMED_OUT;
                      break;
 
-                case OS_ERR_NONE:
+                case OS_NO_ERR:
                      *perr = MODBUS_ERR_NONE;
                      break;
-                default:
-                     *perr = MODBUS_ERR_INVALID;
-            }
-
-            if ( err == OS_ERR_NONE ) {
-                pch->RxFaildCtr     = 0;
-                pch->RxFaildFlag    = 0;
-            } else {
-              if (pch->RxFaildCtr < MODBUS_CFG_FAILD_MAX) {
-                pch->RxFaildCtr++;
-              } else {
-                pch->RxFaildFlag    = 1;
-              }
             }
         } else {
             *perr = MODBUS_ERR_NOT_MASTER;
@@ -560,65 +478,6 @@ void  MB_OS_RxWait (MODBUS_CH   *pch,
 #endif
 }
 
-void  MB_OS_TxWait (MODBUS_CH   *pch,
-                    CPU_INT16U  *perr)
-{
-#if (MODBUS_CFG_MASTER_EN == DEF_ENABLED)
-    CPU_INT08U  err;
-
-    if (pch != (MODBUS_CH *)0) {
-        if (pch->MasterSlave == MODBUS_MASTER) {
-#if OS_VERSION > 30000U
-            OSSemPend((OS_SEM *)pch->TxSem,
-                      (OS_TICK )pch->RxTimeout,
-                      (OS_OPT  )OS_OPT_PEND_BLOCKING,
-                      (CPU_TS  )0,
-                      (OS_ERR *)&err);
-#else
-            OSSemPend(pch->TxSem,
-                      pch->RxTimeout,
-                      &err);
-#endif
-            switch (err) {
-                //case OS_ERR_EVENT_TYPE:
-                case OS_ERR_PEND_ISR:
-                case OS_ERR_PEND_LOCKED:
-                     *perr = MODBUS_ERR_INVALID;
-                     break;
-
-                case OS_ERR_TIMEOUT:
-                     *perr = MODBUS_ERR_TIMED_OUT;
-                     break;
-
-                case OS_ERR_NONE:
-                     *perr = MODBUS_ERR_NONE;
-                     break;
-                default:
-                  *perr = MODBUS_ERR_INVALID;
-            }
-        } else {
-            *perr = MODBUS_ERR_NOT_MASTER;
-        }
-    } else {
-        *perr = MODBUS_ERR_NULLPTR;
-    }
-#else
-    *perr = MODBUS_ERR_INVALID;
-#endif
-}
-
-void  MB_OS_TxOver (MODBUS_CH   *pch )
-{
-#if OS_VERSION  > 30000u
-  OS_ERR    err;
-  OSSemPost((OS_SEM  *)pch->TxSem,
-            (OS_OPT   )OS_OPT_POST_1,
-            (OS_ERR  *)&err);
-#else
-  OSSemPost(pch->TxSem);
-#endif
-
-}
 /*$PAGE*/
 /*
 *********************************************************************************************************
@@ -641,24 +500,14 @@ static  void  MB_OS_RxTask (void *p_arg)
 {
     CPU_INT08U  err;
     MODBUS_CH  *pch;
-#if OS_VERSION  > 30000u
-    OS_MSG_SIZE p_msg_size;
-#endif
-    (void)p_arg;
 
+
+    (void)p_arg;
+    
     while (DEF_TRUE) {
-#if OS_VERSION  > 30000u
-        pch = (MODBUS_CH *)OSQPend ((OS_Q         *)&MB_OS_RxQ,
-                                    (OS_TICK       )0,
-                                    (OS_OPT        )OS_OPT_PEND_BLOCKING,//OS_OPT_PEND_NON_BLOCKING,
-                                    (OS_MSG_SIZE  *)&p_msg_size,
-                                    (CPU_TS       *)0,
-                                    (OS_ERR       *)&err);
-#else
         pch = (MODBUS_CH *)OSQPend(MB_OS_RxQ,    /* Wait for a packet to be received                   */
                                    0,
                                    &err);
-#endif
         MB_RxTask(pch);                          /* Process the packet received                        */
     }
 }
