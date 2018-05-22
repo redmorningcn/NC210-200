@@ -7,6 +7,7 @@
 #define	__APP_COM_TYPE_H__
 #include <includes.h>
 #include <csnr_package_deal.h>
+#include <app_mtr_com.h>
 
 /*********************************************************************
 * INCLUDES
@@ -52,6 +53,16 @@
 #define     TAX_TIMEOUT         5
 
 
+//MTR 通讯类型定义（conntype）
+#define     MTR_RD_DETECT       0 /* 读检测数据参数 */
+#define     MTR_RD_SYS          1 /* 读产品信息     */
+#define     MTR_RD_CALI         2 /* 读运算校准信息 */
+#define     MTR_WR_SYS          3 /* 写产品信息     */
+#define     MTR_WR_CALC         4 /* 写运算校准信息 */
+//MTR 数据地址定义
+
+
+
 /*********************************************************************
 * CONSTANTS
 */
@@ -70,7 +81,9 @@ __packed
 typedef union {
     
 //  数据结构1
-//  数据结构2
+//  数据结构2、
+    strSpeed        speed;                          //速度检测板数据结构
+
     u16             Buf16[COMM_RECV_DATA_MAX_LEN/2];		            //	
     u8              Buf[COMM_RECV_DATA_MAX_LEN];		            //	
 } uRecvData;
@@ -84,6 +97,8 @@ typedef union {
 //	stcFlshRecNdp02A        sRecA;				    //数据记录     128 	
 //  数据结构1
 //  数据结构2
+    strSpeed        speed;                          //速度检测板数据结构
+
     u16             Buf16[COMM_SEND_DATA_MAX_LEN/2];		            //	
     u8              Buf[COMM_SEND_DATA_MAX_LEN];	
 } uSendData;
@@ -94,36 +109,39 @@ typedef union {
 *******************************************************************************/
 __packed
 typedef struct {     
-    u8      EnableFlg   :1;     //连接控制：1，允许连接，0，不允许连接
-    u8      RecvEndFlg  :1;		//接收标示：1，数据接收完成，0，无数据接收。
-    u8      ConnType    :2;     //连接类型：0，数据传输；1，参数设置；2，IAP传输；
-    u8      SendFlg     :1;     //发送标示：有数据发送，1；无数据发送，0
-    u8      ErrFlg      :1;     //错误标示，连接正常，0；连接错误，1
-    u8      protocol    :2;     //通信协议。0，modbus；1，csnc；
-
-    u8      TimeOutEn   :1;     //超时计数器允许标识。
-    u8      Connflg     :1;     //连接状态：1，有连接，0，无连接。
-    u8      TimeOut     :7;     //超时时间，单位1s。
+    u32     EnableFlg   :1;     //连接控制：1，允许连接，0，不允许连接
+    u32     RecvEndFlg  :1;     //接收标示：1，数据接收完成，0，无数据接收。
+    u32     SendFlg     :1;     //发送标示：有数据发送，1；无数据发送，0
+    u32     ErrFlg      :1;     //错误标示，连接正常，0；连接错误，1
+    u32     Connflg     :1;     //连接状态：1，有连接，0，无连接。
+    u32     ConnType    :3;     //连接类型：0，数据传输；1，参数设置；2，IAP传输；
+            
+    u32     protocol    :2;     //通信协议。0，modbus；1，csnc；
+    u32     TimeOutEn   :1;     //超时计数器允许标识。
+    u32     TimeOut     :5;     //超时时间，单位1s。
+    
+    u32     MB_Node     :5;     //modbus连接编号
+    u32     COM_Num     :3;     //串口编号
+        
+    u32     Bits        :4;
+    u32     Parity      :2;
+    u32     Stops       :2;
+   
+    u32     Baud;
+    u32     DataCode;           //控制字（数据区内部）
+    
     union {
         struct{
-            u8      DestAddr;       //源地址        master = 0x80	   
-            u8      SourceAddr;     //接收地址      slave  = 0xCA	   
-            u8      FramNum;        //帧序号   
-            u8      FrameCode;      //帧控制字
+            u8  DestAddr;       //源地址        master = 0x80	   
+            u8  SourceAddr;     //接收地址      slave  = 0xCA	   
+            u8  FramNum;        //帧序号   
+            u8  FrameCode;      //帧控制字
+            u8  datalen;        //数据长度     
         };
         
         strCsnrProtocolPara sCsnc;  //CSNC协议结构体
     };
-    u8      MB_Node     :5;         //modbus连接编号
-    u8      COM_Num     :3;         //串口编号
-
-    u8      Bits        :4;
-    u8      Parity      :2;
-    u8      Stops       :2;
-    
-    u32     Baud;
-    u32     DataCode;               //控制字（数据区内部）
-} sCOMConnCtrl;		
+}sCOMConnCtrl;		
 
 
 //接收控制字
@@ -141,7 +159,8 @@ typedef struct {
     u8      Len;                    //接收有效数据长度
     u8      protocol;               //通信协议。0，modbus；1，csnc；
     u8      EvtFlag;                //时间标识组
-    u8      Tmp[1];
+    u8      RecvFlg     :1;         //数据接收完成
+    u8      Tmp         :7;
     u32     DataCode;               //接收控制字
     
 } sCOMRecvCtrl;

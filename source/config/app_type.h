@@ -73,6 +73,10 @@ typedef struct _stcRunPara_
 	u8   		        StoreType ;                 // 1    存储类型
 	u8                  AvgCnt;                     // 1    测量平均次数
 
+    /**************************************************************
+    * Description  : 参数保存控制
+    * Author       : 2018/5/22 星期二, by redmorningcn
+    */
     union ___u_Framflg {
         struct {
             u16             WrHead      : 1;        // 写sCtrl头
@@ -142,6 +146,7 @@ typedef struct _stcRunPara_
         } Flag;
         u16                 Flags;
     }Mask;                                          // 故障屏蔽
+    
     union ___u_dev_cfg {
         struct  {
             u8   		        PwrEnFlag       : 1;        //
@@ -171,10 +176,10 @@ typedef struct _stcRunPara_
     
     union _u_sys_err {
         struct  {
-            u8              Sen1OpenErr     : 1;     //D0=1：一端传感器模块故障
-            u8              Sen2OpenErr     : 1;     //D1=1：二端传感器模块故障 
-            u8              Mtr1CommErr     : 1;     //D2=1：一端测量模块通信故障
-            u8              Mtr2CommErr     : 1;     //D3=1：二端测量模块通信故障
+            u8              Speed1CommErr   : 1;     //D0=1：速度检测板1通讯异常
+            u8              Speed2CommErr   : 1;     //D1=1：速度检测板2通讯异常 
+            u8              Speed3CommErr   : 1;     //D2=1：速度检测板3通讯异常
+            u8              WorkStaCommErr  : 1;     //D3=1：工况检测板通讯异常
             u8              OtrCommErr      : 1;     //D4=1：IC卡模块通讯故障
             u8              PwrCommErr      : 1;     //D5=1：电量模块通讯故障
             u8              ExtCommErr      : 1;     //D6=1：扩展通讯模块通讯故障

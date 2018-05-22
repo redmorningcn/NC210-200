@@ -64,7 +64,6 @@ void APP_CommInit(void);
 * EXTERN FUNCTIONS
 */
 
-
 /*******************************************************************************/
 /**************************************************************
 * Description  : App_CommIdle(void)串口的每秒周期处理程序，
@@ -72,6 +71,8 @@ void APP_CommInit(void);
 */
 void    App_CommIdle(void)
 {
+    OS_ERR      err;
+
     /**************************************************************
     * Description  : 连接状态判断
     * Author       : 2018/5/18 星期五, by redmorningcn
@@ -119,12 +120,20 @@ void    App_CommIdle(void)
        &&   DtuCom->ConnCtrl.ConnType    == DATA_COMM
       )       
     {
-        OS_ERR      err;
         OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,   //通知DTU，可以进行数据发送
                    ( OS_FLAGS      )COMM_EVT_FLAG_DTU_TX,
                    ( OS_OPT        )OS_OPT_POST_FLAG_SET,
                    ( OS_ERR       *)&err);
     }
+    
+    /**************************************************************
+    * Description  : MTR数据通讯
+    * Author       : 2018/5/22 星期二, by redmorningcn
+    */
+    OSFlagPost(( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,        //通知MTR，进行数据发送
+               ( OS_FLAGS      )COMM_EVT_FLAG_MTR_TX,
+               ( OS_OPT        )OS_OPT_POST_FLAG_SET,
+               ( OS_ERR       *)&err);
 }
 
 /**************************************************************
@@ -209,7 +218,7 @@ static  void  AppTaskComm (void *p_arg)
             OS_FLAGS    flagClr = 0;
             
             /**************************************************************
-            * Description  : DTU通讯 接收
+            * Description  : DTU通讯 收发
             * Author       : 2018/5/18 星期五, by redmorningcn
             */
             if( flags   & COMM_EVT_FLAG_DTU_RX  ) {     //60秒内无通讯，强制启动通讯
@@ -221,9 +230,17 @@ static  void  AppTaskComm (void *p_arg)
                     flagClr |=   COMM_EVT_FLAG_DTU_RX;   
                 }
             }
-            
+            if(    flags & COMM_EVT_FLAG_DTU_TX ) {
+                //app_comm_tax(flags);
+                
+                
+                if(flags &      COMM_EVT_FLAG_DTU_TX) {      
+                    flagClr |=  COMM_EVT_FLAG_DTU_TX;   
+                }                
+            }
+
             /**************************************************************
-            * Description  : 扩展通讯口（TAX）接收
+            * Description  : 扩展通讯口（TAX）收发
             * Author       : 2018/5/18 星期五, by redmorningcn
             */
             if(    flags & COMM_EVT_FLAG_TAX_RX ) {
@@ -236,39 +253,6 @@ static  void  AppTaskComm (void *p_arg)
                     flagClr |=  COMM_EVT_FLAG_TAX_RX;   
                 }                
             }
-            
-            /**************************************************************
-            * Description  : DTU发送
-            * Author       : 2018/5/18 星期五, by redmorningcn
-            */
-            if(    flags & COMM_EVT_FLAG_DTU_TX ) {
-                //app_comm_tax(flags);
-                
-                
-                if(flags &      COMM_EVT_FLAG_DTU_TX) {      
-                    flagClr |=  COMM_EVT_FLAG_DTU_TX;   
-                }                
-            }
-            
-            /**************************************************************
-            * Description  : MTR发送
-            * Author       : 2018/5/18 星期五, by redmorningcn
-            */
-            if(    flags & COMM_EVT_FLAG_MTR_TX ) {
-                DtuCom->ConnectFlag     = 1;                //接收到数据
-                DtuCom->ConnectTimeOut  = DTU_TIMEOUT;      //DTU超时计数器重新启动
-                //DtuCom->TimeoutEn       = 0;                //关超时标识。发送时启动。
-                    
-                
-                if(flags &      COMM_EVT_FLAG_MTR_TX) {      
-                    flagClr |=  COMM_EVT_FLAG_MTR_TX;   
-                }                
-            }
-            
-            /**************************************************************
-            * Description  : TAX发送
-            * Author       : 2018/5/18 星期五, by redmorningcn
-            */
             if(    flags & COMM_EVT_FLAG_TAX_TX ) {
                 //app_comm_tax(flags);
                 
@@ -276,6 +260,29 @@ static  void  AppTaskComm (void *p_arg)
                     flagClr |=  COMM_EVT_FLAG_TAX_TX;   
                 }                
             }
+            
+            /**************************************************************
+            * Description  : MTR收发
+            * Author       : 2018/5/18 星期五, by redmorningcn
+            */
+            if(    flags & COMM_EVT_FLAG_MTR_RX ) {
+
+                
+                if(flags &      COMM_EVT_FLAG_MTR_RX) {      
+                    flagClr |=  COMM_EVT_FLAG_MTR_RX;   
+                }                
+            }
+            if(    flags & COMM_EVT_FLAG_MTR_TX ) {
+                
+                extern void app_mtr_com(void);
+                app_mtr_com();          //处理板和检测板通讯处理     
+                
+                if(flags &      COMM_EVT_FLAG_MTR_TX) {      
+                    flagClr |=  COMM_EVT_FLAG_MTR_TX;   
+                }                
+            }            
+            
+
             
             /***********************************************
             * 描述： 清除标志

@@ -1014,6 +1014,12 @@
     <group>
       <name>task</name>
       <file>
+        <name>$PROJ_DIR$\..\source\task\app_mtr_com.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\task\app_mtr_com.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\task\app_task_com.c</name>
       </file>
       <file>
@@ -1327,6 +1333,9 @@
       <name>$PROJ_DIR$\..\doc\readme.md</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\doc\&#x5904;&#x7406;&#x677F;&#x548C;&#x68C0;&#x6D4B;&#x677F;&#x901A;&#x8BAF;&#x534F;&#x8BAe;</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\doc\&#x5De5;&#x7A0B;&#x6587;&#x4eF6;&#x8BF4;&#x660e;.txt</name>
     </file>
   </group>
@@ -1446,7 +1455,7 @@
         <name>$PROJ_DIR$\..\source\Software\uC-MB\OS\uCOS-III\MB_OS.C</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\source\Software\uC-MB\OS\uCOS-III\MB_OS.H</name>
+        <name>$PROJ_DIR$\..\source\Software\uC-MB\OS\uCOS-III\mb_os.h</name>
       </file>
     </group>
     <group>
