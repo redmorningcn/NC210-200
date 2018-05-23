@@ -33,7 +33,7 @@
 // struct（异步串口通讯协议结构体）
 /********************************************************************************************/
 typedef struct {     
-	unsigned char	    sourceaddr;
+	unsigned char	sourceaddr;
 	unsigned char 	destaddr;
 	unsigned char 	framnum;
 	unsigned char 	framcode;

@@ -39,9 +39,11 @@
 
 
 //通讯连接类型
-#define     DATA_COMM           0
-#define     SET_COMM            1
-#define     IAP_COMM            2
+#define     RECORD_SEND_COMM    0               /* 数据记录发送          */
+#define     SET_COMM            1               /* 参数操作              */
+#define     IAP_COMM            2               /* 程序升级操作          */  
+#define     RECORD_GET_COMM     3               /* 查询数据记录          */
+
 
 //通讯协议类型
 #define     MODBUS_PROTOCOL     0
@@ -58,7 +60,7 @@
 #define     MTR_RD_SYS          1 /* 读产品信息     */
 #define     MTR_RD_CALI         2 /* 读运算校准信息 */
 #define     MTR_WR_SYS          3 /* 写产品信息     */
-#define     MTR_WR_CALC         4 /* 写运算校准信息 */
+#define     MTR_WR_CALI         4 /* 写运算校准信息 */
 //MTR 数据地址定义
 
 
@@ -130,6 +132,8 @@ typedef struct {
     u32     Baud;
     u32     DataCode;           //控制字（数据区内部）
     
+    u8      SendRecordNum;      //发送记录号
+    u8      rec[3];
     union {
         struct{
             u8  DestAddr;       //源地址        master = 0x80	   

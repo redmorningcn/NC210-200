@@ -493,6 +493,42 @@ void TaskInitStore(void)
                         OS_TICKS_PER_SEC * 6);
 }
 
+
+/**************************************************************
+* Description  : 根据指定记录号，读取数据记录
+如果数据记录读取错误，重新赋值机车信息，数据记录信息，故障状态信息及校验。
+* Author       : 2018/5/23 星期三, by redmorningcn
+*/
+void    app_ReadOneRecord(stcFlshRec *pRec,u32 num)
+{
+    u16         crc1;
+    u16         crc2;
+    u8          retrys = 2;
+    
+    do {
+        ReadFlshRec(pRec, num); //读取指定记录号的数据
+        
+        crc1 = GetCrc16Chk((u8 *)pRec,sizeof(stcFlshRec)-2); 
+        crc2 = pRec->CrcCheck;
+        
+        if(crc1 == crc2) {      //如果校验通过，数据读取完成，退出
+            return;
+        }
+    } while ( --retrys );
+    
+    /**************************************************
+    * 描述： 重新赋值机车信息，数据记录信息，故障状态信息及校验
+    */ 
+    
+    pRec->RecordId    = num;         //记录号
+    pRec->LocoType    = Ctrl.sProductInfo.LocoId.Type  ;//机车型号       2  
+    pRec->LocoNbr     = Ctrl.sProductInfo.LocoId.Nbr   ;//机 车 号       2 
+    //pRec->Err.= 1;        //flash故障
+    crc1              = GetCrc16Chk((u8 *)pRec,sizeof(stcFlshRec)-2);
+    pRec->CrcCheck    = crc1;
+    
+}
+
 /*******************************************************************************
 * 				                    end of file                                *
 *******************************************************************************/

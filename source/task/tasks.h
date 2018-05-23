@@ -32,5 +32,8 @@ void App_FramPara(void);
 void    App_TaskCommCreate(void);
 void    App_CommIdle(void);
 
+void NMB_Tx(MODBUS_CH    *pch,
+            CPU_INT08U   *p_reg_tbl,
+            CPU_INT16U   nbr_bytes);
 #endif
 

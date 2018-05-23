@@ -326,7 +326,8 @@ void app_mtr_com(void)
             MtrWrSys();                     //写sys              
             break;
             
-        case MTR_WR_CALC:
+        case MTR_WR_CALI:
+            MtrWrCali();                    //写校准系数     
             break;
             
         default:

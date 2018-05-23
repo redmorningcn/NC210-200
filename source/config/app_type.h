@@ -41,7 +41,7 @@ typedef struct _StrRecNumMgr {
     u32   		        Current;			        //当前记录号	0~0xffffffff(计算地址)
     u32   		        Record;				        //文件号
     u32   		        GrsRead;			        //无线已读取记录号
-    u32   		        IcDump;				        //IC卡转储
+    u32   		        PointNum;                   //读取指定记录号
 }StrRecNumMgr;
 
 //产品信息:型号 + 编号
@@ -121,7 +121,7 @@ typedef struct _stcRunPara_
             u32                 RsvFalg         :12;        // 备用
             u32                 OkFlag          : 1;        // 全部初始化成功标志，未初化0零，初始化化后为1
             u32                 InstallFlag     : 1;        // 装车完成标志，未初化0零，初始化化后为1
-        } Flag;
+        };
         u32                 Flags;
     } InitFlag;
     

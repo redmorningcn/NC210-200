@@ -106,7 +106,7 @@ void    App_CommIdle(void)
             DtuCom->ConnCtrl.EnableFlg   = 1;        //允许连接    
             DtuCom->ConnCtrl.RecvEndFlg  = 0;        //无数据接收
             DtuCom->ConnCtrl.SendFlg     = 0;        //无数发送
-            DtuCom->ConnCtrl.ConnType    = DATA_COMM;//传输数据  
+            DtuCom->ConnCtrl.ConnType    = RECORD_SEND_COMM;//传输数据  
         }
     }
     
@@ -117,7 +117,7 @@ void    App_CommIdle(void)
     */
     if(     Ctrl.sRecNumMgr.GrsRead < Ctrl.sRecNumMgr.Current
        //&&   DtuCom->ConnCtrl[0].SendFlg     == 0  //(状态不好判断)
-       &&   DtuCom->ConnCtrl.ConnType    == DATA_COMM
+       &&   DtuCom->ConnCtrl.ConnType    == RECORD_SEND_COMM
       )       
     {
         OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,   //通知DTU，可以进行数据发送
@@ -128,12 +128,25 @@ void    App_CommIdle(void)
     
     /**************************************************************
     * Description  : MTR数据通讯
+    没有进行其他曹组时（读写sys或cali），周期性读检测板数据。
     * Author       : 2018/5/22 星期二, by redmorningcn
     */
-    OSFlagPost(( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,        //通知MTR，进行数据发送
-               ( OS_FLAGS      )COMM_EVT_FLAG_MTR_TX,
-               ( OS_OPT        )OS_OPT_POST_FLAG_SET,
-               ( OS_ERR       *)&err);
+    MtrCom->ConnCtrl.protocol = MODBUS_PROTOCOL;
+    if(
+            MtrCom->ConnCtrl.ConnType == MTR_RD_DETECT 
+       &&   MtrCom->ConnCtrl.protocol == MODBUS_PROTOCOL) 
+    {
+        static  u8 node = 0;
+        
+        node++;                     
+        node %= 4;
+        MtrCom->ConnCtrl.MB_Node = node+1;                      //modbus协议的端口号
+        
+        OSFlagPost(( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,    //通知MTR，进行数据发送
+                   ( OS_FLAGS      )COMM_EVT_FLAG_MTR_TX,
+                   ( OS_OPT        )OS_OPT_POST_FLAG_SET,
+                   ( OS_ERR       *)&err);
+    }
 }
 
 /**************************************************************
@@ -221,7 +234,7 @@ static  void  AppTaskComm (void *p_arg)
             * Description  : DTU通讯 收发
             * Author       : 2018/5/18 星期五, by redmorningcn
             */
-            if( flags   & COMM_EVT_FLAG_DTU_RX  ) {     //60秒内无通讯，强制启动通讯
+            if( flags   & COMM_EVT_FLAG_DTU_RX  ) {    
                 //app_comm_dtu(flags); 
                 
                 DtuCom->ConnCtrl.Connflg = 1;           //连接成功
@@ -231,8 +244,9 @@ static  void  AppTaskComm (void *p_arg)
                 }
             }
             if(    flags & COMM_EVT_FLAG_DTU_TX ) {
-                //app_comm_tax(flags);
                 
+                extern  void app_dtu_send(void);
+                app_dtu_send();                     //和DTU模块，发送部分
                 
                 if(flags &      COMM_EVT_FLAG_DTU_TX) {      
                     flagClr |=  COMM_EVT_FLAG_DTU_TX;   
@@ -281,7 +295,6 @@ static  void  AppTaskComm (void *p_arg)
                     flagClr |=  COMM_EVT_FLAG_MTR_TX;   
                 }                
             }            
-            
 
             
             /***********************************************

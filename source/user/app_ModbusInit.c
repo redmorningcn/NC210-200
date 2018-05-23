@@ -215,8 +215,10 @@ CPU_BOOLEAN  MBN_FCxx_Handler (MODBUS_CH  *pch)
                 u8 reply = DataUnpack_CSNC((strCsnrProtocolPara *)&Ctrl.ComCtrl[i].RxCtrl.sCsnc);
                 if(reply == 1)  //解析成功
                 {
-                    Ctrl.ComCtrl[i].RxCtrl.Len      = Ctrl.ComCtrl[i].RxCtrl.sCsnc.datalen;
-                    Ctrl.ComCtrl[i].RxCtrl.protocol = CSNC_PROTOCOL;
+                    Ctrl.ComCtrl[i].RxCtrl.Len          = Ctrl.ComCtrl[i].RxCtrl.sCsnc.datalen;
+                    Ctrl.ComCtrl[i].RxCtrl.protocol     = CSNC_PROTOCOL;
+                    Ctrl.ComCtrl[i].ConnCtrl.RecvEndFlg = 1;                        //接收到结束标识(同一任务中，收发协调)
+                    Ctrl.ComCtrl[i].RxCtrl.RecvFlg      = 1;                        //接收到结束标识()
                     
                     OS_ERR      err;
                     OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,           //
