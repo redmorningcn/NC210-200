@@ -59,10 +59,9 @@ void app_init_sctrl(void)
         Ctrl.ComCtrl[i].ConnCtrl.ErrFlg      = 0;            //连接正常
         Ctrl.ComCtrl[i].ConnCtrl.SourceAddr  = LKJ_MAINBOARD_ADDR;     //本机地址
         Ctrl.ComCtrl[i].ConnCtrl.DestAddr    = DTU_ADDR;     //数据接收服务器地址
-        Ctrl.ComCtrl[i].ConnCtrl.SendFlg     = 0;
+        Ctrl.ComCtrl[i].ConnCtrl.RecordSendFlg= 0;
         Ctrl.ComCtrl[i].ConnCtrl.RecvEndFlg  = 0;
         Ctrl.ComCtrl[i].ConnCtrl.FramNum     = 1;
-        
     }
 
     /*****************************************************************

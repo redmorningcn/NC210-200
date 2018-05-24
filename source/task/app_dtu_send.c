@@ -38,6 +38,9 @@ void    app_dtu_send(void)
         */
     case RECORD_SEND_COMM:     
         
+        if(Ctrl.sRecNumMgr.Current == 0)
+            return;
+        
         //取数据记录号
         if(Ctrl.sRecNumMgr.Current < Ctrl.sRecNumMgr.GrsRead )  {
             Ctrl.sRecNumMgr.GrsRead = 0;
@@ -50,7 +53,8 @@ void    app_dtu_send(void)
         
         //数据记录按csnc协议打包 DataPackage_CSNC(strCsnrProtocolPara * sprotocolpara);
         DtuCom->ConnCtrl.sCsnc.framnum      = DtuCom->ConnCtrl.SendRecordNum;   //发送记录号
-        
+        DtuCom->ConnCtrl.RecordSendFlg      = 1;        
+
         DtuCom->ConnCtrl.sCsnc.datalen      = sizeof(stcFlshRec);
         DtuCom->ConnCtrl.sCsnc.databuf      = (u8 *)&DtuCom->Wr;                //数据内容
         DtuCom->ConnCtrl.sCsnc.rxtxbuf      = DtuCom->pch->TxBuf;               //打包后的数据直接存入发送缓存
@@ -79,7 +83,8 @@ void    app_dtu_send(void)
         
         //数据记录按csnc协议打包 DataPackage_CSNC(strCsnrProtocolPara * sprotocolpara);
         DtuCom->ConnCtrl.sCsnc.framnum      = DtuCom->ConnCtrl.SendRecordNum;   //发送记录号
-        
+        DtuCom->ConnCtrl.RecordSendFlg      = 1;
+
         DtuCom->ConnCtrl.sCsnc.datalen      = sizeof(stcFlshRec);
         DtuCom->ConnCtrl.sCsnc.databuf      = (u8 *)&DtuCom->Wr;                //数据内容
         DtuCom->ConnCtrl.sCsnc.rxtxbuf      = DtuCom->pch->TxBuf;               //打包后的数据直接存入发送缓存
@@ -138,6 +143,7 @@ void    app_dtu_send(void)
         
 
     default:
+        DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;                           //默认状态位数据发送
         break;
     }
     
@@ -147,7 +153,6 @@ void    app_dtu_send(void)
         if(DtuCom->pch->TxBufByteCtr == 0)                                      //如果数据异常，发送20字节
             DtuCom->pch->TxBufByteCtr = 20;
         DtuCom->ConnCtrl.protocol   = CSNC_PROTOCOL;    
-        DtuCom->ConnCtrl.SendFlg    = 1;
         DtuCom->ConnCtrl.RecvEndFlg = 0;                                        //如需要在规定时间内接收到应答是，协调处理。                                         
         DtuCom->RxCtrl.RecvFlg      = 0;
         //DtuCom->ConnCtrl.sCsnc

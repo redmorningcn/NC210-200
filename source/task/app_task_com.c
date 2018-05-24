@@ -105,7 +105,7 @@ void    App_CommIdle(void)
             */
             DtuCom->ConnCtrl.EnableFlg   = 1;        //允许连接    
             DtuCom->ConnCtrl.RecvEndFlg  = 0;        //无数据接收
-            DtuCom->ConnCtrl.SendFlg     = 0;        //无数发送
+            DtuCom->ConnCtrl.RecordSendFlg= 0;        //无数发送
             DtuCom->ConnCtrl.ConnType    = RECORD_SEND_COMM;//传输数据  
         }
     }
@@ -229,7 +229,29 @@ static  void  AppTaskComm (void *p_arg)
         */
         if ( err == OS_ERR_NONE ) {
             OS_FLAGS    flagClr = 0;
-            
+           
+            /**************************************************************
+            * Description  : MTR收发
+            * Author       : 2018/5/18 星期五, by redmorningcn
+            */
+            if(    flags & COMM_EVT_FLAG_MTR_RX ) {
+
+                
+                if(flags &      COMM_EVT_FLAG_MTR_RX) {      
+                    flagClr |=  COMM_EVT_FLAG_MTR_RX;   
+                }                
+            }
+            if(    flags & COMM_EVT_FLAG_MTR_TX ) {
+                
+                extern void app_mtr_com(void);
+                app_mtr_com();          //处理板和检测板通讯处理     
+                
+                if(flags &      COMM_EVT_FLAG_MTR_TX) {      
+                    flagClr |=  COMM_EVT_FLAG_MTR_TX;   
+                }                
+            }            
+
+                        
             /**************************************************************
             * Description  : DTU通讯 收发
             * Author       : 2018/5/18 星期五, by redmorningcn
@@ -237,7 +259,9 @@ static  void  AppTaskComm (void *p_arg)
             if( flags   & COMM_EVT_FLAG_DTU_RX  ) {    
                 //app_comm_dtu(flags); 
                 
-                DtuCom->ConnCtrl.Connflg = 1;           //连接成功
+                extern  void app_dtu_rec(void);
+                app_dtu_rec();                      //和DTU模块，接收部分。
+                DtuCom->ConnCtrl.Connflg = 1;       //连接成功
                 
                 if( flags &      COMM_EVT_FLAG_DTU_RX ) { 
                     flagClr |=   COMM_EVT_FLAG_DTU_RX;   
@@ -274,29 +298,7 @@ static  void  AppTaskComm (void *p_arg)
                     flagClr |=  COMM_EVT_FLAG_TAX_TX;   
                 }                
             }
-            
-            /**************************************************************
-            * Description  : MTR收发
-            * Author       : 2018/5/18 星期五, by redmorningcn
-            */
-            if(    flags & COMM_EVT_FLAG_MTR_RX ) {
-
-                
-                if(flags &      COMM_EVT_FLAG_MTR_RX) {      
-                    flagClr |=  COMM_EVT_FLAG_MTR_RX;   
-                }                
-            }
-            if(    flags & COMM_EVT_FLAG_MTR_TX ) {
-                
-                extern void app_mtr_com(void);
-                app_mtr_com();          //处理板和检测板通讯处理     
-                
-                if(flags &      COMM_EVT_FLAG_MTR_TX) {      
-                    flagClr |=  COMM_EVT_FLAG_MTR_TX;   
-                }                
-            }            
-
-            
+ 
             /***********************************************
             * 描述： 清除标志
             */

@@ -1086,6 +1086,12 @@
     <group>
       <name>task</name>
       <file>
+        <name>$PROJ_DIR$\..\source\task\app_dtu_rec.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\task\app_dtu_rec.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\task\app_dtu_send.c</name>
       </file>
       <file>
