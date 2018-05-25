@@ -9,6 +9,58 @@
 #include    <includes.h>
 #include    <app_com_type.h>
 #include    <app_dtu_rec.h>
+#include    <ds3231.h>
+
+
+/**************************************************************
+* Description  : 参数操作（读写或转发）
+* Author       : 2018/5/25 星期五, by redmorningcn
+*/
+void    app_operate_para(void)
+{
+    u32 code;       //指令码
+    
+    code = DtuCom->Rd.dtu.code;
+    
+    switch(code)
+    {
+    case    CMD_TIME_SET:               //设置时间
+        BSP_RTC_WriteTime(DtuCom->Rd.dtu.time);
+        DtuCom->Rd.dtu.reply.ack = 1;   //表示设置成功
+        break;
+    case    CMD_LOCO_SET:               //设置机车号
+        Ctrl.sProductInfo.LocoId.Nbr = DtuCom->Rd.dtu.loco.Nbr;
+        Ctrl.sProductInfo.LocoId.Type= DtuCom->Rd.dtu.loco.Type;
+        
+        Ctrl.sRunPara.FramFlg.WrProduct = 1;                //启动存储任务。
+        osal_set_event(OS_TASK_ID_STORE,OS_EVT_STORE_FRAM); //设置存储事件，启动储存任务
+        
+        DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
+        break;
+    case    CMD_REC_CLR:                //数据清零
+        Ctrl.sRecNumMgr.Current = 0;
+        Ctrl.sRecNumMgr.GrsRead = 0;
+        Ctrl.sRecNumMgr.PointNum= 0;
+        Ctrl.sRecNumMgr.Record  = 0;
+        
+        Ctrl.sRunPara.FramFlg.WrNumMgr = 1;
+        osal_set_event(OS_TASK_ID_STORE,OS_EVT_STORE_FRAM); //设置存储事件，启动储存任务
+
+        break;
+    case    CMD_SYS_RST:
+        
+        break;
+    case    CMD_PARA_SET:
+        
+        break;
+    case    CMD_PARA_GET:
+        
+        break;
+    default:
+        break;
+    }
+}
+
 
 /**************************************************************
 * Description  : 和DTU通讯，接收部分
@@ -39,9 +91,15 @@ void    app_dtu_rec(void)
             if(DtuCom->ConnCtrl.RecordSendFlg == 1){         //有数据发送，通讯类型不变。
                 DtuCom->ConnCtrl.RecordSendFlg = 0;
             }
-            break;
+            //break;
         default:
             DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;   //默认为数据发送
+
+            if(DtuCom->RxCtrl.sCsnc.sourceaddr == SET_ADDR)
+            {
+                DtuCom->ConnCtrl.ConnType = SET_COMM;           //参数读取
+            }
+            
             break;
         }
     }
@@ -55,9 +113,10 @@ void    app_dtu_rec(void)
         //接收到发送数据的应答。判断发送应答帧号和接收帧号，相等认为发送成功。
         //判断是否有数据发送。
         enablesend = 0;
-        if(DtuCom->ConnCtrl.sCsnc.framnum == DtuCom->RxCtrl.sCsnc.framnum)
+        if(DtuCom->ConnCtrl.SendRecordNum == DtuCom->RxCtrl.sCsnc.framnum)
         {
             Ctrl.sRecNumMgr.GrsRead++;
+            DtuCom->ConnCtrl.SendRecordNum++;                                                //发送记录++
             Ctrl.sRunPara.FramFlg.WrNumMgr = 1;                             //存记录标识有效
             osal_set_event(OS_TASK_ID_STORE,OS_EVT_STORE_FRAM);             //设置存储事件，启动储存任务
             
@@ -86,7 +145,8 @@ void    app_dtu_rec(void)
 
     case SET_COMM:
         
-        
+        app_operate_para();             //参数设置（读取）
+
         enablesend = 1;                 //启动数据发送
         break;
         

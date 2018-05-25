@@ -8,14 +8,16 @@
 #include <includes.h>
 #include <csnr_package_deal.h>
 #include <app_mtr_com.h>
+#include <ds3231.h>
+#include <app_type.h>
+
 
 /*********************************************************************
 * INCLUDES
 */
-#define COMM_RECV_DATA_MAX_LEN   128
-#define COMM_SEND_DATA_MAX_LEN   128
+#define COMM_RECV_DATA_MAX_LEN   160
+#define COMM_SEND_DATA_MAX_LEN   160
 #define COM_CONN_NUM             4     
-
 
 //串口地址定义    
 #define     DTU                 0               /* DTU所用控制结构体序号         ComCtrl[]*/
@@ -27,7 +29,6 @@
 #define     MTR_C0              0               /* MTR_C0地址所占用的连接编号    ConnCtrl[]*/
 #define     MTR_NODE            1               /* MTR modebus编号*/
 
-
 //串口地址定义    
 #define     TAX                 2               /* TAX所用控制结构体序号         ComCtrl[]*/
 #define     TAX_C0              0               /* TAX_C0地址所占用的连接编号    ConnCtrl[]*/
@@ -36,14 +37,13 @@
 //csnc地址定义
 #define     LKJ_MAINBOARD_ADDR  (0x84)          /* LKJ接口在线处理处理板 CSNC 协议地址*/
 #define     DTU_ADDR            (0xCA)          /* 无线发送模块 CSNC 协议地址 */
-
+#define     SET_ADDR            (0xC2)          /* 无线发送模块 CSNC 协议地址 */
 
 //通讯连接类型
 #define     RECORD_SEND_COMM    0               /* 数据记录发送          */
 #define     SET_COMM            1               /* 参数操作              */
 #define     IAP_COMM            2               /* 程序升级操作          */  
 #define     RECORD_GET_COMM     3               /* 查询数据记录          */
-
 
 //通讯协议类型
 #define     MODBUS_PROTOCOL     0
@@ -53,7 +53,6 @@
 #define     DTU_TIMEOUT         60
 #define     MTR_TIMEOUT         5
 #define     TAX_TIMEOUT         5
-
 
 //MTR 通讯类型定义（conntype）
 #define     MTR_RD_DETECT       0 /* 读检测数据参数 */
@@ -73,6 +72,31 @@
 /*********************************************************************
 * TYPEDEFS
 */
+__packed
+typedef struct {     
+ 	u16     Type;       //机车类型	2	参见机车类型代码表
+ 	u16     Nbr;        //机车号		2	
+} stcLocoId;
+
+typedef struct {
+    u8      buf[8];
+    u8      ack;
+} stcParaReply;
+
+/**************************************************************
+* Description  : dtu操作命令
+* Author       : 2018/5/25 星期五, by redmorningcn
+*/
+__packed
+typedef struct{
+    u32     code;
+    union{
+        stcTime         time;
+        stcLocoId       loco;
+        stcParaReply    reply;
+    };
+}strDtuRecData;
+
 
 /*******************************************************************************
 * Description  : 串口接收数据结构联合体
@@ -84,8 +108,10 @@ typedef union {
     
 //  数据结构1
 //  数据结构2、
-    strSpeed        speed;                          //速度检测板数据结构
-
+    union{
+        strDtuRecData   dtu;
+        strSpeed        speed;  //速度检测板数据结构
+    };
     u16             Buf16[COMM_RECV_DATA_MAX_LEN/2];		            //	
     u8              Buf[COMM_RECV_DATA_MAX_LEN];		            //	
 } uRecvData;
@@ -111,7 +137,7 @@ typedef union {
 *******************************************************************************/
 __packed
 typedef struct {     
-    u32     EnableFlg   :1;     //连接控制：1，允许连接，0，不允许连接
+    u32     EnableConnFlg:1;     //连接控制：1，允许连接，0，不允许连接
     u32     RecvEndFlg  :1;     //接收标示：1，数据接收完成，0，无数据接收。
     u32     RecordSendFlg:1;     //发送标示：有数据发送，1；无数据发送，0
     u32     ErrFlg      :1;     //错误标示，连接正常，0；连接错误，1

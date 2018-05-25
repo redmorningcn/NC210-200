@@ -151,7 +151,7 @@ void App_ModbusInit(void)
     boud        = 57600;
     
     pch         = MB_CfgCh( TAX_NODE,                   // ... Modbus Node # for this slave channel
-                            MODBUS_SLAVE,              // ... This is a MASTER
+                            MODBUS_SLAVE,               // ... This is a MASTER
                             200,                        // ... 0 when a slave
                             MODBUS_MODE_RTU,            // ... Modbus Mode (_ASCII or _RTU)
                             comnum,                     // ... Specify UART #1
@@ -252,6 +252,7 @@ void NMB_Tx(MODBUS_CH    *pch,
     CPU_INT08U  *ptx_data;
     CPU_INT08U  *pbuf;
     CPU_INT08U   i;
+    int         retry = 100;
     
     /**************************************************************
     * Description  : 发送长度为0，退出
@@ -264,7 +265,8 @@ void NMB_Tx(MODBUS_CH    *pch,
     * Description  : 等发送完成
     * Author       : 2018/5/21 星期一, by redmorningcn
     */
-    while (pch->TxBufByteCtr != 0){
+    retry = 100;           //防死循环
+    while (pch->TxBufByteCtr != 0 && retry--){
         u8  dly = (CPU_INT32U)((float)pch->TxBufByteCtr * 1000.0 * 10.0 / (float)pch->BaudRate);
         if(dly == 0)
             dly = 1;

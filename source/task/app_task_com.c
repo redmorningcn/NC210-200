@@ -66,7 +66,7 @@ void APP_CommInit(void);
 
 /*******************************************************************************/
 /**************************************************************
-* Description  : App_CommIdle(void)串口的每秒周期处理程序，
+* Description  : App_CommIdle(void)串口的200ms周期处理程序，
 * Author       : 2018/5/18 星期五, by redmorningcn
 */
 void    App_CommIdle(void)
@@ -103,23 +103,28 @@ void    App_CommIdle(void)
             * Description  : 超时后，连接状态置默认值
             * Author       : 2018/5/21 星期一, by redmorningcn
             */
-            DtuCom->ConnCtrl.EnableFlg   = 1;        //允许连接    
-            DtuCom->ConnCtrl.RecvEndFlg  = 0;        //无数据接收
-            DtuCom->ConnCtrl.RecordSendFlg= 0;        //无数发送
-            DtuCom->ConnCtrl.ConnType    = RECORD_SEND_COMM;//传输数据  
+            DtuCom->ConnCtrl.EnableConnFlg  = 1;        //允许连接    
+            DtuCom->ConnCtrl.RecvEndFlg     = 0;        //无数据接收
+            DtuCom->ConnCtrl.RecordSendFlg  = 0;        //无数发送
+            DtuCom->ConnCtrl.ConnType       = RECORD_SEND_COMM;//传输数据  
         }
     }
     
+    static  u16  recordtime = 0;
+    recordtime++;
     /**************************************************************
     * Description  : 数据发送判断（DTU）
-    有数据没有发送。且串口不在发送状态，且串口在数据通讯状态。
+    有数据没有发送。且串口不在发送状态，且串口在数据通讯状态，发送时间间隔。
     * Author       : 2018/5/18 星期五, by redmorningcn
     */
     if(     Ctrl.sRecNumMgr.GrsRead < Ctrl.sRecNumMgr.Current
        //&&   DtuCom->ConnCtrl[0].SendFlg     == 0  //(状态不好判断)
-       &&   DtuCom->ConnCtrl.ConnType    == RECORD_SEND_COMM
+       &&   DtuCom->ConnCtrl.ConnType       == RECORD_SEND_COMM
+       &&   (u16)Ctrl.sRunPara.StoreTime*5  == recordtime       
       )       
     {
+        recordtime = 0;
+        
         OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,   //通知DTU，可以进行数据发送
                    ( OS_FLAGS      )COMM_EVT_FLAG_DTU_TX,
                    ( OS_OPT        )OS_OPT_POST_FLAG_SET,
@@ -217,7 +222,7 @@ static  void  AppTaskComm (void *p_arg)
                        ( OS_FLAGS     ) Ctrl.Os.CommEvtFlag,
                        ( OS_TICK      ) dly,
                        ( OS_OPT       ) OS_OPT_PEND_FLAG_SET_ANY | 
-                                        OS_OPT_PEND_BLOCKING,
+                                        OS_OPT_PEND_BLOCKING ,
                        ( CPU_TS      *) NULL,
                        ( OS_ERR      *)&err);
         
@@ -251,7 +256,6 @@ static  void  AppTaskComm (void *p_arg)
                 }                
             }            
 
-                        
             /**************************************************************
             * Description  : DTU通讯 收发
             * Author       : 2018/5/18 星期五, by redmorningcn

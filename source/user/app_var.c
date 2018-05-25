@@ -4,6 +4,9 @@
 *******************************************************************************/
 #include <app_type.h>
 #include <tasks.h>
+#include <includes.h>
+#include <app_dtu_rec.h>
+
 
 /*******************************************************************************
 * Description  : 定义全局变量  sCtrl
@@ -37,7 +40,6 @@ StrCOMCtrl  * TaxCom;
 void app_init_sctrl(void)
 { 
 //    WdtReset();
-    
     /*******************************************************************************
     * Description  : 初始化串口连接参数默认值
     * Author       : 2018/5/18 星期五, by redmorningcn
@@ -45,23 +47,46 @@ void app_init_sctrl(void)
     u8  i;
     for(i = 0;i <sizeof(Ctrl.ComCtrl)/sizeof(StrCOMCtrl);i++ )
     {
-        Ctrl.ComCtrl[i].ConnectFlag     = 0;            //连接标识：0，该串口无连接；1，有连接。
-        Ctrl.ComCtrl[i].ConnectTimeOut  = 5;            //超时时间：5秒内，该串口无连接（数据接收），则串口断开。
-        Ctrl.ComCtrl[i].TimeoutEn       = 0;            //超时计数停止。（发送数据时启动）
+        Ctrl.ComCtrl[i].ConnectFlag             = 0;        //连接标识：0，该串口无连接；1，有连接。
+        Ctrl.ComCtrl[i].ConnCtrl.TimeOut        = 5;        //连接超时时间。（超过该时间，认为连接断开）
         
-        Ctrl.ComCtrl[i].ConnCtrl.Baud        = 57600;
-        Ctrl.ComCtrl[i].ConnCtrl.Bits        = USART_WordLength_8b;
-        Ctrl.ComCtrl[i].ConnCtrl.Parity      = USART_Parity_No;
-        Ctrl.ComCtrl[i].ConnCtrl.Stops       = USART_StopBits_1;
-        
-        Ctrl.ComCtrl[i].ConnCtrl.TimeOut     = 5;            //连接超时时间。（超过该时间，认为连接断开）
-        Ctrl.ComCtrl[i].ConnCtrl.EnableFlg   = 1;            //该连接允许
-        Ctrl.ComCtrl[i].ConnCtrl.ErrFlg      = 0;            //连接正常
-        Ctrl.ComCtrl[i].ConnCtrl.SourceAddr  = LKJ_MAINBOARD_ADDR;     //本机地址
-        Ctrl.ComCtrl[i].ConnCtrl.DestAddr    = DTU_ADDR;     //数据接收服务器地址
-        Ctrl.ComCtrl[i].ConnCtrl.RecordSendFlg= 0;
-        Ctrl.ComCtrl[i].ConnCtrl.RecvEndFlg  = 0;
-        Ctrl.ComCtrl[i].ConnCtrl.FramNum     = 1;
+        Ctrl.ComCtrl[i].ConnCtrl.Baud           = 57600;
+        Ctrl.ComCtrl[i].ConnCtrl.Bits           = USART_WordLength_8b;
+        Ctrl.ComCtrl[i].ConnCtrl.COM_Num        = 0x01;
+        Ctrl.ComCtrl[i].ConnCtrl.Connflg        = 1;        //默认有连接
+        Ctrl.ComCtrl[i].ConnCtrl.ConnType       = RECORD_SEND_COMM;//默认为数据发送
+        Ctrl.ComCtrl[i].ConnCtrl.DataCode       = 0;
+        Ctrl.ComCtrl[i].ConnCtrl.datalen        = 0;
+        Ctrl.ComCtrl[i].ConnCtrl.DestAddr       = DTU_ADDR; //DTU模块
+        Ctrl.ComCtrl[i].ConnCtrl.EnableConnFlg  = 1;        //该连接允许
+        Ctrl.ComCtrl[i].ConnCtrl.ErrFlg         = 0;        //连接正常
+        Ctrl.ComCtrl[i].ConnCtrl.FrameCode      = RECORD_FRAME_CODE;//数据通讯
+        Ctrl.ComCtrl[i].ConnCtrl.FramNum        = 1;        //序号从1开始
+        Ctrl.ComCtrl[i].ConnCtrl.MB_Node        = 1;
+        Ctrl.ComCtrl[i].ConnCtrl.Parity         = USART_Parity_No;//无校验
+        Ctrl.ComCtrl[i].ConnCtrl.protocol       = CSNC_PROTOCOL;  //CSNC协议 
+        //Ctrl.ComCtrl[i].ConnCtrl.rec             
+        Ctrl.ComCtrl[i].ConnCtrl.RecordSendFlg  = 0;        //暂无记录发送
+        Ctrl.ComCtrl[i].ConnCtrl.RecvEndFlg     = 0;        //无数据接收
+        Ctrl.ComCtrl[i].ConnCtrl.SendRecordNum  = 1;        //记录 同步用（确认）
+        Ctrl.ComCtrl[i].ConnCtrl.SourceAddr     = LKJ_MAINBOARD_ADDR;     //本机地址
+        Ctrl.ComCtrl[i].ConnCtrl.Stops          = USART_StopBits_1;
+        Ctrl.ComCtrl[i].ConnectTimeOut          = 5;            //超时时间：5秒内，该串口无连接（数据接收），则串口断开。
+        Ctrl.ComCtrl[i].TimeoutEn               = 0;            //超时计数停止。（发送数据时启动）
+
+        Ctrl.ComCtrl[i].ConnCtrl.sCsnc.databuf  = (u8 *)&Ctrl.ComCtrl[i].Wr;
+        Ctrl.ComCtrl[i].ConnCtrl.sCsnc.datalen  = 0;
+        Ctrl.ComCtrl[i].ConnCtrl.sCsnc.destaddr = Ctrl.ComCtrl[i].ConnCtrl.DestAddr;
+        Ctrl.ComCtrl[i].ConnCtrl.sCsnc.framcode = Ctrl.ComCtrl[i].ConnCtrl.FrameCode;
+        Ctrl.ComCtrl[i].ConnCtrl.sCsnc.framnum  = Ctrl.ComCtrl[i].ConnCtrl.FramNum;
+        Ctrl.ComCtrl[i].ConnCtrl.sCsnc.rxtxbuf  = Ctrl.ComCtrl[i].pch->TxBuf;
+        Ctrl.ComCtrl[i].ConnCtrl.sCsnc.rxtxlen  = 0;
+        Ctrl.ComCtrl[i].ConnCtrl.sCsnc.sourceaddr = Ctrl.ComCtrl[i].ConnCtrl.SourceAddr;
+        //Ctrl.ComCtrl[i].ConnCtrl.sCsnc.tmp      =
+
+        Ctrl.ComCtrl[i].RxCtrl.sCsnc.databuf    = (u8 *)&Ctrl.ComCtrl[i].Rd;    
+        Ctrl.ComCtrl[i].RxCtrl.sCsnc.rxtxbuf    = (u8 *)&Ctrl.ComCtrl[i].pch->RxBuf;  
+        Ctrl.ComCtrl[i].RxCtrl.protocol         =  CSNC_PROTOCOL;
     }
 
     /*****************************************************************

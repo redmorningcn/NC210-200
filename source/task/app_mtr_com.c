@@ -16,10 +16,10 @@
 */
 void    MtrCommErrjudge(u8   node,u16    sta)
 {
-    u8  err = 0;    //正常
+    u8  err = 0;            //正常
     
     if(sta == 0)
-        err = 1;    //故障
+        err = 1;            //故障
     
     switch(node)
     {
@@ -202,7 +202,6 @@ void    MtrWrSys(void)
     MtrCom->ConnCtrl.RecvEndFlg   = 1;      //置接收完成标识。协调其他任务。
 }
                                         
-
 /**************************************************************
 * Description  : 处理板读Cali值。读取得值存在MtrCom->Rd中。
 * Author       : 2018/5/22 星期二, by redmorningcn

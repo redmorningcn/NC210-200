@@ -69,8 +69,8 @@
 *                             可以在IAR仿真中查看堆栈大小分配是否充足。
 *********************************************************************************************************
 */
-#define  MB_OS_CFG_RX_TASK_STK_SIZE                 512u        // ModBus任务堆栈的大小
-#define  APP_TASK_START_STK_SIZE                    128u        // 给起始任务分配堆栈
+#define  MB_OS_CFG_RX_TASK_STK_SIZE                 512u        //ModBus任务堆栈的大小
+#define  APP_TASK_START_STK_SIZE                    128u        //给起始任务分配堆栈
 #define  APP_TASK_OSAL_STK_SIZE                     512u        //OSAL任务堆栈
 #define  APP_TASK_COMM_STK_SIZE                     512u        //COMM任务堆栈
 

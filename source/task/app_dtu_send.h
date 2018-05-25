@@ -7,9 +7,9 @@
 
 #include <includes.h>
 
-#define IAP_FRAME_CODE              0x1a      /* IAP 下载帧控制字     */
-#define SET_FRAME_CODE              0x12      /* SET 设置控制字       */
-#define RECORD_FRAME_CODE           0x10      /* 数据记录csnc控制字    */     
+#define IAP_FRAME_CODE              0x0a      /* IAP 下载帧控制字     */
+#define SET_FRAME_CODE              0x02      /* SET 设置控制字       */
+#define RECORD_FRAME_CODE           0x00      /* 数据记录csnc控制字    */     
 
 #define SET_REPLY_DATA_LEN          (4+4+1)   /* 查询或设置参数，应答数据长度*/
 #define IAP_REPLY_DATA_LEN          (4)       /* IAP数据升级，数据帧应答长度 */

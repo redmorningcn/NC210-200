@@ -67,6 +67,7 @@ extern	void    DisplayTime(void)  ;
 extern BOOL     BSP_RTC_Init(void);
 extern BOOL     BSP_GetTime(struct tm *t_tm);
 extern BOOL     BSP_SetTime(struct tm t_tm);
-s8 BSP_RTC_ReadTemp(void);
+extern  s8 BSP_RTC_ReadTemp(void);
+extern  void BSP_RTC_WriteTime(stcTime  sTime);
 
 #endif

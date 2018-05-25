@@ -22,11 +22,11 @@ typedef struct {
     u16   		        Rsv[7];				            //	2  	软件版本
 } StrRecHeadInfo;
 
-__packed
-typedef struct {     
- 	u16   	            Type;				        //机车类型	2	参见机车类型代码表
- 	u16   	            Nbr;				        //机车号		2	
-} stcLocoId;
+//__packed
+//typedef struct {     
+// 	u16   	            Type;				        //机车类型	2	参见机车类型代码表
+// 	u16   	            Nbr;				        //机车号		2	
+//} stcLocoId;
 
 __packed
 typedef struct {
