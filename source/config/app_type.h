@@ -89,7 +89,10 @@ typedef struct _stcRunPara_
             u16             RdProduct   : 1;        // 读产品信息
             u16             RdRunPara   : 1;        // 读运行参数
             
-            u16             Rsv         : 8;        // 预留       
+            u16             WrSpecial   : 1;        // 写指定特定位置
+            u16             RdSpecial   : 1;        // 读指定特定位置    
+            
+            u16             rev         : 6;        // 指定地址   
         } ;
         u16                 Flags;
     } FramFlg;

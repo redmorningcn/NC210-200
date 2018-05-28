@@ -21,8 +21,8 @@ void    app_dtu_send(void)
 {
     u8  conntype;               //数据通许、参数设置、IAP
     u8  enablesend = 0;         //数据发送标识
-    u8  code; 
-    
+    u8  replylen;
+    u8  iapcode;
     //地址设置
     DtuCom->ConnCtrl.sCsnc.sourceaddr   = LKJ_MAINBOARD_ADDR;
     DtuCom->ConnCtrl.sCsnc.destaddr     = DTU_ADDR;
@@ -66,52 +66,34 @@ void    app_dtu_send(void)
         break;  
         
         /**************************************************************
-        * Description  : 数据记录查询
-        * Author       : 2018/5/23 星期三, by redmorningcn
-        */
-    case RECORD_GET_COMM:     
-        
-        //取数据记录号。
-        if(Ctrl.sRecNumMgr.Current < Ctrl.sRecNumMgr.PointNum )  {
-            Ctrl.sRecNumMgr.PointNum = 0;
-            if(Ctrl.sRecNumMgr.Current)
-                Ctrl.sRecNumMgr.PointNum = Ctrl.sRecNumMgr.Current - 1;        //最后有效记录赋值     
-        }
-        
-        //读取数据记录（查询指定的书记录）
-        app_ReadOneRecord((stcFlshRec *)&DtuCom->Wr,Ctrl.sRecNumMgr.PointNum); //    
-        
-        //数据记录按csnc协议打包 DataPackage_CSNC(strCsnrProtocolPara * sprotocolpara);
-        DtuCom->ConnCtrl.sCsnc.framnum      = DtuCom->ConnCtrl.SendRecordNum;   //发送记录号
-        DtuCom->ConnCtrl.RecordSendFlg      = 1;
-
-        DtuCom->ConnCtrl.sCsnc.datalen      = sizeof(stcFlshRec);
-        DtuCom->ConnCtrl.sCsnc.databuf      = (u8 *)&DtuCom->Wr;                //数据内容
-        DtuCom->ConnCtrl.sCsnc.rxtxbuf      = DtuCom->pch->TxBuf;               //打包后的数据直接存入发送缓存
-        
-        DataPackage_CSNC((strCsnrProtocolPara *)&DtuCom->ConnCtrl.sCsnc);       //数据打包
-        DtuCom->pch->TxBufByteCtr = DtuCom->ConnCtrl.sCsnc.rxtxlen;             //数据长度准备
-        
-        enablesend = 1;        //数据发送标识1
-        
-        break;  
-        
-        /**************************************************************
         * Description  : 参数读写（发送数据应答信号，应答接收到的内容，buf[8]状态位）
         * Author       : 2018/5/23 星期三, by redmorningcn
         */
     case SET_COMM:
         //数据记录按csnc协议打包 DataPackage_CSNC(strCsnrProtocolPara * sprotocolpara);
+        switch(DtuCom->Rd.dtu.code){
+        case CMD_RECORD_GET:
+            replylen    =   sizeof(stcFlshRec);
+            break;
+        case CMD_PARA_GET:
+        case CMD_DETECT_GET:
+            replylen    =   DtuCom->Rd.dtu.paralen;
+            break;
+        default:
+            replylen    =   SET_REPLY_DATA_LEN;
+            break;
+        }
+            
+        DtuCom->ConnCtrl.sCsnc.datalen      = replylen;                         //应答长度
 
-        DtuCom->ConnCtrl.sCsnc.datalen      = SET_REPLY_DATA_LEN;
         DtuCom->ConnCtrl.sCsnc.databuf      = (u8 *)&DtuCom->Rd;                //数据内容
         DtuCom->ConnCtrl.sCsnc.rxtxbuf      = DtuCom->pch->TxBuf;               //打包后的数据直接存入发送缓存
         
         DataPackage_CSNC((strCsnrProtocolPara *)&DtuCom->ConnCtrl.sCsnc);       //数据打包
         DtuCom->pch->TxBufByteCtr = DtuCom->ConnCtrl.sCsnc.rxtxlen;             //数据长度准备
         
-        enablesend = 1;     //数据发送标识1
-        DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;       //应答完后，更改通讯类型
+        enablesend = 1;                                                         //数据发送标识1
+        DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;                           //应答完后，更改通讯类型
         break;
         
         /**************************************************************
@@ -119,18 +101,18 @@ void    app_dtu_send(void)
         * Author       : 2018/5/23 星期三, by redmorningcn
         */
     case IAP_COMM:
-        code = DtuCom->Rd.dtu.iap.code;       //IAP指令位
-        switch(code)
+        iapcode = DtuCom->Rd.dtu.iap.code;       //IAP指令位
+        
+        switch(iapcode)
         {
-//        case IAP_DATA:                  //IAP数据传输应答
-//            DtuCom->ConnCtrl.sCsnc.datalen  = IAP_REPLY_DATA_LEN;
-//
-//            break;
-//        case IAP_START:                 //IAP启动及结束应答
-//        case IAP_END:
-//        default:
-//            DtuCom->ConnCtrl.sCsnc.datalen  = DtuCom->RxCtrl.sCsnc.datalen;
-//            break;
+        case IAP_DATA:                  //IAP数据传输应答
+            DtuCom->ConnCtrl.sCsnc.datalen  = IAP_REPLY_DATA_LEN;
+            break;
+        case IAP_START:                 //IAP启动及结束应答
+        case IAP_END:
+        default:
+            DtuCom->ConnCtrl.sCsnc.datalen  = DtuCom->RxCtrl.sCsnc.datalen;
+            break;
         }
         
         DtuCom->ConnCtrl.sCsnc.databuf      = (u8 *)&DtuCom->Rd;                //数据内容
@@ -138,11 +120,12 @@ void    app_dtu_send(void)
         
         DataPackage_CSNC((strCsnrProtocolPara *)&DtuCom->ConnCtrl.sCsnc);       //数据打包
         DtuCom->pch->TxBufByteCtr = DtuCom->ConnCtrl.sCsnc.rxtxlen;             //数据长度准备
-        enablesend = 1;         //数据发送标识1
+        enablesend = 1;                 //数据发送标识1
+        if(iapcode == IAP_END)
+            DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;                       //默认状态位数据发送
         
         break;
         
-
     default:
         DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;                           //默认状态位数据发送
         break;
@@ -153,6 +136,7 @@ void    app_dtu_send(void)
         //数据发送状态准备
         if(DtuCom->pch->TxBufByteCtr == 0)                                      //如果数据异常，发送20字节
             DtuCom->pch->TxBufByteCtr = 20;
+        
         DtuCom->ConnCtrl.protocol   = CSNC_PROTOCOL;    
         DtuCom->ConnCtrl.RecvEndFlg = 0;                                        //如需要在规定时间内接收到应答是，协调处理。                                         
         DtuCom->RxCtrl.RecvFlg      = 0;

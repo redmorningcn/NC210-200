@@ -129,8 +129,8 @@ CPU_BOOLEAN  MB_CoilRd (CPU_INT16U   coil,
 #if (MODBUS_CFG_FC05_EN == DEF_ENABLED) || \
     (MODBUS_CFG_FC15_EN == DEF_ENABLED)
 void  MB_CoilWr (CPU_INT16U    coil,
-                 CPU_BOOLEAN   coil_val,
-                 CPU_INT16U   *perr)
+                 CPU_BOOLEAN    coil_val,
+                 CPU_INT16U     *perr)
 {
 
     (void)coil;

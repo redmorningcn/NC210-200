@@ -402,7 +402,7 @@ void App_FramPara(void)
             add = (int)&Ctrl.sProductInfo - (int)&Ctrl;
             
             ReadFM24CL64(add,(u8 *)&Ctrl.sRunPara,sizeof(Ctrl.sRunPara));
-        }             
+        }    
     }
         
     Ctrl.sRunPara.FramFlg.Flags = 0;               //วๅฑ๊สถ

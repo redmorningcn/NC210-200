@@ -94,6 +94,12 @@ typedef struct{
         stcLocoId       loco;
         stcParaReply    reply;
         strIapdata      iap;
+        u32             recordnum;      //记录号
+        struct{                         //指定地址读取
+            u16         paraaddr;
+            u16         paralen;
+            u16         parabuf[64];       
+        };
     };
 }strDtuRecData;
 

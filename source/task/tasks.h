@@ -27,6 +27,7 @@ void    TaskInitStore(void);
 osalEvt TaskStoreEvtProcess(osalTid task_id, osalEvt task_event);
 u8      BSP_FlashOsInit(void);
 void    App_FramPara(void);
+void    app_ReadOneRecord(stcFlshRec *pRec,u32 num);
 
 //comm task
 void    App_TaskCommCreate(void);

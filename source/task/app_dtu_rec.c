@@ -11,6 +11,44 @@
 #include    <app_dtu_rec.h>
 #include    <ds3231.h>
 
+typedef  void (*pFunction)(void);			    //定义一个函数类型的参数.
+pFunction   pApp;
+
+/*******************************************************************************
+ * 名    称： IAP_JumpTo()
+ * 功    能： 跳转到应用程序段
+ * 入口参数：
+ * 出口参数： 无
+ * 作　 　者： 无名沈
+ * 创建日期： 2014-04-23
+ * 修    改： 
+ * 修改日期： 
+ *******************************************************************************/
+void IAP_JumpTo(u32 appAddr)
+{    
+    u32     JumpAddress = 0;
+    u8      cpu_sr;
+        
+    /***********************************************
+    * 描述： 关中断，防止值被中断修改
+    */
+    CPU_CRITICAL_ENTER();
+
+    /***********************************************
+    * 描述： 获取应用入口及初始化堆栈指针
+    */
+    JumpAddress   =*(volatile u32*) (appAddr + 4); // 地址+4为PC地址
+    pApp          = (pFunction)JumpAddress;         // 函数指针指向APP
+//    __set_MSP       (*(volatile u32*) appAddr);    // 初始化主堆栈指针（MSP）
+//    __set_PSP       (*(volatile u32*) appAddr);    // 初始化进程堆栈指针（PSP）
+//    __set_CONTROL   (0);                            // 清零CONTROL
+    /***********************************************
+    * 描述： 跳转到APP程序
+    */
+    pApp();
+    
+    CPU_CRITICAL_EXIT();
+}
 
 /**************************************************************
 * Description  : 参数操作（读写或转发）
@@ -19,7 +57,10 @@
 void    app_operate_para(void)
 {
     u32 code;       //指令码
-    
+    u32 recordnum;
+    u16 data;
+    u16 err;
+
     code = DtuCom->Rd.dtu.code;
     
     switch(code)
@@ -46,16 +87,66 @@ void    app_operate_para(void)
         Ctrl.sRunPara.FramFlg.WrNumMgr = 1;
         osal_set_event(OS_TASK_ID_STORE,OS_EVT_STORE_FRAM); //设置存储事件，启动储存任务
 
+        DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
+
         break;
-    case    CMD_SYS_RST:
+    case    CMD_SYS_RST:                                    //系统重启
+        //重启
+        Ctrl.sRunPara.SysSts.SysReset = 1;                  //重启标识置位，准备重启
+        
+        DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
+
+        //IAP_JumpTo(0);
+        break;
+    case    CMD_PARA_SET:                                   //参数设置 
+        
+            for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen)/2;i++ ){
+
+                MB_HoldingRegWr (  (DtuCom->Rd.dtu.paraaddr/2)+i,
+                                    DtuCom->Rd.dtu.parabuf[i],
+                                    &err);   
+                
+                if(err != MODBUS_ERR_NONE){
+                    DtuCom->Rd.dtu.reply.ack = 0;           //表示设置失败
+                    break;
+                }
+            }
+            DtuCom->Rd.dtu.reply.ack = 1;                   //表示设置成功
+
+            break;
+    case    CMD_PARA_GET:                                   //参数设置 
+        //调用参数设置函数
+        for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen)/2;i++ ){
+            
+            data = MB_HoldingRegRd((DtuCom->Rd.dtu.paraaddr/2)+i,&err);
+            if(err != MODBUS_ERR_NONE){
+                //DtuCom->Rd.dtu.reply.ack = 0;             //表示设置失败
+                DtuCom->Rd.dtu.paralen = 0;
+                break;
+            }
+            
+            DtuCom->Rd.dtu.parabuf[i] = data;               //赋值
+        }
         
         break;
-    case    CMD_PARA_SET:
+    case    CMD_RECORD_GET:                                 //数据记录读取（读指定记录号的数据）
+        recordnum = DtuCom->Rd.dtu.recordnum;
+        //取数据记录号。
+        if(Ctrl.sRecNumMgr.Current < recordnum)  {
+            recordnum = 0;
+            if(Ctrl.sRecNumMgr.Current)
+                recordnum = Ctrl.sRecNumMgr.Current - 1;        //最后有效记录赋值     
+        }
+        //读取数据记录（查询指定的书记录）
+        app_ReadOneRecord((stcFlshRec *)&DtuCom->Rd,recordnum); //读取数据记录，（Set应答信息从Rd发送）    
         
         break;
-    case    CMD_PARA_GET:
+    case    CMD_DETECT_SET:             //写检测板数据记录
         
         break;
+    case    CMD_DETECT_GET:             //读检测板数据记录
+        
+        break;        
     default:
         break;
     }
@@ -116,13 +207,13 @@ void    app_dtu_rec(void)
         if(DtuCom->ConnCtrl.SendRecordNum == DtuCom->RxCtrl.sCsnc.framnum)
         {
             Ctrl.sRecNumMgr.GrsRead++;
-            DtuCom->ConnCtrl.SendRecordNum++;                                                //发送记录++
+            DtuCom->ConnCtrl.SendRecordNum++;                               //发送记录++
             Ctrl.sRunPara.FramFlg.WrNumMgr = 1;                             //存记录标识有效
             osal_set_event(OS_TASK_ID_STORE,OS_EVT_STORE_FRAM);             //设置存储事件，启动储存任务
             
             if(Ctrl.sRecNumMgr.GrsRead < Ctrl.sRecNumMgr.Current)           //有数据未发送，继续启动发送任务
             {
-                enablesend = 1;         //再次启动数据发送    
+                enablesend = 1;                                             //再次启动数据发送    
             }
         }
         
@@ -130,19 +221,6 @@ void    app_dtu_rec(void)
         
         break;  
         
-        /**************************************************************
-        * Description  : 数据记录查询。接收应答后，将连接类型改为数据发送。
-        * Author       : 2018/5/23 星期三, by redmorningcn
-        */
-    case RECORD_GET_COMM:     
-        
-        DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;
-        DtuCom->ConnCtrl.RecordSendFlg = 0;
-        
-        enablesend = 0;                 //不需发送数据
-        break;  
-        
-
     case SET_COMM:
         
         app_operate_para();             //参数设置（读取）
@@ -156,9 +234,9 @@ void    app_dtu_rec(void)
         */
     case IAP_COMM:
         
-        app_iap_deal();
+        app_iap_deal();                 //iap升级处理
         
-        enablesend = 1;             //启动数据发送
+        enablesend = 1;                 //启动数据发送
         break;
         
         

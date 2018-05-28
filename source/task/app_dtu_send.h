@@ -6,6 +6,7 @@
 #define  _APP_DTU_SEND_H_
 
 #include <includes.h>
+#include <app_dtu_rec.h>
 
 #define IAP_FRAME_CODE              0x0a      /* IAP 下载帧控制字     */
 #define SET_FRAME_CODE              0x02      /* SET 设置控制字       */
