@@ -61,7 +61,7 @@ void    app_operate_para(void)
     }
 }
 
-
+extern  void app_iap_deal(void);
 /**************************************************************
 * Description  : 和DTU通讯，接收部分
 * Author       : 2018/5/24 星期三, by redmorningcn
@@ -155,7 +155,8 @@ void    app_dtu_rec(void)
         * Author       : 2018/5/23 星期三, by redmorningcn
         */
     case IAP_COMM:
-
+        
+        app_iap_deal();
         
         enablesend = 1;             //启动数据发送
         break;

@@ -255,7 +255,7 @@ static  void  AppTaskComm (void *p_arg)
                     flagClr |=  COMM_EVT_FLAG_MTR_TX;   
                 }                
             }            
-
+    
             /**************************************************************
             * Description  : DTU通讯 收发
             * Author       : 2018/5/18 星期五, by redmorningcn

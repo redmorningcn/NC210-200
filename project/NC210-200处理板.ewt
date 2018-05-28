@@ -1155,6 +1155,12 @@
         <name>$PROJ_DIR$\..\source\user\hook.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\source\user\IAP_program_mcu.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\user\IAP_program_mcu.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\user\RecDataTypeDef.h</name>
       </file>
       <file>
@@ -1172,6 +1178,12 @@
     <name>BSP</name>
     <group>
       <name>driver</name>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_flash.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_flash.h</name>
+      </file>
       <file>
         <name>$PROJ_DIR$\..\source\driver\bsp_FRAM.c</name>
       </file>

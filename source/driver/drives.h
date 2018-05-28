@@ -17,6 +17,7 @@
 #include <bsp_time.h>
 #include <bsp_FRAM.h>
 #include <bsp_max7219.h>
+#include <bsp_flash.h>
 
 #endif
 

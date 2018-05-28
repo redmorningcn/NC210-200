@@ -111,6 +111,7 @@ void    app_dtu_send(void)
         DtuCom->pch->TxBufByteCtr = DtuCom->ConnCtrl.sCsnc.rxtxlen;             //数据长度准备
         
         enablesend = 1;     //数据发送标识1
+        DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;       //应答完后，更改通讯类型
         break;
         
         /**************************************************************
@@ -118,7 +119,7 @@ void    app_dtu_send(void)
         * Author       : 2018/5/23 星期三, by redmorningcn
         */
     case IAP_COMM:
-        code = DtuCom->Rd.Buf[0];       //IAP指令位
+        code = DtuCom->Rd.dtu.iap.code;       //IAP指令位
         switch(code)
         {
 //        case IAP_DATA:                  //IAP数据传输应答

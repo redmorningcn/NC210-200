@@ -235,7 +235,6 @@ static  void  App_NMI_ISR (void)
 * Note(s)     : none.
 *********************************************************************************************************
 */
-
 static  void  App_Fault_ISR (void)
 {
     while (DEF_TRUE) {

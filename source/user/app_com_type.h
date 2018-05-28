@@ -10,13 +10,14 @@
 #include <app_mtr_com.h>
 #include <ds3231.h>
 #include <app_type.h>
+#include <IAP_program_mcu.h>
 
 
 /*********************************************************************
 * INCLUDES
 */
-#define COMM_RECV_DATA_MAX_LEN   160
-#define COMM_SEND_DATA_MAX_LEN   160
+#define COMM_RECV_DATA_MAX_LEN   256
+#define COMM_SEND_DATA_MAX_LEN   256    /* 约等于 128*2+10*2  */
 #define COM_CONN_NUM             4     
 
 //串口地址定义    
@@ -62,8 +63,6 @@
 #define     MTR_WR_CALI         4 /* 写运算校准信息 */
 //MTR 数据地址定义
 
-
-
 /*********************************************************************
 * CONSTANTS
 */
@@ -94,6 +93,7 @@ typedef struct{
         stcTime         time;
         stcLocoId       loco;
         stcParaReply    reply;
+        strIapdata      iap;
     };
 }strDtuRecData;
 
@@ -109,12 +109,13 @@ typedef union {
 //  数据结构1
 //  数据结构2、
     union{
-        strDtuRecData   dtu;
+        strDtuRecData   dtu;    //dtu参数设置的数据
         strSpeed        speed;  //速度检测板数据结构
     };
     u16             Buf16[COMM_RECV_DATA_MAX_LEN/2];		            //	
     u8              Buf[COMM_RECV_DATA_MAX_LEN];		            //	
 } uRecvData;
+
 
 /*******************************************************************************
 * Description  : 串口发送数据联合体
@@ -178,8 +179,8 @@ typedef struct {
 typedef struct {     
     union {
         struct{
-            u8      DestAddr;     //源地址        master = 0x80	   
-            u8      SourceAddr;      //接收地址      slave  = 0xCA	   
+            u8      DestAddr;       //源地址        master = 0x80	   
+            u8      SourceAddr;     //接收地址      slave  = 0xCA	   
             u8      FramNum;        //帧序号   
             u8      FrameCode;      //帧控制字
         };

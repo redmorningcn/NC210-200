@@ -1,0 +1,800 @@
+/**************************************************************
+* Description  : 程序下载协议
+* Author       : 2018/5/25 星期五, by redmorningcn
+*/
+
+/*******************************************************************************
+ * INCLUDES
+ */
+#include  <includes.h>
+#include  <IAP_program_mcu.h>
+#include  <string.h>
+
+/*******************************************************************************
+ * CONSTANTS
+ */
+
+
+/*******************************************************************************
+ * TYPEDEFS
+ */
+
+     
+/**************************************************************
+* Description  : app_iap_deal  软件远程或串口升级
+* Author       : 2018/5/25 星期五, by redmorningcn
+*/
+void    app_iap_deal(void){
+    stcIAPPara      sLocalIap;                          //存储的iap参数
+    stcIAPPara      *sServerIap = (stcIAPPara *)&DtuCom->Rd.dtu.iap;  //服务器下发的iap参数 
+
+    u8  code = DtuCom->Rd.dtu.iap.code;                     //IAP指令位
+    u8  sta  = DtuCom->Rd.dtu.iap.sta;                      //IAP状态位
+    u16 crc16;
+    u16 idx;                                                //数据标号
+    
+    switch(code)
+    {
+        
+    case IAP_START:                     //IAP启动,
+        //读已存的iappara信息
+        memcpy((uint8 *)&sLocalIap,(uint8 *)IAP_PARA_START_ADDR,sizeof(stcIAPPara));
+        crc16 = GetCrc16Chk((uint8 *)&sLocalIap,sizeof(sLocalIap)-8);
+        
+        //对比接收到的iappara信息（版本、大小、已发帧序号、校验、帧号）
+        if ( ( sta == 1 )                           ||      // 重新下载
+            ( sLocalIap.Idx    == 0xffffffff ) ||          // 存储序号为-1
+            ( sLocalIap.Idx    == 0 )          ||          // 存储序号为零
+            ( sServerIap->Idx  == 0 )          ||          // 发送下来的序号为零
+            ( sLocalIap.Chk    != crc16)       ||          // 校验码不正确
+            ( sServerIap->Size != sLocalIap.Size ) ||      // 程序大小不符
+                                //( IapServer.Crc32 != IapInfo.Crc32 ) 
+            ( sServerIap->SwVer!= sLocalIap.SwVer )        // 版本不符
+            ) 
+        {
+            /**************************************************************
+            * Description  : 按重发条件返回
+            * Author       : 2018/5/28 星期一, by redmorningcn
+            */
+            sLocalIap.Addr        = USER_BACK_START_ADDR;       //初始化地址
+            sLocalIap.Idx         = 0;
+            
+            sLocalIap.HwVer       = Ctrl.sProductInfo.HwVer;    //返回装置版本信息
+            sLocalIap.SwVer       = Ctrl.sProductInfo.SwVer;
+            sLocalIap.Size        = sServerIap->Size;           
+            sLocalIap.Crc32       = sServerIap->Crc32;
+        }else{
+            /**************************************************************
+            * Description  : 续传，按存储的地址发送
+            * Author       : 2018/5/28 星期一, by redmorningcn
+            */
+            //sLocalIap.HwVer       = Ctrl.sProductInfo.HwVer;  //续传不更改版本信息
+            //sLocalIap.SwVer       = Ctrl.sProductInfo.SwVer;  
+            sLocalIap.Addr        = USER_BACK_START_ADDR + sLocalIap.Idx * 128;
+        }
+        
+        //将升级信息返回给服务器，如硬件版本，软件版本，程序大小，当前地址，当前帧号
+        memcpy((u8 *)&DtuCom->Rd.dtu.iap,(u8 *)&sLocalIap,sizeof(stcIAPPara)); 
+        //未发送改写程序，不存储更改后的sLocalIap值。
+        
+        break;
+    case IAP_DATA:                      //IAP数据传输应答
+        sLocalIap.End   =   0;          //End=1，程序下载完成，End=0，未完
+        
+        idx = DtuCom->Rd.dtu.iap.idx;   //序号
+        
+        /**************************************************************
+        * Description  : 程序传输，根据idx协调发送同步。
+        接收的idx和想接收的idx相同，接收正确。
+        * Author       : 2018/5/28 星期一, by redmorningcn
+        */
+        if(idx == sLocalIap.Idx)        //
+        {
+            
+        }
+        
+        
+                
+        break;
+    case IAP_END:
+        
+        break;
+    default:
+        break;
+    }
+    
+}
+
+//typedef  void (*pFunction)(void);			                //定义一个函数类型的参数.
+//
+///*******************************************************************************
+// * LOCOAL VARIABLES
+// */ 
+//stcIAPPara  IapInfo;
+//stcIAPCtrl  IapData;      //升级参数
+///***********************************************
+//* 描述：定义函数指针
+//*/
+//pFunction   pApp;
+//
+//u32 USER_PROGRAM_ADDR    = USER_BACK_START_ADDR;
+//u32 USER_PROGRAM_SIZE    = USER_BACK_PRO_SIZE;
+//
+///*******************************************************************************
+// * LOCOAL FUNCTIONS
+// */
+// 
+///*******************************************************************************
+// * GLOBAL VARIABLES
+// */
+//u16	IAP_DATA_LEN        = 128;
+//
+///*******************************************************************************
+// * GLOBAL FUNCTIONS
+// */
+//
+///*******************************************************************************
+// * EXTERN VARIABLES
+// */
+// 
+///*******************************************************************************
+// * EXTERN FUNCTIONS
+// */
+//
+///*******************************************************************************
+//* 名    称： IAP_ReadDeviceInfo
+//* 功    能： 读芯片信息
+//* 入口参数： 无
+//* 出口参数： 无
+//* 作　　者： redmorningcn.
+//* 创建日期： 2017-08-08
+//* 修    改：
+//* 修改日期：
+//*******************************************************************************/
+//void IAP_ReadDeviceInfo(void)
+//{
+//    IAP_STATUS_CODE status;    
+//    uint8_t ver_major, ver_minor; 
+//    uint32_t result[4];
+//    
+//    CPU_SR_ALLOC();
+//    zyIrqDisable();										//关中断
+//    
+//    status  = ReadPartID(result);                        //读芯片ID
+//    status  = ReadBootCodeVer(&ver_major, &ver_minor);   //读启动代码版本
+//    status  = ReadDeviceSerialNum(result);               //读设备ID号    
+//    status  = status;
+//    zyIrqEnable();                                      //写flash完成时，开全局中断
+//}
+//
+///*******************************************************************************
+//* 名    称： IAP_WriteParaFlash
+//* 功    能： 将IAP参数数据写入Flash区
+//* 入口参数： stcIAPCtrl
+//* 出口参数： 无
+//* 作　　者： redmorningcn.
+//* 创建日期： 2017-08-08
+//* 修    改：
+//* 修改日期：
+//*******************************************************************************/
+//void IAP_WriteParaFlash(stcIAPPara *sIAPPara)
+//{
+//    IAP_STATUS_CODE status;
+//    uint32_t result[4];
+//    
+//    uint32_t flash_prog_area_sec_start;
+//    uint32_t flash_prog_area_sec_end;
+//    
+//    CPU_SR_ALLOC();
+//    //关中断
+//    zyIrqDisable();	
+//    
+//    flash_prog_area_sec_start   = 	GetSecNum(IAP_PARA_START_ADDR);
+//    //准备擦除
+//    flash_prog_area_sec_end 	=  	GetSecNum(IAP_PARA_START_ADDR + IAP_PARA_PRO_SIZE); 
+//    //一次所写区间
+//    status = EraseSector(flash_prog_area_sec_start, flash_prog_area_sec_end); 
+//    status = BlankCheckSector(flash_prog_area_sec_start, flash_prog_area_sec_end,
+//                              &result[0], &result[1]);
+//    
+//    //开始flash编写,写入整块数据
+//    status 	= CopyRAM2Flash( (uint8_t *)IAP_PARA_START_ADDR,
+//                            (uint8 *)sIAPPara,
+//                            (IAP_WRITE_SIZE)256);
+//    //比较数据
+//    status =  Compare((uint8_t *)IAP_PARA_START_ADDR,
+//                      (uint8 *)sIAPPara,
+//                      sizeof(stcIAPPara)
+//                          ); 
+//    status = status;
+//    //写flash完成时，开全局中断
+//    zyIrqEnable();
+//}
+//
+///*******************************************************************************
+//* 名    称： IAP_WriteParaFlash
+//* 功    能： 将IAP参数数据写入Flash区
+//* 入口参数： stcIAPCtrl
+//* 出口参数： 无
+//* 作　　者： redmorningcn.
+//* 创建日期： 2017-08-08
+//* 修    改：
+//* 修改日期：
+//*******************************************************************************/
+//void IAP_ReadParaFlash(stcIAPPara *sIAPPara)
+//{    
+//    CPU_SR_ALLOC();
+//    //关中断
+//    zyIrqDisable();
+//    //数据copy
+//    memcpy((uint8 *)sIAPPara,(uint8 *)IAP_PARA_START_ADDR,sizeof(stcIAPPara));
+//    //开全局中断
+//    zyIrqEnable(); 
+//}
+//
+///*******************************************************************************
+//* 名    称： IAP_WriteFlash
+//* 功    能： 将数据写入Flash区
+//* 入口参数： stcIAPCtrl
+//* 出口参数： 无
+//* 作　　者： redmorningcn.
+//* 创建日期： 2017-08-08
+//* 修    改：
+//* 修改日期：
+//*******************************************************************************/
+//void IAP_WriteFlash(stcIAPCtrl * sIAPCtrl)
+//{
+//    IAP_STATUS_CODE status;
+//    uint32_t result[4];
+//    
+//    uint32_t flash_prog_area_sec_start;
+//    uint32_t flash_prog_area_sec_end;
+//    
+//    CPU_SR_ALLOC();
+//    //关中断
+//    zyIrqDisable();	
+//    
+//    //如果从程序下载地址开始，则先插除所有IAP地址数据。
+//    if(sIAPCtrl->Addr == USER_PROGRAM_ADDR) {
+//        flash_prog_area_sec_start   = 	GetSecNum(USER_PROGRAM_ADDR);
+//        //准备擦除
+//        flash_prog_area_sec_end 	=  	GetSecNum(USER_PROGRAM_ADDR + USER_PROGRAM_SIZE);
+//        //一次性擦除所有
+//        status = EraseSector(flash_prog_area_sec_start, flash_prog_area_sec_end); 
+//        
+//        status = BlankCheckSector(flash_prog_area_sec_start, flash_prog_area_sec_end,
+//                                  &result[0], &result[1]);
+//    }
+//    
+//    //开始flash编写
+//    //拷贝数据
+//    status 	= CopyRAM2Flash((uint8 *)sIAPCtrl->Addr,
+//                            (uint8 *)sIAPCtrl->Buf,
+//                            IAP_WRITE_1024); 
+//    //比较数据
+//    status =  Compare((uint8 *) sIAPCtrl->Addr,
+//                      (uint8 *) sIAPCtrl->Buf,
+//                      IAP_WRITE_1024); 
+//    
+//    status  = status;
+//    //写flash完成时，开全局中断
+//    zyIrqEnable();
+//}
+//
+///*******************************************************************************
+// * 名    称： Boot
+// * 功    能： 
+// * 入口参数： 无
+// * 出口参数： 无
+// * 作    者： 无名沈
+// * 创建日期： 2017/12/24
+// * 修    改： 
+// * 修改日期： 
+// * 备    注： 
+// *******************************************************************************/
+//void Boot( void )
+//{
+//    u32     JumpAddress = 0;
+//    
+//    /***********************************************
+//    * 描述： 检查堆栈是否合法
+//    */
+//    if (((*(volatile uint32_t*)USER_APP_START_ADDR) & 0x1FFE0000 ) == 0x10000000) {	
+//        CPU_SR_ALLOC();
+//        CPU_CRITICAL_ENTER();
+//        
+//        JumpAddress   =*(volatile u32*) (USER_APP_START_ADDR + 4); // 地址+4为PC地址
+//        pApp          = (pFunction)JumpAddress;                     // 函数指针指向APP
+//        __set_MSP       (*(volatile u32*) USER_APP_START_ADDR);    // 初始化主堆栈指针（MSP）
+//        __set_PSP       (*(volatile u32*) USER_APP_START_ADDR);    // 初始化进程堆栈指针（PSP）
+//        __set_CONTROL   (0);                                        // 清零CONTROL
+//        
+//        pApp();                                                     //跳转运行
+//
+//        CPU_CRITICAL_EXIT();
+//    }
+//}
+//
+///*******************************************************************************
+// * 名    称： Restart
+// * 功    能： 
+// * 入口参数： 无
+// * 出口参数： 无
+// * 作    者： 无名沈
+// * 创建日期： 2017/12/24
+// * 修    改： 
+// * 修改日期： 
+// * 备    注： 
+// *******************************************************************************/
+//void Restart(void)
+//{
+//    u32     JumpAddress = 0;
+//    u8      cpu_sr;
+//    
+//    CPU_CRITICAL_ENTER();
+//    
+//    JumpAddress   =*(volatile u32*) (0 + 4);    // 地址+4为PC地址
+//    pApp          = (pFunction)JumpAddress;      // 函数指针指向APP
+//    __set_MSP       (*(volatile u32*) 0);       // 初始化主堆栈指针（MSP）
+//    __set_PSP       (*(volatile u32*) 0);       // 初始化进程堆栈指针（PSP）
+//    __set_CONTROL   (0);                         // 清零CONTROL
+//    
+//    pApp();                                      //跳转运行
+//   
+//    CPU_CRITICAL_EXIT();
+//}
+//
+///*******************************************************************************
+//* 名    称： IAP_CopyAppToFlash
+//* 功    能： 
+//* 入口参数： 无
+//* 出口参数： 无
+//* 作    者： 无名沈
+//* 创建日期： 2017/12/24
+//* 修    改： 
+//* 修改日期： 
+//* 备    注： 
+//*******************************************************************************/
+//void IAP_CopyAppToFlash(stcIAPPara *sIAPPara)
+//{
+//    IAP_STATUS_CODE status;
+//    uint32_t result[4];
+//    //读取flash数据
+//    u16 size     = 0;
+//    uint8_t     *buf  = IapData.Buf;
+//    
+//    uint32_t flash_prog_area_sec_start;
+//    uint32_t flash_prog_area_sec_end;
+//    CPU_SR_ALLOC();
+//    zyIrqDisable();
+//    
+//    //插除将要写的区域
+//    flash_prog_area_sec_start   = 	GetSecNum(USER_BOOT_START_ADDR);
+//    flash_prog_area_sec_end 	=  	GetSecNum(USER_BOOT_START_ADDR + USER_BOOT_PRO_SIZE);
+//    
+//    status = EraseSector(flash_prog_area_sec_start, flash_prog_area_sec_end);
+//    
+//    status = BlankCheckSector(flash_prog_area_sec_start, flash_prog_area_sec_end,
+//                              &result[0], &result[1]);
+//    status = status;
+//    size    = 0;
+//    //地址越界或已到数据区长度，退出
+//    for (  size = 0; size < sIAPPara->Size; size += IAP_WRITE_1024 ) {        
+//    
+//        memcpy(buf,(uint8_t *)(USER_BACK_START_ADDR + size),IAP_WRITE_1024);   //取backup区间数据
+//        
+//        status 	= CopyRAM2Flash((uint8_t *)(USER_BOOT_START_ADDR + size),       //将backup区数据写入app区   
+//                                buf,
+//                                (IAP_WRITE_SIZE)IAP_WRITE_1024);
+//                                                          
+//        
+//        status =  Compare((uint8_t *)(USER_BOOT_START_ADDR + size),             //比较写入内容     
+//                          buf,
+//                          IAP_WRITE_1024 ); 
+//    }   
+//    
+//    zyIrqEnable();                                  //?flash???,?????   0731-22689503   6246  7405
+//}
+//
+///*******************************************************************************
+//* 名    称： IAP_PragramDeal
+//* 功    能： 对传入数据处理
+//* 入口参数： 数据区，数据长度
+//* 出口参数： 指令成功，返回0；（发在指令后一位返回）
+//*            否则，返回错误值
+//*            1，发送帧序号不连续
+//*            2，指令不识别
+//*            3，程序大小不符
+//* 作　　者： redmorningcn.
+//* 创建日期： 2017-08-08
+//* 修    改：
+//* 修改日期：
+//*******************************************************************************/
+//int8 IAP_PragramDeal(uint8 *databuf,uint8 datalen)
+//{
+//    u16              IapStep;                     //升级命令字
+//    u16              iapIdx;                     //升级序号
+//    static  u16     bufsize      = 0;
+//    u8               status;
+//    //数据异常，退出
+//    if(datalen < 2 || datalen > 254) 
+//        return  0;
+//    
+//    //取升级命令字
+//    memcpy((char *)&IapStep, databuf, sizeof(IapStep));
+//    status      = databuf[1];
+//    //返回状态标示，默认正常
+//    databuf[1]  = 0; 
+//    //地8位指令区
+//    switch(IapStep & 0xff) {
+//    /***********************************************
+//    * 描述： 2017/12/19,无名沈：开始升级指令（考虑断续传）
+//    */
+//    case IAP_START_CODE:  {
+//        stcIAPPara          IapServer;
+//        //读取上次保存的升级信息
+//        IAP_ReadParaFlash(&IapInfo);
+//        //计算校验值
+//        u16 crc                 = GetCrc16Chk((uint8 *)&IapInfo,sizeof(IapInfo)-8);
+//        //读取服务器传下来的下载信息，包含硬件版本，软件版本，程序大小，当前地址，当前帧号
+//        memcpy(&IapServer,&databuf[sizeof(IapStep)],2+2+4+4+2);
+//        
+//        IapServer.Crc32 = BUILD_INT32U(databuf[16],databuf[17],databuf[18],databuf[19]);
+//        if ( ( IapServer.Crc32 == 0 ) || ( IapServer.Crc32 == 0XFFFFFFFF ) ) {
+//            IapServer.Crc32 = 0xAA5555AA;
+//        }
+//        IapServer.IdxNbr  = IapServer.Size / IAP_DATA_LEN + ((IapServer.Size % IAP_DATA_LEN) == 0 ? 0 : 1 );
+//        
+//        /***********************************************
+//        * 描述： 2018/2/2,无名沈： 当程序大小小于45KB时认为是BOOT程序，则将程序升写入BOOT区
+//        *        如果大于45KB则写入缓冲区
+//        */
+//        USER_PROGRAM_ADDR    = USER_BACK_START_ADDR;
+//        USER_PROGRAM_SIZE    = USER_BACK_PRO_SIZE; 
+//        /***********************************************
+//        * 描述： 2018/1/30,无名沈： 
+//        *        如果上次保存的序号=0xffffffff或者=0，则重新开始下载
+//        *        如果读出校验不正确，则重新下载
+//        *        如果读出程序大小与服务器发送程序大小不一致则重新下载
+//        *        status=1：表示重新开始，=2表示续传,
+//        */
+//        if ( ( status == 1 )                           ||      // 重新下载
+//             ( IapInfo.Idx     == 0xffffffff )         ||      // 存储序号为-1
+//             ( IapInfo.Idx     == 0 )                  ||      // 存储序号为零
+//             ( IapServer.Idx   == 0 )                  ||      // 存储序号为零
+//             ( IapInfo.Chk     != crc)                 ||      // 校验码不正确
+//             ( IapInfo.Idx     >= IapServer.IdxNbr )   ||
+//             ( IapServer.IdxNbr!= IapInfo.IdxNbr )     ||
+//             ( IapServer.Size  != IapInfo.Size )       ||
+//             ( IapServer.Crc32 != IapInfo.Crc32 ) ) {   // 存储程序大小与下发大小不一致
+//            IapInfo.Addr        = USER_PROGRAM_ADDR;
+//            IapInfo.Idx         = 0;
+//            IapInfo.IdxNbr      = IapServer.IdxNbr;
+//            IapInfo.HwVer       = Ctrl.sProductInfo.HwVer;
+//            IapInfo.SwVer       = Ctrl.sProductInfo.SwVer;
+//            IapInfo.Size        = IapServer.Size;
+//            IapInfo.Crc32       = IapServer.Crc32;
+//            //开始发送时，初始化地址
+//            IapData.Addr        = IapInfo.Addr;
+//        /***********************************************
+//        * 描述： 2018/1/30,无名沈： 接着上次读出来的断点续传
+//        */
+//        } else {
+//            IapInfo.HwVer       = Ctrl.sProductInfo.HwVer;
+//            IapInfo.SwVer       = Ctrl.sProductInfo.SwVer; 
+//            //IapInfo.Addr        = USER_PROGRAM_ADDR + IapInfo.Idx * 128;
+//            IapData.Addr        = IapInfo.Addr;
+//        }
+//        //将升级信息返回给服务器，如硬件版本，软件版本，程序大小，当前地址，当前帧号
+//        memcpy(&databuf[sizeof(IapStep)],&IapInfo,2+2+4+4+2); 
+//        //升级有效指令变为0，需要全部下载完成，才能改写成功1  
+//        IapInfo.Cmd             = 0; 
+//        //重新计算检验值
+//        IapInfo.Chk             = GetCrc16Chk((uint8 *)&IapInfo,sizeof(IapInfo)-8);
+//        //保存当前升级信息
+//        IAP_WriteParaFlash(&IapInfo); 
+//    } break;
+//    /***********************************************
+//    * 描述： 2017/12/19,无名沈：传输数据包
+//    */
+//    case IAP_DATA_CODE: 
+//        //计算数据长度
+//        datalen -= 4;
+//        //取帧序号
+//        memcpy((char *)&iapIdx, &databuf[sizeof(IapStep)], sizeof(iapIdx)); 
+//        //相同帧号（重发数据）
+//        
+//        /***********************************************
+//        * 描述： 2018/2/3,无名沈： 即不是续传帧，又不是下一帧，则返回错误和当前帧号
+//        */
+//        if( iapIdx == IapInfo.Idx ) { 
+//            /***********************************************
+//            * 描述： 2018/3/13,无名沈： 计算当前1KB帧号
+//            */
+//            u8      idx     = iapIdx % SEC_DIV_TIMENS;
+//            /***********************************************
+//            * 描述： 2018/3/13,无名沈： 计算当前1KB内数据长度
+//            */
+//            if ( datalen == IAP_DATA_LEN ) {
+//                bufsize = IAP_DATA_LEN * ( 1 + idx );
+//            } else {
+//                bufsize = IAP_DATA_LEN * ( 0 + idx ) + datalen; 
+//            }
+//            /***********************************************
+//            * 描述： 2018/3/13,无名沈： 计算当前接收数据长度
+//            */
+//            u32     size    = IapInfo.Addr + bufsize - USER_PROGRAM_ADDR;
+//            // 超出程序大小
+//            if ( size > IapInfo.Size ) {
+//                //返回状态
+//                databuf[1]          = 3;
+//                return 3;                
+//            }
+//            //读取数据
+//            memcpy(&IapData.Buf[(iapIdx % SEC_DIV_TIMENS) * IAP_DATA_LEN],
+//                   //数据区是从第4字节开始
+//                   &databuf[2 + 2],
+//                   //拷贝数据到升级缓冲区
+//                   datalen);
+//            /***********************************************
+//            * 描述： 2018/2/3,无名沈： 写FLASH操作
+//            */
+//                  //8的整数倍时需要写FLASH
+//            if ( ( idx     == (SEC_DIV_TIMENS - 1) ) ||
+//                  //最后一帧需要写FLASH
+//                  ( datalen != IAP_DATA_LEN ) || 
+//                  //程序大小与已下载的相等时写FLASH
+//                  ( size == IapInfo.Size ) ) {
+//                //如果是最后一帧，填充没有数据的缓冲区
+//                //如果升级结束，将1024字节剩余空间写0xff
+//                for( u32 i = bufsize; i < IAP_WRITE_1024; i++ ) {
+//                    IapData.Buf[i] = 0xff;
+//                }
+//                //程序地址超出范围
+//                if( ( IapData.Addr < USER_PROGRAM_ADDR ) ||
+//                    ( IapData.Addr > ( USER_PROGRAM_ADDR + USER_PROGRAM_SIZE - IAP_WRITE_1024 ) ) ) {
+//                    IapData.Addr        = USER_PROGRAM_ADDR;
+//                    IapInfo.Addr        = USER_PROGRAM_ADDR;
+//                    //返回状态
+//                    databuf[1]          = 4;
+//                    return 4;
+//                }
+//                //如果不是续传帧，或者是最后一帧
+//                if ( (iapIdx != 0) || ( size == IapInfo.Size ) ) {
+//                    //写数据(地址，gsIAPCtrl.addr依次写入)
+//                    IAP_WriteFlash(&IapData);
+//                    //数据地址累加
+//                    IapData.Addr       += bufsize;
+//                    //未完成，存序号
+//                    IapInfo.Cmd         = 0;
+//                    //已写地址
+//                    IapInfo.Addr        = IapData.Addr; 
+//                    //当前序号
+//                    IapInfo.Idx         = iapIdx + 1; 
+//                    //校验
+//                    IapInfo.Chk         = GetCrc16Chk((uint8 *)&IapInfo,sizeof(IapInfo)-8);
+//                    //保存当前文件信息
+//                    IAP_WriteParaFlash(&IapInfo);
+//                    //重复数据清空（满足写条件的，不论是否已写，都清空缓冲）
+//                    bufsize             = 0;
+//                }
+//                //如果当前地址小于升级地址
+//            } else if ( idx < (SEC_DIV_TIMENS - 1) ) {
+//                if(  IapInfo.Size != size ) {
+//                }
+//            //中间帧，不处理
+//            } else {
+//                
+//            }
+//            
+//            //当前序号
+//            IapInfo.Idx     = iapIdx + 1;
+//        /***********************************************
+//        * 描述： 2018/2/5,无名沈：上一帧数据，直接确认 
+//        */
+//        } else if ( iapIdx == IapInfo.Idx - 1 ){ 
+//            
+//        /***********************************************
+//        * 描述： 2018/2/5,无名沈：序号对不上，返回当前序号 
+//        */
+//        } else {
+//            //返回升级状态
+//            databuf[1]      = 1;
+//            //返回当前帧号
+//            databuf[2]      = LO_INT16U(IapInfo.Idx);
+//            databuf[3]      = HI_INT16U(IapInfo.Idx);
+//            
+//            return 1; 
+//        }
+//        
+//        break;
+//    /***********************************************
+//    * 描述： 2017/12/19,无名沈：结束升级指令
+//    */ 
+//    case IAP_END_CODE: {
+//        extern void     App_DispDelay( osalTime dly);
+//        extern void     BSP_DispClrAll(void);
+//        stcIAPPara          IapServer;        
+//        //读取服务器传下来的下载信息，包含硬件版本，软件版本，程序大小，当前地址，当前帧号
+//        memcpy(&IapServer,&databuf[sizeof(IapStep)],2+2+4+4+2);
+//        IapServer.Crc32 = BUILD_INT32U(databuf[16],databuf[17],databuf[18],databuf[19]);
+//        
+//        //将显示任务显示暂停2秒钟
+//        App_DispDelay(2000); 
+//        
+//        //程序大小不符，软件退出。
+//        if( IapServer.Size != IapInfo.Size ) {
+//            //返回状态
+//            databuf[1]      = 5;
+//            uprintf("iap err.5");
+//            return 5;
+//        }
+//        
+//        u64     crc32   = 0x00000000FFFFFFFFL;
+//        u32     size    = 0;
+//        u16     len     = 0;
+//        u8      *buf    = IapData.Buf;
+//        /***********************************************
+//        * 描述： 2018/2/7,无名沈： 下载结束后对程序进行完整性校验
+//        */
+//        for (  size = 0; size < IapInfo.Size; size += len ) {
+//            //取backup区间数据
+//            memcpy((uint8_t *)buf, (uint8_t *)(USER_PROGRAM_ADDR + size), IAP_WRITE_1024); 
+//            //获取需要校验的数据长度
+//            if ( IapInfo.Size - size > IAP_WRITE_1024 )
+//                len = IAP_WRITE_1024;
+//            else
+//                len = IapInfo.Size - size;
+//            //循环校验CRC32
+//            crc32   = GetCrc32Chk( crc32, buf, len); 
+//        }
+//        
+//        crc32   = crc32 ^ 0x00000000FFFFFFFFL;
+//        crc32  &= 0x00000000FFFFFFFFL;
+//        
+//        /***********************************************
+//        * 描述： 2018/2/7,无名沈： 校验通过或者发下来的校验码为0
+//        */
+//        if ( ( crc32 == IapServer.Crc32 ) || ( IapInfo.Crc32 == 0xAA5555AA ) ) {
+//            //将升级状态清除
+//            IapInfo.Idx         = 0;
+//            IapInfo.Crc32       = 0;
+//            IapInfo.Addr        = USER_PROGRAM_ADDR;
+//            //如果是BOOT程序，将程序复制到BOOT区
+//            if ( IapInfo.Size < 45*1024 ) {
+//                //将backup区数据写入app区   
+//                IAP_CopyAppToFlash(&IapInfo);
+//                //将升级状态清除
+//                IapInfo.Cmd     = 0;
+//                
+//                uprintf("  boot ok");
+//            //如果是应用程序，改升级标志为成功，重启后进行程序升级
+//            } else {
+//                //如果程序大小相符，认为下载正确。修改下载成功标示
+//                IapInfo.Cmd     = 1;
+//                // 写升级成功标志
+//                if ( Ctrl.sRunPara.InitFlag.Flag.TestIapFlag ) {
+//                    //升级测试成功
+//                    Ctrl.sRunPara.InitFlag.Flag.TestIapFlag = 0;
+//                    //保存运行参数
+//                    FRAM_StoreRunPara((stcRunPara *) &Ctrl.sRunPara);
+//                }
+//                
+//                uprintf("  app ok");
+//            }
+//        } else {            
+//            databuf[1]      = 6;
+//            uprintf("iap err.6");
+//            return 6;
+//        }
+//        //重新计算校验值
+//        IapInfo.Chk       = GetCrc16Chk((uint8 *)&IapInfo,sizeof(IapInfo)-8);
+//        //保存升级信息
+//        IAP_WriteParaFlash(&IapInfo);
+//    } break;
+//    /***********************************************
+//    * 描述： 2017/12/19,无名沈：终止升级指令
+//    */
+//    case IAP_ABORT_CODE: 
+//        IapInfo.Addr        = USER_PROGRAM_ADDR;
+//        IapInfo.Idx         = 0;
+//        IapInfo.Cmd         = 0;
+//        IapInfo.HwVer       = Ctrl.sProductInfo.HwVer;
+//        IapInfo.SwVer       = Ctrl.sProductInfo.SwVer;
+//        IapInfo.Size        = 0;
+//        IapInfo.Chk         = GetCrc16Chk((uint8 *)&IapInfo,sizeof(IapInfo)-8);
+//        IAP_WriteParaFlash(&IapInfo);
+//        
+//        IapData.Addr        = USER_PROGRAM_ADDR;
+//        break; 
+//    /***********************************************
+//    * 描述： 2017/12/19,无名沈：其他指令，直接返回
+//    */ 
+//    default:
+//        databuf[1] = 2;
+//        uprintf("iap err.2");
+//        return 2;
+//    }
+//    //返回成功
+//    databuf[1] = 0;
+//    return 0;
+//}
+//
+///*******************************************************************************
+// * 名    称： IAP_Init
+// * 功    能： IAP初始化
+// * 入口参数： 无
+// * 出口参数： 无
+// * 作    者： 无名沈
+// * 创建日期： 2018/4/12
+// * 修    改： 
+// * 修改日期： 
+// * 备    注： 
+// *******************************************************************************/
+//void App_IAP_Init(void)
+//{
+//    IAP_ReadParaFlash(&IapInfo);
+//    
+//    u16 crc                 = GetCrc16Chk((uint8 *)&IapInfo,sizeof(IapInfo)-8);
+//    
+//    if ( (IapInfo.Idx == 0xffffffff ) || (IapInfo.Chk != crc) ) {
+//        IapInfo.Addr      = USER_PROGRAM_ADDR;
+//        IapInfo.Idx       = 0;
+//        IapInfo.Cmd       = 0;
+//        IapInfo.Size      = 0;
+//        IapInfo.HwVer     = Ctrl.sProductInfo.HwVer;
+//        IapInfo.SwVer     = Ctrl.sProductInfo.SwVer;
+//        IapInfo.Chk       = GetCrc16Chk((uint8 *)&IapInfo,sizeof(IapInfo)-8);
+//        IAP_WriteParaFlash(&IapInfo);
+//    } else {
+//        IapInfo.HwVer     = Ctrl.sProductInfo.HwVer;
+//        IapInfo.SwVer     = Ctrl.sProductInfo.SwVer; 
+//        crc               = GetCrc16Chk((uint8 *)&IapInfo,sizeof(IapInfo)-8);
+//        if ( IapInfo.Chk != crc ) {
+//            IapInfo.Chk = crc;
+//            IAP_WriteParaFlash(&IapInfo); 
+//        }
+//    }
+//    
+//    if ( (IapInfo.Addr < USER_PROGRAM_ADDR) || (IapInfo.Addr == 0xffffffff) ) {
+//        IapInfo.Addr      = USER_PROGRAM_ADDR;
+//    }
+//    IapData.Addr          = IapInfo.Addr;
+//}
+//
+///*******************************************************************************
+// * 名    称： IAP_ResetCmd
+// * 功    能： 
+// * 入口参数： 无
+// * 出口参数： 无
+// * 作    者： 无名沈
+// * 创建日期： 2018/4/12
+// * 修    改： 
+// * 修改日期： 
+// * 备    注： 
+// *******************************************************************************/
+//void IAP_ResetCmd(void)
+//{    
+//    IapInfo.Cmd       = 0;
+//    IapInfo.Chk       = GetCrc16Chk((uint8 *)&IapInfo,sizeof(IapInfo)-8);
+//    IAP_WriteParaFlash(&IapInfo);
+//}
+//
+///*******************************************************************************
+// * 名    称： IAP_GetCmd
+// * 功    能： 
+// * 入口参数： 无
+// * 出口参数： 无
+// * 作    者： 无名沈
+// * 创建日期： 2018/4/12
+// * 修    改： 
+// * 修改日期： 
+// * 备    注： 
+// *******************************************************************************/
+//u8 IAP_GetCmd(void)
+//{
+//    return IapInfo.Cmd;
+//}
+/*******************************************************************************
+ * 				end of file                                                    *
+ *******************************************************************************/

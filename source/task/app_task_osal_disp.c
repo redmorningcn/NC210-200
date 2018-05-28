@@ -251,6 +251,7 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
     
     return 0;
 }
+
 /*******************************************************************************
  * 名    称： App_DispDelay
  * 功    能： 将显示任务挂起一段时间，用来显示其他内容
@@ -265,8 +266,8 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
 void App_DispDelay( osalTime dly)
 {    
     osal_start_timerEx( OS_TASK_ID_DISP,
-                       OS_EVT_DISP_TICKS,
-                       dly);
+                        OS_EVT_DISP_TICKS,
+                        dly);
 }
 
 /*******************************************************************************
@@ -293,7 +294,7 @@ void TaskInitDisp(void)
     * 描述： 2018/1/30,无名沈：增加亮度调节默认参数
     */
     if ( Ctrl.sRunPara.SysSts.DispLevel == 0 )
-        Ctrl.sRunPara.SysSts.DispLevel = 10;
+         Ctrl.sRunPara.SysSts.DispLevel = 10;
     /***********************************************
     * 描述： 2017/12/3,无名沈：设置显示亮度
     */
