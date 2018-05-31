@@ -115,7 +115,7 @@ void App_ModbusInit(void)
     boud        = 57600;
     
     pch         = MB_CfgCh( MTR_NODE,                   // ... Modbus Node # for this slave channel
-                            MODBUS_SLAVE,               // ... This is a MASTER
+                            MODBUS_MASTER,               // ... This is a MASTER
                             200,                        // ... 0 when a slave
                             MODBUS_MODE_RTU,            // ... Modbus Mode (_ASCII or _RTU)
                             comnum,                     // ... Specify UART #1

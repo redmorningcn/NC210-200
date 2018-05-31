@@ -117,6 +117,7 @@ typedef union {
     union{
         strDtuRecData   dtu;    //dtu参数设置的数据
         strSpeed        speed;  //速度检测板数据结构
+        strlocoVol      loco;   //工况信号
     };
     u16             Buf16[COMM_RECV_DATA_MAX_LEN/2];		            //	
     u8              Buf[COMM_RECV_DATA_MAX_LEN];		            //	

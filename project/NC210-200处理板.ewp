@@ -312,6 +312,11 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$</state>
           <state>$PROJ_DIR$\..\source\config</state>
+          <state>$PROJ_DIR$\..\source\task</state>
+          <state>$PROJ_DIR$\..\source\user</state>
+          <state>$PROJ_DIR$\..\source\Software\OSAL\OS</state>
+          <state>$PROJ_DIR$\..\source\Software\OSAL\Ports</state>
+          <state>$PROJ_DIR$\..\source\driver</state>
           <state>$PROJ_DIR$\..\source\Software\uC-LIB</state>
           <state>$PROJ_DIR$\..\source\Software\uC-CPU</state>
           <state>$PROJ_DIR$\..\source\Software\uC-CPU\ARM-Cortex-M3\IAR</state>
@@ -325,11 +330,6 @@
           <state>$PROJ_DIR$\..\source\Software\uC-MB\OS\uCOS-III</state>
           <state>$PROJ_DIR$\..\source\Software\uC-MB\Ports\STM32\STM32F103\IAR</state>
           <state>$PROJ_DIR$\..\source\Software\uC-MB\Source</state>
-          <state>$PROJ_DIR$\..\source\task</state>
-          <state>$PROJ_DIR$\..\source\user</state>
-          <state>$PROJ_DIR$\..\source\Software\OSAL\OS</state>
-          <state>$PROJ_DIR$\..\source\Software\OSAL\Ports</state>
-          <state>$PROJ_DIR$\..\source\driver</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>

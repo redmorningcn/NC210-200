@@ -10,6 +10,7 @@
 #include    <app_com_type.h>
 #include    <app_dtu_rec.h>
 #include    <ds3231.h>
+#include    <string.h>
 
 typedef  void (*pFunction)(void);			    //定义一个函数类型的参数.
 pFunction   pApp;
@@ -60,6 +61,8 @@ void    app_operate_para(void)
     u32 recordnum;
     u16 data;
     u16 err;
+    u16 addr;
+    u8  len;
 
     code = DtuCom->Rd.dtu.code;
     
@@ -69,6 +72,7 @@ void    app_operate_para(void)
         BSP_RTC_WriteTime(DtuCom->Rd.dtu.time);
         DtuCom->Rd.dtu.reply.ack = 1;   //表示设置成功
         break;
+        
     case    CMD_LOCO_SET:               //设置机车号
         Ctrl.sProductInfo.LocoId.Nbr = DtuCom->Rd.dtu.loco.Nbr;
         Ctrl.sProductInfo.LocoId.Type= DtuCom->Rd.dtu.loco.Type;
@@ -78,6 +82,7 @@ void    app_operate_para(void)
         
         DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
         break;
+        
     case    CMD_REC_CLR:                //数据清零
         Ctrl.sRecNumMgr.Current = 0;
         Ctrl.sRecNumMgr.GrsRead = 0;
@@ -90,6 +95,7 @@ void    app_operate_para(void)
         DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
 
         break;
+        
     case    CMD_SYS_RST:                                    //系统重启
         //重启
         Ctrl.sRunPara.SysSts.SysReset = 1;                  //重启标识置位，准备重启
@@ -98,11 +104,12 @@ void    app_operate_para(void)
 
         //IAP_JumpTo(0);
         break;
+        
     case    CMD_PARA_SET:                                   //参数设置 
         
-            for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen)/2;i++ ){
+            for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen);i++ ){
 
-                MB_HoldingRegWr (  (DtuCom->Rd.dtu.paraaddr/2)+i,
+                MB_HoldingRegWr (  (DtuCom->Rd.dtu.paraaddr)+i,
                                     DtuCom->Rd.dtu.parabuf[i],
                                     &err);   
                 
@@ -114,11 +121,12 @@ void    app_operate_para(void)
             DtuCom->Rd.dtu.reply.ack = 1;                   //表示设置成功
 
             break;
+            
     case    CMD_PARA_GET:                                   //参数设置 
         //调用参数设置函数
-        for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen)/2;i++ ){
+        for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen);i++ ){
             
-            data = MB_HoldingRegRd((DtuCom->Rd.dtu.paraaddr/2)+i,&err);
+            data = MB_HoldingRegRd((DtuCom->Rd.dtu.paraaddr)+i,&err);
             if(err != MODBUS_ERR_NONE){
                 //DtuCom->Rd.dtu.reply.ack = 0;             //表示设置失败
                 DtuCom->Rd.dtu.paralen = 0;
@@ -129,6 +137,7 @@ void    app_operate_para(void)
         }
         
         break;
+        
     case    CMD_RECORD_GET:                                 //数据记录读取（读指定记录号的数据）
         recordnum = DtuCom->Rd.dtu.recordnum;
         //取数据记录号。
@@ -141,11 +150,44 @@ void    app_operate_para(void)
         app_ReadOneRecord((stcFlshRec *)&DtuCom->Rd,recordnum); //读取数据记录，（Set应答信息从Rd发送）    
         
         break;
-    case    CMD_DETECT_SET:             //写检测板数据记录
         
+    case    CMD_DETECT_SET:                                     //写检测板数据记录
+        MtrCom->ConnCtrl.MB_Node = (u8)DtuCom->Rd.dtu.paralen;  //低字节为node号
+        len     = (u8)DtuCom->Rd.dtu.paralen >> 8;              //高字节为len
+        
+        if(len == 0)
+            break;
+        
+        memcpy((u8 *)&MtrCom->Wr,DtuCom->Rd.dtu.parabuf,len);   //准备写入的数据
+        addr    = (u8)DtuCom->Rd.dtu.paraaddr;
+        
+        extern  void    MtrWrSpecial(u16 addr,u8  len);
+        MtrWrSpecial(addr,len);                                 //写入数据
+        
+        DtuCom->Rd.dtu.reply.ack = 0;
+        if(MtrCom->ConnCtrl.datalen == len)                     //判断写入是否正确
+            DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
+
         break;
-    case    CMD_DETECT_GET:             //读检测板数据记录
         
+    case    CMD_DETECT_GET:                                     //读检测板数据记录
+        MtrCom->ConnCtrl.MB_Node = (u8)DtuCom->Rd.dtu.paralen;  //低字节为node号
+        len     = (u8)DtuCom->Rd.dtu.paralen >> 8;              //高字节为len
+        addr    = (u8)DtuCom->Rd.dtu.paraaddr;
+        
+        if(len == 0)
+            break;
+        
+        extern  void    MtrRdSpecial(u16 addr,u8  len);
+        MtrRdSpecial(addr,len);                                 //读入数据
+        
+        if(MtrCom->RxCtrl.Len == len)                           //判断写入是否正确
+        {
+            memcpy(DtuCom->Rd.dtu.parabuf,(u8 *)&MtrCom->Rd,len);//取出数据
+        }else{
+            DtuCom->Rd.dtu.paralen = 0;                         //将数据长度置0，表示错误
+        }       
+            
         break;        
     default:
         break;

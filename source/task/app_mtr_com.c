@@ -9,6 +9,7 @@
 */
 #include    <includes.h>
 #include    <app_mtr_com.h>
+#include    <string.h>
 
 /**************************************************************
 * Description  : 通讯状态指示
@@ -39,296 +40,138 @@ void    MtrCommErrjudge(u8   node,u16    sta)
         break;
     }
 }
-
-/**************************************************************
-* Description  : 处理板读sys值。读取得值存在MtrCom->Rd中。
-* Author       : 2018/5/22 星期二, by redmorningcn
-*/
-void    MtrRdSys(void)
-{
-    u8      node = MtrCom->ConnCtrl.MB_Node;    //modbus地址
-    u32     addr;
-    u32     len;
-    u16     sta;
-    
-    switch(node)
-    {
-    /**************************************************************
-    * Description  : 工况板和速度信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 1:
-    case 2:
-    case 3:
-        addr = 0;
-        len  = sizeof(strSpeedSys);      
-        sta  = MBM_FC03_HoldingRegRd(   MtrCom->pch,
-                                        node,
-                                        addr,
-                                        (u16 *)&MtrCom->Rd,
-                                        len);
-        break; 
-        
-    /**************************************************************
-    * Description  : 处理板和工况信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 4:
-        
-        break;      
-    default:
-        break;
-    }
-    
-    MtrCommErrjudge(node,sta);              //故障判断，置runpara中的故障标识位。异常置1，正常置0    
-    
-    MtrCom->RxCtrl.Len    = sta;            //置数据长度。（长度控制在255以内）
-    MtrCom->RxCtrl.RecvFlg = 1;             //置接收完成标识。协调其他任务。
-}
-
-/**************************************************************
-* Description  : 处理板读检测值。读取得值给Ctrl.Rec。
-* Author       : 2018/5/22 星期二, by redmorningcn
-*/
-void    MtrRdDetect(void)
-{
-    u8      node = MtrCom->ConnCtrl.MB_Node;        //modbus地址
-    u32     addr;
-    u32     len;
-    u16     sta;
-    
-    switch(node)
-    {
-    /**************************************************************
-    * Description  : 工况板和速度信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 1:
-    case 2:
-    case 3:
-        len  = sizeof(strSpeed) ;   //速度检测板有效参数长度
-        addr = sizeof(strSpeedSys) + sizeof(strCoupleChannel) - len;   //有效参数存储在结构体后部
-
-        sta  = MBM_FC03_HoldingRegRd(   MtrCom->pch,
-                                        node,
-                                        addr,
-                                        (u16 *)&MtrCom->Rd,
-                                        len);
-        
-        if( sta == sizeof(strSpeed) )   //数据读取成功
-        {
-            /******************************************************
-            * Description  : 将读取值给Ctrl.Rec
-            * Author       : 2018/5/22 星期二, by redmorningcn
-            */
-            u8  i = 0;
-            u32 freq[2];
-            for(i = 0;i < 2;i++){
-                Ctrl.Rec.speed[node-1].ch[i].fail   = MtrCom->Rd.speed.para[i].fail;
-                Ctrl.Rec.speed[node-1].ch[i].hig    = MtrCom->Rd.speed.para[i].Voh;
-                Ctrl.Rec.speed[node-1].ch[i].low    = MtrCom->Rd.speed.para[i].Vol;
-                Ctrl.Rec.speed[node-1].ch[i].raise  = MtrCom->Rd.speed.para[i].raise;
-                Ctrl.Rec.speed[node-1].ch[i].ratio  = MtrCom->Rd.speed.para[i].ratio;
-                freq[i]                             = MtrCom->Rd.speed.para[i].freq;
-            }
-            Ctrl.Rec.speed[node-1].phase            = MtrCom->Rd.speed.ch1_2phase;
-            Ctrl.Rec.speed[node-1].vcc              = MtrCom->Rd.speed.vcc_vol;
-            if(freq[0] && freq[1])  //频率值有效，计算平均
-                Ctrl.Rec.speed[node-1].freq         = ((freq[0] + freq[1])/2);
-        }
-        
-        break; 
-    /**************************************************************
-    * Description  : 处理板和工况信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 4:
-        break;      
-    default:
-        break;
-    }
-    
-    MtrCommErrjudge(node,sta);              //故障判断，置runpara中的故障标识位。异常置1，正常置0    
-    
-    MtrCom->RxCtrl.Len      = sta;          //置数据长度。（长度控制在255以内）
-    MtrCom->RxCtrl.RecvFlg  = 1;            //置接收完成标识。协调其他任务。
-}
-
-
-/**************************************************************
-* Description  : 处理板写sys值。写前sys数据存在MtrCom->Wr中。
-* Author       : 2018/5/22 星期二, by redmorningcn
-*/
-void    MtrWrSys(void)
-{
-    u8      node = MtrCom->ConnCtrl.MB_Node;    //modbus地址
-    u32     addr;
-    u32     len;
-    u16     sta;
-    
-    switch(node)
-    {
-    /**************************************************************
-    * Description  : 工况板和速度信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 1:
-    case 2:
-    case 3:
-        addr = 0;
-        len  = sizeof(strSpeedSys);      
-   
-        sta  = MBM_FC16_HoldingRegWrN ( MtrCom->pch,
-                                        node,
-                                        addr,
-                                        (u16 *)&MtrCom->Wr,
-                                        len);
-        break; 
-        
-    /**************************************************************
-    * Description  : 处理板和工况信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 4:
-        
-        break;      
-    default:
-        break;
-    }
-    
-    MtrCommErrjudge(node,sta);              //故障判断，置runpara中的故障标识位。异常置1，正常置0    
-    
-    MtrCom->ConnCtrl.datalen      = sta;    //置数据长度。（长度控制在255以内）
-    MtrCom->ConnCtrl.RecvEndFlg   = 1;      //置接收完成标识。协调其他任务。
-}
                                         
 /**************************************************************
-* Description  : 处理板读Cali值。读取得值存在MtrCom->Rd中。
+* Description  : 处理板读指定地址值。读取得值存在MtrCom->Rd中。
 * Author       : 2018/5/22 星期二, by redmorningcn
 */
-void    MtrRdCali(void)
+void    MtrRdSpecial(u16 addr,u8  len)
 {
     u8      node = MtrCom->ConnCtrl.MB_Node;    //modbus地址
-    u32     addr;
-    u32     len;
     u16     sta;
     
-    switch(node)
-    {
-    /**************************************************************
-    * Description  : 工况板和速度信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 1:
-    case 2:
-    case 3:
-        addr = sizeof(strSpeedSys) + sizeof(strCoupleChannel);
-        len  = sizeof(strCaliTable); 
-        
-        sta  = MBM_FC03_HoldingRegRd(   MtrCom->pch,
-                                        node,
-                                        addr,
-                                        (u16 *)&MtrCom->Rd,
-                                        len);
-        break; 
-        
-    /**************************************************************
-    * Description  : 处理板和工况信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 4:
-        
-        break;      
-    default:
-        break;
-    }
-    
+    sta  = MBM_FC03_HoldingRegRd(   MtrCom->pch,
+                                    node,
+                                    addr,
+                                    (u16 *)&MtrCom->Rd,
+                                    len);
+
     MtrCommErrjudge(node,sta);              //故障判断，置runpara中的故障标识位。异常置1，正常置0    
     
-    MtrCom->RxCtrl.Len    = sta;            //置数据长度。（长度控制在255以内）
-    MtrCom->RxCtrl.RecvFlg = 1;             //置接收完成标识。协调其他任务。
+    MtrCom->RxCtrl.Len      = sta;            //置数据长度。（长度控制在255以内）
+    MtrCom->RxCtrl.RecvFlg  = 1;             //置接收完成标识。协调其他任务。
 }                                        
 
-
 /**************************************************************
-* Description  : 处理板写MtrWrCali值。写前MtrWrCali数据存在MtrCom->Wr中。
+* Description  : 处理板写指定位置。写前数据存在MtrCom->Wr中。
 * Author       : 2018/5/22 星期二, by redmorningcn
 */
-void    MtrWrCali(void)
+void    MtrWrSpecial(u16 addr,u8  len)
 {
     u8      node = MtrCom->ConnCtrl.MB_Node;    //modbus地址
-    u32     addr;
-    u32     len;
-    u16     sta;
+    u16     sta = 0;
     
-    switch(node)
-    {
-    /**************************************************************
-    * Description  : 工况板和速度信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 1:
-    case 2:
-    case 3:
-        addr = sizeof(strSpeedSys) + sizeof(strCoupleChannel);
-        len  = sizeof(strCaliTable);     
-   
-        sta  = MBM_FC16_HoldingRegWrN ( MtrCom->pch,
-                                        node,
-                                        addr,
-                                        (u16 *)&MtrCom->Wr,
-                                        len);
-        break; 
-        
-    /**************************************************************
-    * Description  : 处理板和工况信号检测板通讯
-    * Author       : 2018/5/22 星期二, by redmorningcn
-    */
-    case 4:
-        
-        break;      
-    default:
-        break;
-    }
+    sta  = MBM_FC16_HoldingRegWrN ( MtrCom->pch,
+                                    node,
+                                    addr,
+                                    (u16 *)&MtrCom->Wr,
+                                    len);
+
+    MtrCommErrjudge(node,sta);                  //故障判断，置runpara中的故障标识位。异常置1，正常置0    
     
-    MtrCommErrjudge(node,sta);              //故障判断，置runpara中的故障标识位。异常置1，正常置0    
-    
-    MtrCom->ConnCtrl.datalen      = sta;    //置数据长度。（长度控制在255以内）
-    MtrCom->ConnCtrl.RecvEndFlg   = 1;      //置接收完成标识。协调其他任务。
+    MtrCom->ConnCtrl.datalen      = sta;        //置数据长度。（长度控制在255以内）
+    MtrCom->ConnCtrl.RecvEndFlg   = 1;          //置接收完成标识。协调其他任务。
 }
 
 
+#define MTR_READ_FLG  2
+#define MTR_WRITE_FLG 1
 /**************************************************************
 * Description  : 处理板和检测板通讯
 * Author       : 2018/5/22 星期二, by redmorningcn
 */
 void app_mtr_com(void)
 {
+    u8      i = 0;
+    u8      node = MtrCom->ConnCtrl.MB_Node;            //modbus地址
+
     if(MtrCom->ConnCtrl.protocol == MODBUS_PROTOCOL)    //modbus协议
     {
         u8      conntype = MtrCom->ConnCtrl.ConnType;
+        u16     addr;
+        u8      len;
+        u16     freq[2];
         switch(conntype)
         {
-        case MTR_RD_SYS:
-            MtrRdSys();                     //读sys                     
-            break;
             
         case MTR_RD_DETECT:
-            MtrRdDetect();                  //读检测值
-            break;
+            /**************************************************************
+            * Description  : 读取速度信号
+            * Author       : 2018/5/31 星期四, by redmorningcn
+            */
+            if(node < 4){
+                len  = sizeof(strSpeed)/2 ;                                         //速度检测板有效参数长度
+                addr = sizeof(strSpeedSys)/2 + sizeof(strCoupleChannel)/2 - len;   //有效参数存储在结构体后部
+                
+                MtrRdSpecial(addr,len);
+                
+                if(MtrCom->RxCtrl.Len == len)
+                {   
+                    for(i = 0;i < 2;i++){
+                        Ctrl.Rec.speed[node-1].ch[i].fail   =  MtrCom->Rd.speed.para[i].fail;
+                        Ctrl.Rec.speed[node-1].ch[i].hig    =  MtrCom->Rd.speed.para[i].Voh;
+                        Ctrl.Rec.speed[node-1].ch[i].low    =  MtrCom->Rd.speed.para[i].Vol;
+                        Ctrl.Rec.speed[node-1].ch[i].raise  =  MtrCom->Rd.speed.para[i].raise;
+                        Ctrl.Rec.speed[node-1].ch[i].ratio  =  MtrCom->Rd.speed.para[i].ratio;
+                        freq[i]                             =  MtrCom->Rd.speed.para[i].freq;
+                    }
+                    
+                    if((freq[0] == 0) && ((freq[1] == 0))){           //频率偏差在5hz以内。
+                        Ctrl.Rec.speed[node-1].freq     =   (freq[0] + freq[1])/2;
+                        Ctrl.Rec.speed[node-1].sta.freq =   FREQ_CH_OK;
+                    }else if(fabs(freq[1]-freq[0]) < 5)
+                    {
+                        Ctrl.Rec.speed[node-1].freq     =   0;  //频率为0
+                        Ctrl.Rec.speed[node-1].sta.freq =   FREQ_CH_NONE;
+                    }else if((freq[0] == 0)){
+                        Ctrl.Rec.speed[node-1].freq     =   freq[1];
+                        Ctrl.Rec.speed[node-1].sta.freq =   FREQ_CH1_NONE;
+                        
+                    }else if((freq[1] == 0)){
+                        Ctrl.Rec.speed[node-1].freq     =   freq[0];
+                        Ctrl.Rec.speed[node-1].sta.freq =   FREQ_CH2_NONE;
+                        
+                    }else {
+                        
+                        Ctrl.Rec.speed[node-1].sta.freq = freq[1];
+                        if(freq[0] > freq[1]){
+                            Ctrl.Rec.speed[node-1].sta.freq = freq[0];
+                        }
+                        
+                        Ctrl.Rec.speed[node-1].sta.freq     =   FREQ_DIFF;
+                    }
+                    
+                    Ctrl.Rec.speed[node-1].phase    =   MtrCom->Rd.speed.ch1_2phase;
+                    Ctrl.Rec.speed[node-1].vcc      =   MtrCom->Rd.speed.vcc_vol;
+                }
+            }
             
-        case MTR_RD_CALI:
-            MtrRdCali();                    //读校准系数                    
-            break;
+            /**************************************************************
+            * Description  : 读取工况检测信号
+            * Author       : 2018/5/31 星期四, by redmorningcn
+            */
+            if(node == NODE_LOCO){
+                len  = sizeof(strlocoVol)/2 ;                                         //工况检测板有效参数长度
+                addr = sizeof(strLocoSysPara)/2 + sizeof(strLocoRunStatus)/2 - len;   //有效参数存储在结构体后部
+                
+                MtrRdSpecial(addr,len);                 
+                
+                if(MtrCom->RxCtrl.Len == len){
+                    memcpy((u8 *)&Ctrl.Rec.Vol,(u8 *)&MtrCom->Rd.loco,sizeof(Ctrl.Rec.Vol));   //取工况信号
+                }
+            }
             
-        case MTR_WR_SYS:
-            MtrWrSys();                     //写sys              
             break;
-            
-        case MTR_WR_CALI:
-            MtrWrCali();                    //写校准系数     
-            break;
-            
         default:
             break;
         }

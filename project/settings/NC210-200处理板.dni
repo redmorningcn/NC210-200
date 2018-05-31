@@ -14,7 +14,7 @@ TraceBufferSize=0x00010000
 TraceStallIfFIFOFull=0x00000000
 TracePortSize=0x00000004
 [DebugChecksum]
-Checksum=165275900
+Checksum=83691474
 [CodeCoverage]
 Enabled=_ 0
 [Exceptions]
@@ -103,14 +103,15 @@ mode=0
 [Breakpoints2]
 Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\APP_task_osal_store.c}.227.17" 0 0 1 "" 0 "" 0
 Bp1=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\APP_task_osal_store.c}.234.9" 0 0 1 "" 0 "" 0
-Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.126.1" 0 0 1 "" 0 "" 0
-Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.330.13" 0 0 1 "" 0 "" 0
-Bp4=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.326.13" 0 0 1 "" 0 "" 0
-Bp5=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.322.13" 0 0 1 "" 0 "" 0
-Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.318.13" 0 0 1 "" 0 "" 0
-Bp7=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.314.13" 0 0 1 "" 0 "" 0
-Bp8=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.140.17" 0 0 1 "" 0 "" 0
-Count=9
+Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.127.1" 0 0 1 "" 0 "" 0
+Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.441.1" 0 0 1 "" 0 "" 0
+Bp4=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.441.1" 0 0 1 "" 0 "" 0
+Bp5=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.441.1" 0 0 1 "" 0 "" 0
+Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.441.1" 0 0 1 "" 0 "" 0
+Bp7=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.370.13" 0 0 1 "" 0 "" 0
+Bp8=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.258.17" 0 0 1 "" 0 "" 0
+Bp9=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.422.17" 0 0 1 "" 0 "" 0
+Count=10
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
