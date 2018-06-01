@@ -18,6 +18,7 @@
 * INCLUDES
 */
 #include <mb.h>
+#include <stdio.h>
 
 /*******************************************************************************
 * CONSTANTS
@@ -25,7 +26,7 @@
 #define INCLUDE_STRING
 
 #ifdef INCLUDE_STRING
-#include "string.h"
+//#include "string.h"
 #endif
 
 #ifndef TRUE
@@ -911,14 +912,14 @@ static char * flt(char *str, double num, int size, int precision, char fmt, int 
 static int vsprintf(char *buf, const char *fmt, va_list args)
 {
     char *str;
-    int field_width;      /* Width of output field */
+    int field_width;            /* Width of output field */
     
     for (str = buf; *fmt; fmt++)
     {
         unsigned long num;
         int base = 10;
-        int flags = 0; /* Flags to number()    Process flags */
-        int qualifier = -1;        /* 'h', 'l', or 'L' for integer fields */
+        int flags = 0;          /* Flags to number()    Process flags */
+        int qualifier = -1;     /* 'h', 'l', or 'L' for integer fields */
         int precision = -1;     /* Min. # of digits for integers; max number of chars for from string */
         BOOL bFmt = TRUE;
         if (*fmt != '%')
@@ -1148,53 +1149,54 @@ int usprintf(char *buf, const char *fmt, ...)
 extern u8       BSP_DispEvtProcess  (void);
 extern void     WIN_DispMsg         (const char *msg);
 extern void     UARTPutString       (MODBUS_CH  *pch, const char *printfbuf);
-/*******************************************************************************
-* 名    称： uprintf
-* 功    能： 
-* 入口参数： 无
-* 出口参数： 无
-* 作    者： 无名沈
-* 创建日期： 2017/11/17
-* 修    改： 
-* 修改日期： 
-* 备    注： 
-*******************************************************************************/
-void uprintf(const char *fmt, ...)
-{
-    char printfbuf[100];    
-    printfbuf[99] = 0;
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(printfbuf, fmt, args);
-    va_end(args);
-    printfbuf[99] = 0;
-    WIN_DispMsg((const char *)printfbuf);
-    BSP_DispEvtProcess(); 
-}
-
-/*******************************************************************************
-* 名    称： uartprintf
-* 功    能： 
-* 入口参数： 无
-* 出口参数： 无
-* 作    者： 无名沈
-* 创建日期： 2017/11/17
-* 修    改： 
-* 修改日期： 
-* 备    注： 
-*******************************************************************************/
-void uartprintf(MODBUS_CH  *pch,const char *fmt, ...)
-{
-    char printfbuf[200];
-    printfbuf[199] = 0;
-    
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(printfbuf, fmt, args);
-    va_end(args);
-    printfbuf[199] = 0;
-    UARTPutString(pch, (const char *)printfbuf);
-}
+///*******************************************************************************
+//* 名    称： uprintf
+//* 功    能： 
+//* 入口参数： 无
+//* 出口参数： 无
+//* 作    者： 无名沈
+//* 创建日期： 2017/11/17
+//* 修    改： 
+//* 修改日期： 
+//* 备    注： 
+//*******************************************************************************/
+//void uprintf(const char *fmt, ...)
+//{
+//    char printfbuf[100];    
+//    printfbuf[99] = 0;
+//    va_list args;
+//    va_start(args, fmt);
+//    //vsprintf(printfbuf, fmt, args);
+//    vsnprintf(printfbuf,(sizeof(printfbuf)-1),fmt,(__Va_list )args);
+//    va_end(args);
+//    printfbuf[99] = 0;
+//    WIN_DispMsg((const char *)printfbuf);
+//    BSP_DispEvtProcess(); 
+//}
+//
+///*******************************************************************************
+//* 名    称： uartprintf
+//* 功    能： 
+//* 入口参数： 无
+//* 出口参数： 无
+//* 作    者： 无名沈
+//* 创建日期： 2017/11/17
+//* 修    改： 
+//* 修改日期： 
+//* 备    注： 
+//*******************************************************************************/
+//void uartprintf(MODBUS_CH  *pch,const char *fmt, ...)
+//{
+//    char printfbuf[200];
+//    printfbuf[199] = 0;
+//    
+//    va_list args;
+//    va_start(args, fmt);
+//    vsprintf(printfbuf, fmt, args);
+//    va_end(args);
+//    printfbuf[199] = 0;
+//    UARTPutString(pch, (const char *)printfbuf);
+//}
 
 /*******************************************************************************
 * 				end of file                                                    *

@@ -7,6 +7,12 @@
 #include    <includes.h>
 #include    "string.h"
 
+/**************************************************************
+* Description  : 对写数据地址检查，防止数据溢出
+* Author       : 2018/6/1 星期五, by redmorningcn
+*/
+#define     CSCN_MAX_BUF_LEN   (254)
+
 //数据打包，根据stcCsnrProtocolPara信息，将数据打包成CNSR数据
 //
 void	DataPackage_CSNC(strCsnrProtocolPara *sprotocolpara)
@@ -16,7 +22,17 @@ void	DataPackage_CSNC(strCsnrProtocolPara *sprotocolpara)
 	unsigned short	AddHeadNum;
 	unsigned short	i,j;
 	unsigned char	ByteStation;
-	unsigned char	DataLen;
+	unsigned char	DataLen = 0;
+
+    /**************************************************************
+    * Description  : 对数据长度判断，防止溢出
+    * Author       : 2018/6/1 星期五, by redmorningcn
+    */
+    if(sprotocolpara->datalen > CSCN_MAX_BUF_LEN -12){
+        sprotocolpara->rxtxlen = 0 ;
+        return ;
+    }
+        
 
 	//////////////////////////////////////////////准备数据
 	ByteStation = 0;
@@ -43,7 +59,7 @@ void	DataPackage_CSNC(strCsnrProtocolPara *sprotocolpara)
 	sprotocolpara->rxtxbuf[ByteStation]   = (unsigned char)(Crc16>>8);
 	ByteStation += sizeof(Crc16);
 
-	////////////////////////////////////////////////			按照协议补位
+	////////////////////////////////////////////////			    按照协议补位
 	AddHeadNum = 0;
 	for(i = 2; i< ByteStation + AddHeadNum;i++ )                    //	数据，补移位 FRAM_HERD0
 	{
@@ -56,6 +72,16 @@ void	DataPackage_CSNC(strCsnrProtocolPara *sprotocolpara)
 
 			i++;											        //跳过移位字节
 			AddHeadNum++;
+            /**************************************************************
+            * Description  : 限定范围，防止溢出
+            * Author       : 2018/6/1 星期五, by redmorningcn
+            */
+            if(ByteStation + AddHeadNum > CSCN_MAX_BUF_LEN)
+            {
+                ByteStation = CSCN_MAX_BUF_LEN;
+                AddHeadNum  = 0;
+                break;
+            }
 		}
 	}
 
@@ -78,7 +104,14 @@ unsigned char   DataUnpack_CSNC(strCsnrProtocolPara *sprotocolpara)
 
 	if(sprotocolpara->rxtxlen< 2+6+2+2)
 		return 0;
-
+    /**************************************************************
+    * Description  : 限定处理范围，防止溢出
+    * Author       : 2018/6/1 星期五, by redmorningcn
+    */
+    if(sprotocolpara->rxtxlen > CSCN_MAX_BUF_LEN)
+        sprotocolpara->rxtxlen = CSCN_MAX_BUF_LEN;
+    
+    
 	for(j = 0;j < sprotocolpara->rxtxlen;j++ )						//去重复通讯首字节
 	{
 		if(
@@ -108,9 +141,12 @@ unsigned char   DataUnpack_CSNC(strCsnrProtocolPara *sprotocolpara)
 			 	 	(sprotocolpara->rxtxbuf[i+11+DataLen] 	!= FRAM_END1)
 			 )
 			 {
+
+
 			 	i = (unsigned short)(i + 10 + DataLen);         //地址不对或帧尾错误，跳过此帧
 			 	continue;
 			 }
+            
 
 
 			DataLen = sprotocolpara->rxtxbuf[i+6];
@@ -143,10 +179,15 @@ unsigned char   DataUnpack_CSNC(strCsnrProtocolPara *sprotocolpara)
 				sprotocolpara->framnum   	= sprotocolpara->rxtxbuf[i+4];
 				sprotocolpara->framcode  	= sprotocolpara->rxtxbuf[i+5]&0x0f;
 				sprotocolpara->datalen     	= (unsigned char )DataLen;
-
-				memcpy(sprotocolpara->databuf,&sprotocolpara->rxtxbuf[i+8],DataLen);				//数据拷贝
-
-				return	1;
+                
+                /**************************************************************
+                * Description  : 防止溢出
+                * Author       : 2018/6/1 星期五, by redmorningcn
+                */
+                if(DataLen < CSCN_MAX_BUF_LEN ){
+                    memcpy(sprotocolpara->databuf,&sprotocolpara->rxtxbuf[i+8],DataLen);				//数据拷贝
+                    return	1;
+                }
 			}
 		}
 	}

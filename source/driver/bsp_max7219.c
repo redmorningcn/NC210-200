@@ -699,6 +699,30 @@ void BSP_DispInit (void)
 }
 
 /*******************************************************************************
+* 名    称： uprintf
+* 功    能： 
+* 入口参数： 无
+* 出口参数： 无
+* 作    者： 无名沈
+* 创建日期： 2017/11/17
+* 修    改： 
+* 修改日期： 
+* 备    注： 
+*******************************************************************************/
+void uprintf(const char *fmt, ...)
+{
+    char printfbuf[100];    
+    printfbuf[99] = 0;
+    va_list args;
+    va_start(args, fmt);
+    //vsprintf(printfbuf, fmt, args);
+    vsnprintf(printfbuf,(sizeof(printfbuf)-1),fmt,args);
+    va_end(args);
+    printfbuf[99] = 0;
+    WIN_DispMsg((const char *)printfbuf);
+    BSP_DispEvtProcess(); 
+}
+/*******************************************************************************
 * 				                end of file                                    *
 *******************************************************************************/
 #endif

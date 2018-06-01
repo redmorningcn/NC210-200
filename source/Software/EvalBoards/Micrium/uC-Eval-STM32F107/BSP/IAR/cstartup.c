@@ -238,6 +238,11 @@ static  void  App_NMI_ISR (void)
 static  void  App_Fault_ISR (void)
 {
     while (DEF_TRUE) {
+        u8 i= 0;
+        i++;
+        if(i < 10)
+            i = 0;
+
         ;
     }
 }

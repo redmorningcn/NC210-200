@@ -1163,12 +1163,6 @@
       <file>
         <name>$PROJ_DIR$\..\source\user\RecDataTypeDef.h</name>
       </file>
-      <file>
-        <name>$PROJ_DIR$\..\source\user\sprintf.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\source\user\sprintf.h</name>
-      </file>
     </group>
     <file>
       <name>$PROJ_DIR$\..\source\config\app.c</name>
