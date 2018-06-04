@@ -96,7 +96,7 @@ void	DataPackage_CSNC(strCsnrProtocolPara *sprotocolpara)
 //能简析，返回1；否则，返回0
 unsigned char   DataUnpack_CSNC(strCsnrProtocolPara *sprotocolpara)
 {
-    unsigned short			i,j,k;
+    unsigned short        i,j,k;
     unsigned char			SumCheck8;
     unsigned char			Tmp;
     unsigned short			RecCRC16,Check16 = 0;

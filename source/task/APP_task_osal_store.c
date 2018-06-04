@@ -146,10 +146,9 @@ static u32  GetRecFlashAddr(u32 FlshRecNum)
 */
 static  void    FmtRecord(void)
 {
-    Ctrl.Rec.CmdTpye    = 01;
-    Ctrl.Rec.EvtType    = 0;
     
-    if(Ctrl.sRunPara.SysSts.StartFlg == 1){
+    if(Ctrl.sRunPara.SysSts.StartFlg    == 1){
+        Ctrl.sRunPara.SysSts.StartFlg   = 0;
         Ctrl.Rec.EvtType =  START_EVT;                              //开机事件
     }
     
@@ -162,7 +161,6 @@ static  void    FmtRecord(void)
     Ctrl.Rec.Min    = t_tm.tm_min;	
     Ctrl.Rec.Sec    = t_tm.tm_sec;   
     
-    memset((u8 *)Ctrl.Rec.rsvbyte,0,sizeof(Ctrl.Rec.rsvbyte));    //预留数值置零
 }
 
 /*******************************************************************************

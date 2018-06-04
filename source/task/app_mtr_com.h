@@ -16,6 +16,10 @@
 #define         FREQ_CH2_NONE           0x02        /* 通道2无频率信号   */
 #define         FREQ_CH_OK              0x03        /* 通道频率信号正常  */
 #define         FREQ_DIFF               0x04        /* 通道频率相差较大  */
+#define         FREQ_CH_LOSE            0x05
+#define         FREQ_CH1_LOSE           0x06        /* 通道1丢脉冲       */
+#define         FREQ_CH2_LOSE           0x07        /* 通道2丢脉冲       */
+
 
 /**************************************************************
 * Description  : 定义检测板节点号
@@ -138,7 +142,6 @@ typedef struct {
     u32     line;       //修正线性度
     int16   Deviance;   //修正偏差
     int16   tmp;        //预留
-
 }strCalibration;
 
 
@@ -188,7 +191,7 @@ typedef union _UnnSpeedctrl_ {
 typedef union  
 {
     struct _strpara_ {          
-        uint16              vcc;                           //预留
+        uint16              vcc;                            //预留
         uint16              qy;                             //牵引
         uint16              zd;                             //制动
         uint16              xq;                             //向前

@@ -25,20 +25,22 @@ void    MtrCommErrjudge(u8   node,u16    sta)
     switch(node)
     {
     case 1:
-        Ctrl.sRunPara.Err.Speed1CommErr = err;
+        Ctrl.sRunPara.Err.Speed1Comm= err;
         break;
     case 2:
-        Ctrl.sRunPara.Err.Speed2CommErr = err;
+        Ctrl.sRunPara.Err.Speed2Comm= err;
         break;
     case 3:
-        Ctrl.sRunPara.Err.Speed3CommErr = err;
+        Ctrl.sRunPara.Err.Speed3Comm= err;
         break;
     case 4:
-        Ctrl.sRunPara.Err.WorkStaCommErr= err;
+        Ctrl.sRunPara.Err.LocoComm  = err;
         break;
     default:
         break;
     }
+    
+    
 }
                                         
 /**************************************************************
@@ -123,33 +125,24 @@ void app_mtr_com(void)
                         Ctrl.Rec.speed[node-1].ch[i].low    =  MtrCom->Rd.speed.para[i].Vol;
                         Ctrl.Rec.speed[node-1].ch[i].raise  =  MtrCom->Rd.speed.para[i].raise;
                         Ctrl.Rec.speed[node-1].ch[i].ratio  =  MtrCom->Rd.speed.para[i].ratio;
+                        Ctrl.Rec.speed[node-1].sta.flgs[i]  =  (u8)MtrCom->Rd.speed.para[i].status;
                         freq[i]                             =  MtrCom->Rd.speed.para[i].freq;
                     }
                     
-                    if((freq[0] == 0) && ((freq[1] == 0))){           //频率偏差在5hz以内。
-                        Ctrl.Rec.speed[node-1].freq     =   (freq[0] + freq[1])/2;
-                        Ctrl.Rec.speed[node-1].sta.freq =   FREQ_CH_OK;
-                    }else if(fabs(freq[1]-freq[0]) < 5)
-                    {
-                        Ctrl.Rec.speed[node-1].freq     =   0;  //频率为0
-                        Ctrl.Rec.speed[node-1].sta.freq =   FREQ_CH_NONE;
-                    }else if((freq[0] == 0)){
-                        Ctrl.Rec.speed[node-1].freq     =   freq[1];
-                        Ctrl.Rec.speed[node-1].sta.freq =   FREQ_CH1_NONE;
-                        
-                    }else if((freq[1] == 0)){
-                        Ctrl.Rec.speed[node-1].freq     =   freq[0];
-                        Ctrl.Rec.speed[node-1].sta.freq =   FREQ_CH2_NONE;
-                        
+                    if(fabs(freq[1]-freq[0]) < 5){
+                        Ctrl.Rec.speed[node-1].freq     =   (freq[1] + freq[0])/2;
                     }else {
-                        
-                        Ctrl.Rec.speed[node-1].sta.freq = freq[1];
-                        if(freq[0] > freq[1]){
-                            Ctrl.Rec.speed[node-1].sta.freq = freq[0];
+                        if(freq[1] > freq[0]){
+                            Ctrl.Rec.speed[node-1].freq     =   freq[1];
+                            Ctrl.Rec.speed[node-1].sta.Err[0].FreqLess  = 1;    //通道0，频率小
+                            Ctrl.Rec.speed[node-1].sta.Err[1].FreqMore  = 1;    //通道1，频率大
+                        }else{
+                            Ctrl.Rec.speed[node-1].freq     =   freq[0];
+                            Ctrl.Rec.speed[node-1].sta.Err[1].FreqLess  = 1;    //通道0，频率小
+                            Ctrl.Rec.speed[node-1].sta.Err[0].FreqMore  = 1;    //通道1，频率大
                         }
-                        
-                        Ctrl.Rec.speed[node-1].sta.freq     =   FREQ_DIFF;
                     }
+                    
                     
                     Ctrl.Rec.speed[node-1].phase    =   MtrCom->Rd.speed.ch1_2phase;
                     Ctrl.Rec.speed[node-1].vcc      =   MtrCom->Rd.speed.vcc_vol;

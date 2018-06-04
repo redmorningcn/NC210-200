@@ -6,6 +6,7 @@
 #include <tasks.h>
 #include <includes.h>
 #include <app_dtu_rec.h>
+#include <string.h>
 
 
 /*******************************************************************************
@@ -31,7 +32,6 @@ StrCOMCtrl  * MtrCom;
 * Author       : 2018/5/14 星期一, by redmorningcn
 *******************************************************************************/
 StrCOMCtrl  * TaxCom;
-
 
 /*******************************************************************************
 * Description  : 全局变量初始化
@@ -97,19 +97,28 @@ void app_init_sctrl(void)
     Ctrl.sRunPara.FramFlg.RdNumMgr  = 1;
     Ctrl.sRunPara.FramFlg.RdProduct = 1;
     Ctrl.sRunPara.FramFlg.RdRunPara = 1;
+    
     App_FramPara();
     
-    Ctrl.sRunPara.Err.Errors        = 0;                //清零故障代码
+    Ctrl.sRunPara.Err.Flags         = 0;                //清零故障代码
     
     if(Ctrl.sHeadInfo.Password != MODBUS_PASSWORD){     //通讯密码
         Ctrl.sHeadInfo.Password = MODBUS_PASSWORD;
-        Ctrl.sRunPara.Err.FramErr = 1;                  //铁电故障（指定地址读出的值错误）
+        Ctrl.sRunPara.Err.FramErr   = 1;                //铁电故障（指定地址读出的值错误）
     }
    
-    Ctrl.sRunPara.SysSts.StartFlg   = 1;                //开始标示 
+    Ctrl.sRunPara.SysSts.StartFlg   = 1;                //开始标示(开机置位，存储完第一条数据记录后置零) 
     
     if ( ( Ctrl.sRunPara.StoreTime < 5 ) ||             //数据存储周期
          ( Ctrl.sRunPara.StoreTime > 10*60 ) ) {
         Ctrl.sRunPara.StoreTime    = 60;
     }
+    
+    /**************************************************************
+    * Description  : 初始化rec中默认值
+    * Author       : 2018/6/4 星期一, by redmorningcn
+    */
+    Ctrl.Rec.CmdTpye    = 0;                            //默认值为0
+    memset((u8 *)Ctrl.Rec.rsvbyte,0,sizeof(Ctrl.Rec.rsvbyte));    //预留数值置零
+
 }

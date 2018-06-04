@@ -8,9 +8,16 @@
 #include    "stm32f10x_type.h"
 #include    <app_com_type.h>
 #include    <RecDataTypeDef.h>
+#include    <bsp_q560.h>
 
 #define     SOFT_VERSION                (0101)          /* 软件版本         */
 #define     MODBUS_PASSWORD             (6237)          /* modbus通讯密码   */
+
+/**************************************************************
+* Description  : 记录事件定义
+* Author       : 2018/6/4 星期一, by redmorningcn
+*/
+#define     EVT_START                   (0x031)         /* 开机事件         */
 
 
 /*******************************************************************************
@@ -177,66 +184,10 @@ typedef struct _stcRunPara_
         u16                  Flags;                     // 
     } SysSts; 
     
-    union _u_sys_err {
-        struct  {
-            u8              Speed1CommErr   : 1;     //D0=1：速度检测板1通讯异常
-            u8              Speed2CommErr   : 1;     //D1=1：速度检测板2通讯异常 
-            u8              Speed3CommErr   : 1;     //D2=1：速度检测板3通讯异常
-            u8              WorkStaCommErr  : 1;     //D3=1：工况检测板通讯异常
-            u8              OtrCommErr      : 1;     //D4=1：IC卡模块通讯故障
-            u8              PwrCommErr      : 1;     //D5=1：电量模块通讯故障
-            u8              ExtCommErr      : 1;     //D6=1：扩展通讯模块通讯故障
-            u8              Disp1CommErr    : 1;     //D7=1：一端显示模块通讯故障
-            u8              Disp2CommErr    : 1;     //D8=1：二端显示模块通讯故障
-            u8              TaxCommErr      : 1;     //D9：TAX通讯故障
-            u8              ParaNullErr     : 1;     //D10=1：未设置运行参数
-            u8              BoxNullErr      : 1;     //D11=1：未设置油箱模型
-            u8              DevNullErr      : 1;     //D12=1：未设置模块
-            u8              BoxSetErr       : 1;     //D13=1：油箱模型设置错误
-            u8              FlashErr        : 1;     //D14=1：存储器故障
-            u8              FramErr         : 1;     //D15=1：铁电故障
-            u8              BattLowErr      : 1;     //D16=1：电池电压低
-            u8              TimeErr         : 1;     //D17=1：时间故障
-            u8              OilLowErr       : 1;     //D18=1：油位低故障
-            u8              OilHighErr      : 1;     //D19=1：油位高故障
-            u8              RsvErr          : 4;     //D23~20：预留
-        } ;
-        u8                  Flags[4];
-        u32                 Errors;
-        //u8   		        MtrErr[2];                  // 1   	    传感器错误代码
-        //u8   		        SysErr;                     // 1   	    系统错误代码
-        //u8   		        StoreType ;                 // 1   	    存储类型
-    } Err;
-    union _u_sys_err_mask {
-        struct  {
-            u8                  Sen1OpenErr     : 1;     //D0=1：一端传感器模块故障
-            u8                  Sen2OpenErr     : 1;     //D1=1：二端传感器模块故障 
-            u8                  Mtr1CommErr     : 1;     //D2=1：一端测量模块通信故障
-            u8                  Mtr2CommErr     : 1;     //D3=1：二端测量模块通信故障
-            u8                  OtrCommErr      : 1;     //D4=1：IC卡模块通讯故障
-            u8                  PwrCommErr      : 1;     //D5=1：电量模块通讯故障
-            u8                  ExtCommErr      : 1;     //D6=1：扩展通讯模块通讯故障
-            u8                  Disp1CommErr    : 1;     //D7=1：一端显示模块通讯故障
-            u8                  Disp2CommErr    : 1;     //D8=1：二端显示模块通讯故障
-            u8                  TaxCommErr      : 1;     //D9：TAX通讯故障
-            u8                  ParaNullErr     : 1;     //D10=1：未设置运行参数
-            u8                  BoxNullErr      : 1;     //D11=1：未设置油箱模型
-            u8                  DevNullErr      : 1;     //D12=1：未设置模块
-            u8                  BoxSetErr       : 1;     //D13=1：油箱模型设置错误
-            u8                  FlashErr        : 1;     //D14=1：存储器故障
-            u8                  FramErr         : 1;     //D15=1：铁电故障
-            u8                  BattLowErr      : 1;     //D16=1：电池电压低
-            u8                  TimeErr         : 1;     //D17=1：时间故障
-            u8                  OilLowErr       : 1;     //D18=1：油位低故障
-            u8                  OilHighErr      : 1;     //D19=1：油位高故障
-            u8                  RsvErr          : 4;     //D23~20：预留
-        } ;
-        u8                  Flags[4];
-        u32                 Error;
-        //u8   		        MtrErr[2];                  // 1   	    传感器错误代码
-        //u8   		        SysErr;                     // 1   	    系统错误代码
-        //u8   		        StoreType ;                 // 1   	    存储类型
-    } ErrMask;
+    strDeviceErr            Err;                    // 错误代码
+    
+    strDeviceErr            ErrMask;
+    
     u8                  Rsv2[7];                    // 预留16个字节
 }stcRunPara;
 
@@ -286,7 +237,14 @@ typedef union _Unnctrl_ {
         * Description  : 操作系统参数
         * Author       : 2018/5/18 星期五, by redmorningcn
         */
-        StrCtrlOS           Os;                                 
+        StrCtrlOS           Os;      
+        
+        /**************************************************************
+        * Description  : GPS通讯
+        * Author       : 2018/6/4 星期一, by redmorningcn
+        */
+        StrGpsInfo          Gps;
+
     };
    
     u16   buf[512];

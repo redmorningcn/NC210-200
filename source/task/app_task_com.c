@@ -111,6 +111,7 @@ void    App_CommIdle(void)
     }
     
     static  u16  recordtime = 0;
+    static  u8   mod = 0;
     recordtime++;
     /**************************************************************
     * Description  : 数据发送判断（DTU）
@@ -124,7 +125,14 @@ void    App_CommIdle(void)
       )       
     {
         recordtime = 0;
-        
+        /**************************************************************
+        * Description  : 空隙时，循环发送数据和GPS查询
+        * Author       : 2018/6/4 星期一, by redmorningcn
+        */
+        mod++;
+        if(mod %2 == 0)
+            DtuCom->ConnCtrl.ConnType = GPS_COMM;               //查询gps
+                
         OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,   //通知DTU，可以进行数据发送
                    ( OS_FLAGS      )COMM_EVT_FLAG_DTU_TX,
                    ( OS_OPT        )OS_OPT_POST_FLAG_SET,

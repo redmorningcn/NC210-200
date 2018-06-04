@@ -101,14 +101,14 @@ void    app_dtu_send(void)
         * Author       : 2018/5/23 星期三, by redmorningcn
         */
     case IAP_COMM:
-        iapcode = DtuCom->Rd.dtu.iap.code;       //IAP指令位
+        iapcode = DtuCom->Rd.dtu.iap.code;  //IAP指令位
         
         switch(iapcode)
         {
-        case IAP_DATA:                  //IAP数据传输应答
+        case IAP_DATA:                      //IAP数据传输应答
             DtuCom->ConnCtrl.sCsnc.datalen  = IAP_REPLY_DATA_LEN;
             break;
-        case IAP_START:                 //IAP启动及结束应答
+        case IAP_START:                     //IAP启动及结束应答
         case IAP_END:
         default:
             DtuCom->ConnCtrl.sCsnc.datalen  = DtuCom->RxCtrl.sCsnc.datalen;
@@ -120,10 +120,22 @@ void    app_dtu_send(void)
         
         DataPackage_CSNC((strCsnrProtocolPara *)&DtuCom->ConnCtrl.sCsnc);       //数据打包
         DtuCom->pch->TxBufByteCtr = DtuCom->ConnCtrl.sCsnc.rxtxlen;             //数据长度准备
-        enablesend = 1;                 //数据发送标识1
+        enablesend = 1;                     //数据发送标识1
         if(iapcode == IAP_END)
             DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;                       //默认状态位数据发送
         
+        break;
+        
+    case GPS_COMM:                          //定位模块
+        /**************************************************************
+        * Description  : 查询模块的信号强度
+        * Author       : 2018/6/4 星期一, by redmorningcn
+        */
+        strcpy((char *)DtuCom->pch->TxBuf,(const char *)GPS_RSSI_ASK);
+        DtuCom->pch->TxBufByteCtr = strlen(GPS_RSSI_ASK);
+        
+        DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;                           //默认状态位数据发送
+        enablesend = 1;                     //数据发送标识1
         break;
         
     default:
@@ -131,7 +143,7 @@ void    app_dtu_send(void)
         break;
     }
     
-    if( enablesend == 1 )        //有数据发送
+    if( enablesend == 1 )                   //有数据发送
     {
         //数据发送状态准备
         if(DtuCom->pch->TxBufByteCtr == 0)                                      //如果数据异常，发送20字节

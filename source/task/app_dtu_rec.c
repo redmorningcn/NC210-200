@@ -210,34 +210,43 @@ void    app_dtu_rec(void)
     如果是程序下载，或者参数读写，则更改为对应的通讯类型。
     * Author       : 2018/5/24 星期四, by redmorningcn
     */
-    if(DtuCom->RxCtrl.protocol == CSNC_PROTOCOL)            //csnc异步串口通讯协议
+    if(DtuCom->RxCtrl.protocol == CSNC_PROTOCOL)                //csnc异步串口通讯协议
     {
         switch(DtuCom->RxCtrl.FrameCode)
         {
         case IAP_FRAME_CODE:
-            DtuCom->ConnCtrl.ConnType = IAP_COMM;           //IAP通讯
+            DtuCom->ConnCtrl.ConnType = IAP_COMM;               //IAP通讯
             break;
         case SET_FRAME_CODE:
-            DtuCom->ConnCtrl.ConnType = SET_COMM;           //参数读取
+            DtuCom->ConnCtrl.ConnType = SET_COMM;               //参数读取
             break;
         case RECORD_FRAME_CODE:
-            if(DtuCom->ConnCtrl.RecordSendFlg == 1){         //有数据发送，通讯类型不变。
+            if(DtuCom->ConnCtrl.RecordSendFlg == 1){            //有数据发送，通讯类型不变。
                 DtuCom->ConnCtrl.RecordSendFlg = 0;
             }
             //break;
         default:
-            DtuCom->ConnCtrl.ConnType = RECORD_SEND_COMM;   //默认为数据发送
+            DtuCom->ConnCtrl.ConnType       = RECORD_SEND_COMM;       //默认为数据发送
 
             if(DtuCom->RxCtrl.sCsnc.sourceaddr == SET_ADDR)
             {
-                DtuCom->ConnCtrl.ConnType = SET_COMM;           //参数读取
+                DtuCom->ConnCtrl.ConnType   = SET_COMM;           //参数读取
             }
             
             break;
         }
     }
     
-    //更具通讯类型处理
+    /**************************************************************
+    * Description  : 增加gps定位模块
+    * Author       : 2018/6/4 星期一, by redmorningcn
+    */
+    if(DtuCom->RxCtrl.protocol == Q560_PROTOCOL)
+    {
+        DtuCom->ConnCtrl.ConnType = GPS_COMM;               //GPS定位模块通讯
+    }
+
+    //根据通讯类型处理
     conntype = DtuCom->ConnCtrl.ConnType;
     
     switch(conntype){
@@ -282,6 +291,14 @@ void    app_dtu_rec(void)
         break;
         
         
+        /**************************************************************
+        * Description  : GPS模块通讯,成功接收到数据
+        * Author       : 2018/6/4 星期一, by redmorningcn
+        */
+    case GPS_COMM:
+        
+        enablesend = 0;                 
+        break;
     default:
         break;
     }

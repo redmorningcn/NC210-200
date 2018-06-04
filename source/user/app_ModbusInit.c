@@ -11,6 +11,7 @@
 #include <includes.h>
 #include <string.h>
 #include <bsp_os.h>
+#include <bsp_q560.h>
 
 
 /*******************************************************************************
@@ -191,6 +192,7 @@ CPU_BOOLEAN  MBN_FCxx_Handler (MODBUS_CH  *pch)
     memcpy(&pch->RxFrameData[pch->RxFrameNDataBytes+2],(u8 *)&pch->RxFrameCRC,sizeof(pch->RxFrameCRC));
     
     u8  i;
+    u8  reply;
     for(i = 0;i <sizeof(Ctrl.ComCtrl)/sizeof(StrCOMCtrl);i++ )
     {
         if(Ctrl.ComCtrl[i].pch == pch && pch !=null)    //查找对应的串口控制块
@@ -200,8 +202,6 @@ CPU_BOOLEAN  MBN_FCxx_Handler (MODBUS_CH  *pch)
             * Author       : 2018/5/21 星期一, by redmorningcn
             */            
             //判断数据是否满足帧头帧尾要求
-            Ctrl.ComCtrl[i].RxCtrl.protocol = MODBUS_PROTOCOL;
-            
             if(     pch->RxFrameData[0]     == FRAM_HERD0
                 &&  pch->RxFrameData[1]     == FRAM_HERD1
                 &&  pch->RxFrameData[len-2] == FRAM_END0
@@ -212,7 +212,7 @@ CPU_BOOLEAN  MBN_FCxx_Handler (MODBUS_CH  *pch)
                 Ctrl.ComCtrl[i].RxCtrl.sCsnc.rxtxbuf = pch->RxFrameData;
                 Ctrl.ComCtrl[i].RxCtrl.sCsnc.rxtxlen = len;
                 
-                u8 reply = DataUnpack_CSNC((strCsnrProtocolPara *)&Ctrl.ComCtrl[i].RxCtrl.sCsnc);
+                reply = DataUnpack_CSNC((strCsnrProtocolPara *)&Ctrl.ComCtrl[i].RxCtrl.sCsnc);
                 if(reply == 1)  //解析成功
                 {
                     Ctrl.ComCtrl[i].RxCtrl.Len          = Ctrl.ComCtrl[i].RxCtrl.sCsnc.datalen;
@@ -220,21 +220,40 @@ CPU_BOOLEAN  MBN_FCxx_Handler (MODBUS_CH  *pch)
                     Ctrl.ComCtrl[i].ConnCtrl.RecvEndFlg = 1;                        //接收到结束标识(同一任务中，收发协调)
                     Ctrl.ComCtrl[i].RxCtrl.RecvFlg      = 1;                        //接收到结束标识()
                     
+                    Ctrl.ComCtrl[i].RxCtrl.protocol = MODBUS_PROTOCOL;              //csnc异步通讯协议。
+                    
                     OS_ERR      err;
                     OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,           //
                                ( OS_FLAGS      )Ctrl.ComCtrl[i].RxCtrl.EvtFlag,     //发送指定的事件标识组。
                                ( OS_OPT        )OS_OPT_POST_FLAG_SET,   
                                ( OS_ERR       *)&err);
                     
+
                     return DEF_TRUE; 
                 }
+            }
+            
+            /**************************************************************
+            * Description  : Q560无线（4G模块）AT指令
+            * Author       : 2018/5/21 星期一, by redmorningcn
+            */
+            reply = Q460ProtocoUnpack((char *)pch->RxFrameData,len);
+            if(reply == 1)  //解析成功
+            {
+                Ctrl.ComCtrl[i].RxCtrl.protocol = Q560_PROTOCOL;                //q560无线at指令
+                
+                OS_ERR      err;
+                OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,           //
+                           ( OS_FLAGS      )Ctrl.ComCtrl[i].RxCtrl.EvtFlag,     //发送指定的事件标识组。
+                           ( OS_OPT        )OS_OPT_POST_FLAG_SET,   
+                           ( OS_ERR       *)&err);
+                return  DEF_TRUE;
             }
             
             /**************************************************************
             * Description  : 其他协议在此加入接口
             * Author       : 2018/5/21 星期一, by redmorningcn
             */
-
         }
     }
     

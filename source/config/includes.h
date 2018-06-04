@@ -131,6 +131,7 @@
 #include <RecDataTypeDef.h>
 #include <CrcCheck.h>
 #include <tasks.h>
+#include <string.h>
 
 /*
 *********************************************************************************************************

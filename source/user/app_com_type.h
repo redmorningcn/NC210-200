@@ -45,10 +45,13 @@
 #define     SET_COMM            1               /* 参数操作              */
 #define     IAP_COMM            2               /* 程序升级操作          */  
 #define     RECORD_GET_COMM     3               /* 查询数据记录          */
+#define     GPS_COMM            4
 
 //通讯协议类型
 #define     MODBUS_PROTOCOL     0
 #define     CSNC_PROTOCOL       1
+#define     Q560_PROTOCOL       2               /* 无线发送模块AT指令   */
+
 
 //定义通讯超时时间
 #define     DTU_TIMEOUT         60

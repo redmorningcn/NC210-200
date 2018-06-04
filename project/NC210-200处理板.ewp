@@ -1131,6 +1131,12 @@
         <name>$PROJ_DIR$\..\source\driver\bsp_max7219.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_q560.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_q560.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\driver\bsp_time.c</name>
       </file>
       <file>
