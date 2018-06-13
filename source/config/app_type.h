@@ -26,7 +26,8 @@
 */
 typedef struct { 
     u16                 Password;                       // 	2  	用于MODEBUS通讯确认密钥，默认为6237，防止非法改数据
-    u16   		        Rsv[7];				            //	2  	软件版本
+    u32                 systime;                        //  4   系统时间
+    u16   		        Rsv[5];				            //	2  	软件版本
 } StrRecHeadInfo;
 
 //__packed

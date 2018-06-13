@@ -34,6 +34,13 @@
 #endif
 
 #define KB						*1024
+     
+/**************************************************************
+* Description  : 地址由外部传入
+* Author       : 2018/5/28 星期一, by redmorningcn
+*/
+#define     PARAM_START_ADDR    0
+#define     FLASH_SIZE_EEP      256KB
 
 #if !defined ( STM32_FLASH_SIZE )
 #define	STM32_FLASH_SIZE		(256KB)											            // FLASH大小
@@ -45,11 +52,7 @@
 //#define STM_FLASH_PAGES         (STM32_FLASH_SIZE * 1024 / STM_SECTOR_SIZE )
 //#define EEPROM_START_PAGE       (STM_FLASH_PAGES-FLASH_SIZE_EEP/STM_SECTOR_SIZE)            //你想存的页数
 //#define PARAM_START_ADDR        (STM32_FLASH_BASE + STM_SECTOR_SIZE * EEPROM_START_PAGE)    //flash页首地址
-/**************************************************************
-* Description  : 地址由外部传入
-* Author       : 2018/5/28 星期一, by redmorningcn
-*/
-#define PARAM_START_ADDR        0
+
 
 typedef union {
     u8  buf1[STM_SECTOR_SIZE / 1];          //最多是2K字节

@@ -26,21 +26,21 @@
 #define IAP_SIZE_ERR            0x03               
 #define IAP_STORE_ERR           0x04
 #define IAP_END_ERR             0x05
+#define IAP_TIME_ERR            0x06
 
-
-//地址信息
-#define	USER_BOOT_START_ADDR		0x00000000	
+//地址信息                          
+#define	USER_BOOT_START_ADDR		0x08000000	
 #define	USER_BOOT_PRO_SIZE			0X0000AFFF
 
-#define	USER_APP_START_ADDR			0x00010000
-#define	USER_APP_PRO_SIZE			0x0002FFFF	
+#define	USER_APP_START_ADDR			0x08010000
+#define	USER_APP_PRO_SIZE			0x00017FFE	
 
-#define	USER_BACK_START_ADDR		0x00040000
-#define	USER_BACK_PRO_SIZE			0x0002FFFF	
+#define	USER_BACK_START_ADDR		0x08028000
+#define	USER_BACK_PRO_SIZE			0x00017FFF	
 
 //存放IAP参数地址
-#define	IAP_PARA_START_ADDR     	0x00070000	
-#define	IAP_PARA_PRO_SIZE			0x0000FFFF	
+#define	IAP_PARA_START_ADDR     	0X0800D000	
+#define	IAP_PARA_PRO_SIZE			0x00002FFF	
 
 
 #define	IAP_DATA_BUF_LEN            (128)
@@ -62,7 +62,11 @@ typedef  struct   _stcIAPPara_
     uint16          End;            //指令码 01，标示有正确的可用
     uint16          Chk;            //校验
     uint32          Crc32;          //程序校验码
+    uint32          BackAddr;       //备份区地址
     uint16          IdxNbr;         //帧数
+    uint16          Rec;            //预留1
+    uint16          Rec1;           //预留2
+    uint16          storeCrc;       //保存校验16
 }stcIAPPara;
 
 /**************************************************************
@@ -82,52 +86,4 @@ typedef  struct{
     };
 }strIapdata;
 
-
-///*******************************************************************************
-// * TYPEDEFS
-// */
-//#define zyIrqDisable()  CPU_CRITICAL_ENTER()//__disable_irq()
-//#define zyIrqEnable()   CPU_CRITICAL_EXIT()//__enable_irq()
-//
-//__packed
-//typedef  struct   _stcIAPCtrl_
-//{
-//    u8              Buf[1024];      //数据区
-//    uint32          Addr;           //数据地址
-//}stcIAPCtrl;
-//
-
-//    
-//extern stcIAPPara   IapInfo;
-//extern stcIAPCtrl   IapData;       //升级参数
-//
-//extern u32                      USER_PROGRAM_ADDR;
-//extern u32                      USER_PROGRAM_SIZE;
-//extern uint16_t	                IAP_DATA_LEN;
-//
-///*******************************************************************************
-// * GLOBAL VARIABLES
-// */
-//
-///*******************************************************************************
-// * GLOBAL FUNCTIONS
-// */
-//
-///*******************************************************************************
-// * EXTERN VARIABLES
-// */
-// 
-///*******************************************************************************
-// * EXTERN FUNCTIONS
-// */
-//extern void         IAP_ReadParaFlash        (stcIAPPara *sIAPPara);
-//extern void         IAP_WriteParaFlash       (stcIAPPara *sIAPPara);
-//extern int8         IAP_PragramDeal          (uint8 *databuf,uint8 datalen);
-// 
-///*******************************************************************************
-// * 				end of file                                                    *
-// *******************************************************************************/
-//#ifdef __cplusplus
-//}
-//#endif
 #endif	/* _IAP_PROGRAM_MCU_H */

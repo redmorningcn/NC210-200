@@ -83,7 +83,7 @@ void    app_operate_para(void)
         DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
         break;
         
-    case    CMD_REC_CLR:                //数据清零
+    case    CMD_REC_CLR:                                    //数据清零
         Ctrl.sRecNumMgr.Current = 0;
         Ctrl.sRecNumMgr.GrsRead = 0;
         Ctrl.sRecNumMgr.PointNum= 0;
@@ -190,6 +190,7 @@ void    app_operate_para(void)
             
         break;        
     default:
+        DtuCom->ConnCtrl.ConnType   = RECORD_SEND_COMM;         //默认为数据发送
         break;
     }
 }
@@ -226,11 +227,11 @@ void    app_dtu_rec(void)
             }
             //break;
         default:
-            DtuCom->ConnCtrl.ConnType       = RECORD_SEND_COMM;       //默认为数据发送
+            DtuCom->ConnCtrl.ConnType       = RECORD_SEND_COMM; //默认为数据发送
 
             if(DtuCom->RxCtrl.sCsnc.sourceaddr == SET_ADDR)
             {
-                DtuCom->ConnCtrl.ConnType   = SET_COMM;           //参数读取
+                DtuCom->ConnCtrl.ConnType   = SET_COMM;         //参数读取
             }
             
             break;
@@ -241,9 +242,8 @@ void    app_dtu_rec(void)
     * Description  : 增加gps定位模块
     * Author       : 2018/6/4 星期一, by redmorningcn
     */
-    if(DtuCom->RxCtrl.protocol == Q560_PROTOCOL)
-    {
-        DtuCom->ConnCtrl.ConnType = GPS_COMM;               //GPS定位模块通讯
+    if(DtuCom->RxCtrl.protocol == Q560_PROTOCOL){
+        DtuCom->ConnCtrl.ConnType = GPS_COMM;                   //GPS定位模块通讯
     }
 
     //根据通讯类型处理
@@ -255,8 +255,7 @@ void    app_dtu_rec(void)
         //接收到发送数据的应答。判断发送应答帧号和接收帧号，相等认为发送成功。
         //判断是否有数据发送。
         enablesend = 0;
-        if(DtuCom->ConnCtrl.SendRecordNum == DtuCom->RxCtrl.sCsnc.framnum)
-        {
+        if(DtuCom->ConnCtrl.SendRecordNum == DtuCom->RxCtrl.sCsnc.framnum){
             Ctrl.sRecNumMgr.GrsRead++;
             DtuCom->ConnCtrl.SendRecordNum++;                               //发送记录++
             Ctrl.sRunPara.FramFlg.WrNumMgr = 1;                             //存记录标识有效

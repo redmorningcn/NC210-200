@@ -180,6 +180,7 @@ u8 App_SaveRecord(void)
     u32         addr ;	
     u16         CRC_sum1;
     u16         CRC_sum2;
+    u16         CRC_sum3;
     u16         retrys;
     u8          ret;
 
@@ -200,8 +201,9 @@ u8 App_SaveRecord(void)
         */
         addr = GetRecFlashAddr(Ctrl.sRecNumMgr.Current);
 
-        memcpy((u8 *)&sRectmp,(u8 *)&Ctrl.Rec,sizeof(Ctrl.Rec));        //数据拷贝，全局数据变更
-        sRectmp.CrcCheck = GetCrc16Chk((u8*)&sRectmp,sizeof(stcFlshRec)-2);//计算校验
+        memcpy((u8 *)&sRectmp,(u8 *)&Ctrl.Rec,sizeof(Ctrl.Rec));            //数据拷贝，全局数据变更
+        sRectmp.CrcCheck = GetCrc16Chk((u8*)&sRectmp,sizeof(stcFlshRec)-2); //计算校验
+        CRC_sum1 = sRectmp.CrcCheck;
         // 数据存储到flash
         ret = WriteFlshRec(addr, (stcFlshRec *)&sRectmp);
         // 从FLASH中读取出来进行对比
@@ -209,17 +211,16 @@ u8 App_SaveRecord(void)
         /**************************************************
         * 描述： 数据校验
         */
-        CRC_sum1 = GetCrc16Chk((u8*)&sRectmp,sizeof(stcFlshRec)-2);
-        CRC_sum2 = sRectmp.CrcCheck; 
-        if(CRC_sum1 == CRC_sum2) {                                      //数据记录正确,记录编号增加
+        CRC_sum2 = GetCrc16Chk((u8*)&sRectmp,sizeof(stcFlshRec)-2);
+        CRC_sum3 = sRectmp.CrcCheck; 
+        
+        if(CRC_sum1 == CRC_sum2 && CRC_sum1 == CRC_sum3) {                                          //数据记录正确,记录编号增加
             Ctrl.sRecNumMgr.Current++;          
             Ctrl.sRecNumMgr.Record++;
             Ctrl.Rec.RecordId = Ctrl.sRecNumMgr.Current;                
             break;
-        } 
-        else
-        {
-            Ctrl.sRecNumMgr.Current++;                                  //记录跳转  
+        }else{
+            Ctrl.sRecNumMgr.Current++;                                      //记录跳转  
             if( retrys == 2 )                                       
             {
                 if(Ctrl.sRecNumMgr.Current % (4096/128) != 0)           //翻转一页，再试一次。

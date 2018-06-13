@@ -213,23 +213,31 @@ CPU_BOOLEAN  MBN_FCxx_Handler (MODBUS_CH  *pch)
                 Ctrl.ComCtrl[i].RxCtrl.sCsnc.rxtxlen = len;
                 
                 reply = DataUnpack_CSNC((strCsnrProtocolPara *)&Ctrl.ComCtrl[i].RxCtrl.sCsnc);
-                if(reply == 1)  //解析成功
+                
+                if(reply == 1)                          //解析成功
                 {
-                    Ctrl.ComCtrl[i].RxCtrl.Len          = Ctrl.ComCtrl[i].RxCtrl.sCsnc.datalen;
-                    Ctrl.ComCtrl[i].RxCtrl.protocol     = CSNC_PROTOCOL;
-                    Ctrl.ComCtrl[i].ConnCtrl.RecvEndFlg = 1;                        //接收到结束标识(同一任务中，收发协调)
-                    Ctrl.ComCtrl[i].RxCtrl.RecvFlg      = 1;                        //接收到结束标识()
-                    
-                    Ctrl.ComCtrl[i].RxCtrl.protocol = MODBUS_PROTOCOL;              //csnc异步通讯协议。
-                    
-                    OS_ERR      err;
-                    OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,           //
-                               ( OS_FLAGS      )Ctrl.ComCtrl[i].RxCtrl.EvtFlag,     //发送指定的事件标识组。
-                               ( OS_OPT        )OS_OPT_POST_FLAG_SET,   
-                               ( OS_ERR       *)&err);
-                    
-
-                    return DEF_TRUE; 
+                    /**************************************************************
+                    * Description  : 解析地址，
+                    * Author       : 2018/6/7 星期四, by redmorningcn
+                    */
+                    if(Ctrl.ComCtrl[i].RxCtrl.sCsnc.sourceaddr    == DTU_ADDR || Ctrl.ComCtrl[i].RxCtrl.sCsnc.sourceaddr == SET_ADDR){
+                        if(Ctrl.ComCtrl[i].RxCtrl.sCsnc.destaddr  == LKJ_MAINBOARD_ADDR){
+                            
+                            Ctrl.ComCtrl[i].RxCtrl.Len          = Ctrl.ComCtrl[i].RxCtrl.sCsnc.datalen;
+                            Ctrl.ComCtrl[i].RxCtrl.protocol     = CSNC_PROTOCOL;
+                            Ctrl.ComCtrl[i].ConnCtrl.RecvEndFlg = 1;                        //接收到结束标识(同一任务中，收发协调)
+                            Ctrl.ComCtrl[i].RxCtrl.RecvFlg      = 1;                        //接收到结束标识()
+                                                        
+                            OS_ERR      err;
+                            OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,           //
+                                       ( OS_FLAGS      )Ctrl.ComCtrl[i].RxCtrl.EvtFlag,     //发送指定的事件标识组。
+                                       ( OS_OPT        )OS_OPT_POST_FLAG_SET,   
+                                       ( OS_ERR       *)&err);
+                            
+                            
+                            return DEF_TRUE;
+                        }
+                    }
                 }
             }
             

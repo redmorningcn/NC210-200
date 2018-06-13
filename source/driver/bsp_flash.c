@@ -340,7 +340,7 @@ u16     BSP_FlashWriteBytes     (u32 addr, u8 *pbuf, u16 len)
     /***********************************************
     * 描述： 检测地址是否会溢出，如果溢出则直接返回
     */
-    if ( (addr + len) > (FLASH_SIZE_EEP) )
+    if ( (addr + len) > (STM32_FLASH_BASE + FLASH_SIZE_EEP) )
         return 0;
 
     u16    copyLen;                                     // 要复制的长度

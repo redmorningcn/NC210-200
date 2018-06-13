@@ -214,7 +214,7 @@ void NVIC_SETFAULTMASK(void)
 
 /*******************************************************************************
 * Function Name  : NVIC_RESETFAULTMASK
-* Description    : Disables the FAULTMASK priority.
+* Description    : Disables th e FAULTMASK priority.
 * Input          : None
 * Output         : None
 * Return         : None

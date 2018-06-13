@@ -14,7 +14,7 @@ TraceBufferSize=0x00010000
 TraceStallIfFIFOFull=0x00000000
 TracePortSize=0x00000004
 [DebugChecksum]
-Checksum=615852149
+Checksum=-1299859192
 [CodeCoverage]
 Enabled=_ 0
 [Exceptions]
@@ -101,23 +101,24 @@ SumSortOrder=0
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\APP_task_osal_store.c}.225.17" 0 0 1 "" 0 "" 0
-Bp1=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\APP_task_osal_store.c}.232.9" 0 0 1 "" 0 "" 0
-Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.127.1" 0 0 1 "" 0 "" 0
+Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.132.1" 0 0 1 "" 0 "" 0
+Bp1=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
+Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
 Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
 Bp4=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
 Bp5=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
-Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
-Bp7=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
-Bp8=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.258.17" 0 0 1 "" 0 "" 0
-Bp9=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\IAR\cstartup.c}.242.9" 0 0 1 "" 0 "" 0
-Bp10=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.32.9" 0 0 1 "" 0 "" 0
-Bp11=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.81.17" 0 0 1 "" 0 "" 0
-Bp12=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.112.9" 0 0 1 "" 0 "" 0
-Bp13=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\IAR\cstartup.c}.241.12" 0 0 1 "" 0 "" 0
-Bp14=_ 0 "EMUL_CODE" "0x0800CE80" 0 0 1 "" 0 "" 0
-Bp15=_ 0 "EMUL_CODE" "0x0800CE7C" 0 0 1 "" 0 "" 0
-Count=16
+Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.258.9" 0 0 1 "" 0 "" 0
+Bp7=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.32.9" 0 0 1 "" 0 "" 0
+Bp8=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.81.17" 0 0 1 "" 0 "" 0
+Bp9=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.112.9" 0 0 1 "" 0 "" 0
+Bp10=_ 0 "EMUL_CODE" "0x0800CE80" 0 0 1 "" 0 "" 0
+Bp11=_ 0 "EMUL_CODE" "0x0800CE7C" 0 0 1 "" 0 "" 0
+Bp12=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\ST\STM32\src\stm32f10x_nvic.c}.401.3" 0 0 1 "" 0 "" 0
+Bp13=_ 0 "EMUL_CODE" "0x080129BA" 0 0 1 "" 0 "" 0
+Bp14=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\config\app.c}.104.5" 0 0 1 "" 0 "" 0
+Bp15=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\config\app.c}.99.5" 0 0 1 "" 0 "" 0
+Bp16=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\IAR\cstartup.c}.241.12" 0 0 1 "" 0 "" 0
+Count=17
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""

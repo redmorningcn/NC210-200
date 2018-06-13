@@ -52,6 +52,7 @@ void    app_dtu_send(void)
         app_ReadOneRecord((stcFlshRec *)&DtuCom->Wr,Ctrl.sRecNumMgr.GrsRead);     
         
         //数据记录按csnc协议打包 DataPackage_CSNC(strCsnrProtocolPara * sprotocolpara);
+        DtuCom->ConnCtrl.sCsnc.framcode     = SET_FRAME_CODE;                   //新数据格式
         DtuCom->ConnCtrl.sCsnc.framnum      = DtuCom->ConnCtrl.SendRecordNum;   //发送记录号
         DtuCom->ConnCtrl.RecordSendFlg      = 1;        
 
@@ -73,7 +74,8 @@ void    app_dtu_send(void)
         //数据记录按csnc协议打包 DataPackage_CSNC(strCsnrProtocolPara * sprotocolpara);
         switch(DtuCom->Rd.dtu.code){
         case CMD_RECORD_GET:
-            replylen    =   sizeof(stcFlshRec);
+            DtuCom->ConnCtrl.sCsnc.framcode = SET_FRAME_CODE;                   //新数据格式
+            replylen                        = sizeof(stcFlshRec);
             break;
         case CMD_PARA_GET:
         case CMD_DETECT_GET:

@@ -42,8 +42,8 @@ const  CPU_CHAR  *app_task_disp__c = "$Id: $";
 
 #endif     
      
-static  uint8               dis_mode    = 0;
-         uint16              ErrCode     = 0;
+static  uint8       dis_mode    =   0;
+         uint16      ErrCode     =   0;
 
 /*******************************************************************************
  * GLOBAL VARIABLES
@@ -76,7 +76,7 @@ static  void                AppTaskDisp           (void *p_arg);
 *******************************************************************************/
 void    LkjDisplayInfo(void)
 {
-    static  u8      times = 0;
+    static  u8     times = 0;
     u8              mod = DIS_INFO_NUM + DIS_MAX_ERR_NUM;
     u8              groupstring[]= "ABC";
     u8              groupunm;

@@ -87,9 +87,19 @@ static  void  AppTaskStart  (void *p_arg);
 */
 int  main (void)
 {
-    OS_ERR  err;
 
+/**************************************************************
+* Description  : 设置中断向量表
+* Author       : 2018/6/8 星期五, by redmorningcn
+*/
     BSP_IntDisAll();                                            /* Disable all interrupts.                              */
+
+#ifdef  APP_RELEASE
+    u32 offset = USER_APP_START_ADDR-NVIC_VectTab_FLASH;
+    NVIC_SetVectorTable(NVIC_VectTab_FLASH, offset);
+#endif
+    
+    OS_ERR  err;
 
     OSInit(&err);                                               /* Init uC/OS-III.                                      */
 
@@ -107,6 +117,11 @@ int  main (void)
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                  (OS_ERR     *)&err);
 
+//    offset = USER_APP_START_ADDR-NVIC_VectTab_FLASH;
+//    NVIC_SetVectorTable(NVIC_VectTab_FLASH, offset);
+    
+
+    
     OSStart(&err);                                              /* Start multitasking (i.e. give control to uC/OS-III). */
 }
 
@@ -132,9 +147,8 @@ static  void  AppTaskStart (void *p_arg)
     CPU_INT32U  cpu_clk_freq;
     CPU_INT32U  cnts;
     OS_ERR      err;
-
+    
    (void)p_arg;
-
     BSP_Init();                                                 /* Initialize BSP functions                             */
     CPU_Init();
 

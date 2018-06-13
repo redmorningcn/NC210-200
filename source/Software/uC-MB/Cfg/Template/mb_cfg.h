@@ -61,7 +61,7 @@
 
 #define  MODBUS_CFG_MAX_CH                           4          /* Maximum number of Modbus channels.                 */
 
-#define  MODBUS_CFG_BUF_SIZE                       256          /* Maximum outgoing message size.                     */
+#define  MODBUS_CFG_BUF_SIZE                       512          /* Maximum outgoing message size.                     */
 #define  MODBUS_CFG_FAILD_MAX                        5          /* Maximum 通讯失败次数.                              */
 
 /*

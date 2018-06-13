@@ -16,8 +16,8 @@
 /*********************************************************************
 * INCLUDES
 */
-#define COMM_RECV_DATA_MAX_LEN   256
-#define COMM_SEND_DATA_MAX_LEN   256    /* 约等于 128*2+10*2  */
+#define COMM_RECV_DATA_MAX_LEN   512
+#define COMM_SEND_DATA_MAX_LEN   512    /* 约等于 128*2+10*2  */
 #define COM_CONN_NUM             4     
 
 //串口地址定义    
@@ -91,17 +91,22 @@ typedef struct {
 */
 __packed
 typedef struct{
-    u32     code;
     union{
-        stcTime         time;
-        stcLocoId       loco;
-        stcParaReply    reply;
         strIapdata      iap;
-        u32             recordnum;      //记录号
-        struct{                         //指定地址读取
-            u16         paraaddr;
-            u16         paralen;
-            u16         parabuf[64];       
+
+        struct{
+            u32     code;
+            union{
+                stcTime         time;
+                stcLocoId       loco;
+                stcParaReply    reply;
+                u32             recordnum;      //记录号
+                struct{                         //指定地址读取
+                    u16         paraaddr;
+                    u16         paralen;
+                    u16         parabuf[64];       
+                };
+            };
         };
     };
 }strDtuRecData;

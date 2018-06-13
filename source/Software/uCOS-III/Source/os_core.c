@@ -718,7 +718,33 @@ void  OSStart (OS_ERR  *p_err)
         OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
         OSTCBCurPtr     = OSTCBHighRdyPtr;
         OSRunning       = OS_STATE_OS_RUNNING;
+        
+
+        
         OSStartHighRdy();                                   /* Execute target specific code to start task             */
+    {
+        int i = 0;
+//            
+//        int offset = 0x10000;
+//            
+//        NVIC_SetVectorTable(NVIC_VectTab_FLASH, offset);
+            
+        //OS_CPU_SysTickInit(1000);
+        //App_ModbusInit();                   //初始化串口及串口控制信息（启动串口Modbus接收任务）
+
+        //MB_RTU_TmrInit();
+        while(1)
+        {
+            i = 1000000;
+            while(i--);
+            BSP_LED_Toggle(1);
+            BSP_LED_Toggle(2);
+            BSP_LED_Toggle(3);
+//            BSP_LED_Toggle(Ctrl.sHeadInfo.systime %7);
+            
+
+        }
+    }        
        *p_err           = OS_ERR_FATAL_RETURN;              /* OSStart() is not supposed to return                    */
     } else {
        *p_err           = OS_ERR_OS_RUNNING;                /* OS is already running                                  */
