@@ -3,7 +3,7 @@
 *                                                uC/CPU
 *                                    CPU CONFIGURATION & PORT LAYER
 *
-*                          (c) Copyright 2004-2011; Micrium, Inc.; Weston, FL
+*                          (c) Copyright 2004-2016; Micrium, Inc.; Weston, FL
 *
 *               All rights reserved.  Protected by international copyright laws.
 *
@@ -15,6 +15,8 @@
 *               Please help us continue to provide the Embedded community with the finest
 *               software available.  Your honesty is greatly appreciated.
 *
+*               You can find our product's user manual, API reference, release notes and
+*               more information at https://doc.micrium.com.
 *               You can contact us at www.micrium.com.
 *********************************************************************************************************
 */
@@ -25,7 +27,7 @@
 *                                           CORE CPU MODULE
 *
 * Filename      : cpu_core.c
-* Version       : V1.29.01
+* Version       : V1.31.00
 * Programmer(s) : SR
 *                 ITJ
 *********************************************************************************************************
@@ -40,15 +42,24 @@
 
 #define    MICRIUM_SOURCE
 #define    CPU_CORE_MODULE
-#include  <cpu_core.h>
+#include  "cpu_core.h"
+
+#if (CPU_CFG_CACHE_MGMT_EN == DEF_ENABLED)
+#include  "cpu_cache.h"
+#endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                            LOCAL DEFINES
 *********************************************************************************************************
 */
+
+                                                                /* Pop cnt algorithm csts.                              */
+#define CRC_UTIL_POPCNT_MASK01010101_32  0x55555555u
+#define CRC_UTIL_POPCNT_MASK00110011_32  0x33333333u
+#define CRC_UTIL_POPCNT_MASK00001111_32  0x0F0F0F0Fu
+#define CRC_UTIL_POPCNT_POWERSOF256_32   0x01010101u
 
 
 /*
@@ -115,12 +126,13 @@ static  const  CPU_INT08U  CPU_CntLeadZerosTbl[256] = {                         
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                       LOCAL GLOBAL VARIABLES
 *********************************************************************************************************
 */
+
+CPU_INT32U  const  CPU_EndiannessTest = 0x12345678LU;               /* Variable to test CPU endianness.                 */
 
 
 /*
@@ -155,7 +167,6 @@ static  CPU_TS_TMR  CPU_IntDisMeasMaxCalc(CPU_TS_TMR  time_tot_cnts);
 */
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                             CPU_Init()
@@ -206,10 +217,13 @@ void  CPU_Init (void)
 #if (CPU_CFG_NAME_EN == DEF_ENABLED)
      CPU_NameInit();
 #endif
+
+#if (CPU_CFG_CACHE_MGMT_EN == DEF_ENABLED)
+     CPU_Cache_Init();
+#endif
 }
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                         CPU_SW_Exception()
@@ -223,7 +237,7 @@ void  CPU_Init (void)
 * Caller(s)   : various.
 *
 * Note(s)     : (1) CPU_SW_Exception() deadlocks the current code execution -- whether multi-tasked/
-*                   -processed/-threaded or single-threaded -- when the current code execution cannot 
+*                   -processed/-threaded or single-threaded -- when the current code execution cannot
 *                   gracefully recover or report a fault or exception condition.
 *
 *                   See also 'cpu_core.h  CPU_SW_EXCEPTION()  Note #1'.
@@ -238,7 +252,6 @@ void  CPU_SW_Exception (void)
 }
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                            CPU_NameClr()
@@ -252,7 +265,7 @@ void  CPU_SW_Exception (void)
 * Caller(s)   : CPU_NameInit(),
 *               Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : none.
@@ -273,7 +286,6 @@ void  CPU_NameClr (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                            CPU_NameGet()
@@ -292,7 +304,7 @@ void  CPU_NameClr (void)
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY 
+*               This function is a CPU module application programming interface (API) function & MAY
 *               be called by application function(s).
 *
 * Note(s)     : (1) The size of the ASCII character array that will receive the return CPU host name
@@ -331,7 +343,6 @@ void  CPU_NameGet (CPU_CHAR  *p_name,
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                            CPU_NameSet()
@@ -350,7 +361,7 @@ void  CPU_NameGet (CPU_CHAR  *p_name,
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : (1) 'p_name' ASCII string size, including the terminating NULL character, MUST be less
@@ -392,7 +403,6 @@ void  CPU_NameSet (const  CPU_CHAR  *p_name,
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                           CPU_TS_Get32()
@@ -405,7 +415,7 @@ void  CPU_NameSet (const  CPU_CHAR  *p_name,
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY 
+*               This function is a CPU module application programming interface (API) function & MAY
 *               be called by application function(s).
 *
 * Note(s)     : (1) When applicable, the amount of time measured by CPU timestamps is calculated by
@@ -453,8 +463,8 @@ CPU_TS32  CPU_TS_Get32 (void)
     CPU_TS_TMR  tmr_cur;
     CPU_TS_TMR  tmr_delta;
     CPU_SR_ALLOC();
-#endif
 
+#endif
 
 #if (CPU_CFG_TS_TMR_SIZE >= CPU_WORD_SIZE_32)
     ts = (CPU_TS32)CPU_TS_TmrRd();                                  /* Get cur ts tmr val (in 32-bit ts cnts).          */
@@ -474,7 +484,6 @@ CPU_TS32  CPU_TS_Get32 (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                           CPU_TS_Get64()
@@ -487,7 +496,7 @@ CPU_TS32  CPU_TS_Get32 (void)
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY 
+*               This function is a CPU module application programming interface (API) function & MAY
 *               be called by application function(s).
 *
 * Note(s)     : (1) When applicable, the amount of time measured by CPU timestamps is calculated by
@@ -556,7 +565,6 @@ CPU_TS64  CPU_TS_Get64 (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                           CPU_TS_Update()
@@ -598,7 +606,6 @@ void  CPU_TS_Update (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                         CPU_TS_TmrFreqGet()
@@ -618,7 +625,7 @@ void  CPU_TS_Update (void)
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : none.
@@ -632,7 +639,7 @@ CPU_TS_TMR_FREQ  CPU_TS_TmrFreqGet (CPU_ERR  *p_err)
 
 
     if (p_err == (CPU_ERR *)0) {
-        CPU_SW_EXCEPTION(;);
+        CPU_SW_EXCEPTION(0);
     }
 
     freq_hz =  CPU_TS_TmrFreq_Hz;
@@ -643,7 +650,6 @@ CPU_TS_TMR_FREQ  CPU_TS_TmrFreqGet (CPU_ERR  *p_err)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                         CPU_TS_TmrFreqSet()
@@ -685,7 +691,6 @@ void  CPU_TS_TmrFreqSet (CPU_TS_TMR_FREQ  freq_hz)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                     CPU_IntDisMeasMaxCurReset()
@@ -701,7 +706,7 @@ void  CPU_TS_TmrFreqSet (CPU_TS_TMR_FREQ  freq_hz)
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function 
+*               This function is a CPU module application programming interface (API) function
 *               & MAY be called by application function(s).
 *
 * Note(s)     : (1) After initialization, 'CPU_IntDisMeasMaxCur_cnts' MUST ALWAYS be accessed
@@ -726,7 +731,6 @@ CPU_TS_TMR  CPU_IntDisMeasMaxCurReset (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                      CPU_IntDisMeasMaxCurGet()
@@ -743,7 +747,7 @@ CPU_TS_TMR  CPU_IntDisMeasMaxCurReset (void)
 * Caller(s)   : CPU_IntDisMeasMaxCurReset(),
 *               Application.
 *
-*               This function is a CPU module application programming interface (API) function 
+*               This function is a CPU module application programming interface (API) function
 *               & MAY be called by application function(s).
 *
 * Note(s)     : (1) After initialization, 'CPU_IntDisMeasMaxCur_cnts' MUST ALWAYS be accessed
@@ -769,7 +773,6 @@ CPU_TS_TMR  CPU_IntDisMeasMaxCurGet (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                       CPU_IntDisMeasMaxGet()
@@ -786,7 +789,7 @@ CPU_TS_TMR  CPU_IntDisMeasMaxCurGet (void)
 * Caller(s)   : CPU_IntDisMeasInit(),
 *               Application.
 *
-*               This function is a CPU module application programming interface (API) function 
+*               This function is a CPU module application programming interface (API) function
 *               & MAY be called by application function(s).
 *
 * Note(s)     : (1) After initialization, 'CPU_IntDisMeasMax_cnts' MUST ALWAYS be accessed
@@ -812,7 +815,6 @@ CPU_TS_TMR  CPU_IntDisMeasMaxGet (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_IntDisMeasStart()
@@ -844,7 +846,6 @@ void  CPU_IntDisMeasStart (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_IntDisMeasStop()
@@ -927,7 +928,6 @@ void  CPU_IntDisMeasStart (void)
 *                                               interrupts              during critical section exit
 *                                              enabled ovrhd
 *
-*$PAGE*
 *
 *                       (2) When interrupts disabled time measurements are enabled :
 *
@@ -997,9 +997,8 @@ void  CPU_IntDisMeasStart (void)
 *                                                 ovrhd                 stop time (in timer counts)
 *
 *
-*$PAGE*
-*                   (b) (1) (A) In order to correctly handle unsigned subtraction overflows of start times 
-*                               from stop times, CPU timestamp timer count values MUST be returned via 
+*                   (b) (1) (A) In order to correctly handle unsigned subtraction overflows of start times
+*                               from stop times, CPU timestamp timer count values MUST be returned via
 *                               word-size-configurable 'CPU_TS_TMR' data type.
 *
 *                               See also 'cpu_core.h  FUNCTION PROTOTYPES  CPU_TS_TmrRd()  Note #2a'.
@@ -1043,7 +1042,6 @@ void  CPU_IntDisMeasStop (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                         CPU_CntLeadZeros()
@@ -1059,7 +1057,7 @@ void  CPU_IntDisMeasStop (void)
 * Caller(s)   : CPU_CntTrailZeros(),
 *               Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY 
+*               This function is a CPU module application programming interface (API) function & MAY
 *               be called by application function(s).
 *
 * Note(s)     : (1) (a) Supports the following data value sizes :
@@ -1102,7 +1100,6 @@ void  CPU_IntDisMeasStop (void)
 *                              0    0    0         0    0    0    0    1           15
 *                              0    0    0         0    0    0    0    0           16
 *
-*$PAGE*
 *                       (3) For 32-bit values :
 *
 *                             b31  b30  b29  ...  b04  b03  b02  b01  b00    # Leading Zeros
@@ -1169,7 +1166,6 @@ CPU_DATA  CPU_CntLeadZeros (CPU_DATA  val)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_CntLeadZeros08()
@@ -1184,7 +1180,7 @@ CPU_DATA  CPU_CntLeadZeros (CPU_DATA  val)
 *               CPU_CntTrailZeros08(),
 *               Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : (1) Supports  8-bit values :
@@ -1225,8 +1221,8 @@ CPU_DATA  CPU_CntLeadZeros08 (CPU_INT08U  val)
 #else                                                                           /* ----------- C-OPTIMIZED ------------ */
                                                                                 /* Chk bits [07:00] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
-    ix              = (CPU_DATA)(val >>  0u);                                   /* .. lookup tbl ix  = 'val' >>  0 bits */
-    nbr_lead_zeros  = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] +  0u);                /* .. plus nbr msb lead zeros =  0 bits.*/
+    ix              = (CPU_DATA)(val);                                          /* .. lookup tbl ix  = 'val' >>  0 bits */
+    nbr_lead_zeros  = (CPU_DATA)(CPU_CntLeadZerosTbl[ix]);                      /* .. plus nbr msb lead zeros =  0 bits.*/
 #endif
 
 
@@ -1235,7 +1231,6 @@ CPU_DATA  CPU_CntLeadZeros08 (CPU_INT08U  val)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_CntLeadZeros16()
@@ -1250,7 +1245,7 @@ CPU_DATA  CPU_CntLeadZeros08 (CPU_INT08U  val)
 *               CPU_CntTrailZeros16(),
 *               Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : (1) Supports 16-bit values :
@@ -1293,13 +1288,13 @@ CPU_DATA  CPU_CntLeadZeros16 (CPU_INT16U  val)
 #else                                                                           /* ----------- C-OPTIMIZED ------------ */
     if (val > 0x00FFu) {                                                        /* Chk bits [15:08] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
-        ix             = (CPU_DATA)(val >>  8u);                                /* .. lookup tbl ix  = 'val' >>  8 bits */
-        nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] +  0u);             /* .. plus nbr msb lead zeros =  0 bits.*/
+        ix             = (CPU_DATA)(val >> 8u);									/* .. lookup tbl ix  = 'val' >>  8 bits */
+        nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix]);                   /* .. plus nbr msb lead zeros =  0 bits.*/
 
     } else {                                                                    /* Chk bits [07:00] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
-        ix             = (CPU_DATA)(val >>  0u);                                /* .. lookup tbl ix  = 'val' >>  0 bits */
-        nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] +  8u);             /* .. plus nbr msb lead zeros =  8 bits.*/
+        ix             = (CPU_DATA)(val);                                       /* .. lookup tbl ix  = 'val' >>  0 bits */
+        nbr_lead_zeros = (CPU_DATA)((CPU_DATA)CPU_CntLeadZerosTbl[ix] +  8u);   /* .. plus nbr msb lead zeros =  8 bits.*/
     }
 #endif
 
@@ -1309,7 +1304,6 @@ CPU_DATA  CPU_CntLeadZeros16 (CPU_INT16U  val)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_CntLeadZeros32()
@@ -1324,7 +1318,7 @@ CPU_DATA  CPU_CntLeadZeros16 (CPU_INT16U  val)
 *               CPU_CntTrailZeros32(),
 *               Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : (1) Supports 32-bit values :
@@ -1369,24 +1363,24 @@ CPU_DATA  CPU_CntLeadZeros32 (CPU_INT32U  val)
         if (val > 0x00FFFFFFu) {                                                /* Chk bits [31:24] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
             ix             = (CPU_DATA)(val >> 24u);                            /* .. lookup tbl ix  = 'val' >> 24 bits */
-            nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] +  0u);         /* .. plus nbr msb lead zeros =  0 bits.*/
+            nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix]);               /* .. plus nbr msb lead zeros =  0 bits.*/
 
         } else {                                                                /* Chk bits [23:16] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
             ix             = (CPU_DATA)(val >> 16u);                            /* .. lookup tbl ix  = 'val' >> 16 bits */
-            nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] +  8u);         /* .. plus nbr msb lead zeros =  8 bits.*/
+            nbr_lead_zeros = (CPU_DATA)((CPU_DATA)CPU_CntLeadZerosTbl[ix] +  8u);/* .. plus nbr msb lead zeros =  8 bits.*/
         }
 
     } else {
         if (val > 0x000000FFu) {                                                /* Chk bits [15:08] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
             ix             = (CPU_DATA)(val >>  8u);                            /* .. lookup tbl ix  = 'val' >>  8 bits */
-            nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] + 16u);         /* .. plus nbr msb lead zeros = 16 bits.*/
+            nbr_lead_zeros = (CPU_DATA)((CPU_DATA)CPU_CntLeadZerosTbl[ix] + 16u);/* .. plus nbr msb lead zeros = 16 bits.*/
 
         } else {                                                                /* Chk bits [07:00] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
-            ix             = (CPU_DATA)(val >>  0u);                            /* .. lookup tbl ix  = 'val' >>  0 bits */
-            nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] + 24u);         /* .. plus nbr msb lead zeros = 24 bits.*/
+            ix             = (CPU_DATA)(val);                                   /* .. lookup tbl ix  = 'val' >>  0 bits */
+            nbr_lead_zeros = (CPU_DATA)((CPU_DATA)CPU_CntLeadZerosTbl[ix] + 24u);/* .. plus nbr msb lead zeros = 24 bits.*/
         }
     }
 #endif
@@ -1397,7 +1391,6 @@ CPU_DATA  CPU_CntLeadZeros32 (CPU_INT32U  val)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_CntLeadZeros64()
@@ -1412,7 +1405,7 @@ CPU_DATA  CPU_CntLeadZeros32 (CPU_INT32U  val)
 *               CPU_CntTrailZeros64(),
 *               Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : (1) Supports 64-bit values :
@@ -1435,7 +1428,7 @@ CPU_DATA  CPU_CntLeadZeros32 (CPU_INT32U  val)
 *                   See also 'CPU COUNT LEAD ZEROs LOOKUP TABLE  Note #1'.
 *********************************************************************************************************
 */
-/*$PAGE*/
+
 #if (CPU_CFG_DATA_SIZE_MAX >= CPU_WORD_SIZE_64)
 CPU_DATA  CPU_CntLeadZeros64 (CPU_INT64U  val)
 {
@@ -1453,55 +1446,55 @@ CPU_DATA  CPU_CntLeadZeros64 (CPU_INT64U  val)
 
 
 #else                                                                           /* ----------- C-OPTIMIZED ------------ */
-    if (val > 0x00000000FFFFFFFFu) {
-        if (val > 0x0000FFFFFFFFFFFFu) {
-            if (val > 0x00FFFFFFFFFFFFFFu) {                                    /* Chk bits [63:56] :                   */
+    if (val > 0x00000000FFFFFFFFull) {
+        if (val > 0x0000FFFFFFFFFFFFull) {
+            if (val > 0x00FFFFFFFFFFFFFFull) {                                  /* Chk bits [63:56] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
                 ix             = (CPU_DATA)(val >> 56u);                        /* .. lookup tbl ix  = 'val' >> 56 bits */
-                nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] +  0u);     /* .. plus nbr msb lead zeros =  0 bits.*/
+                nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix]);           /* .. plus nbr msb lead zeros =  0 bits.*/
 
             } else {                                                            /* Chk bits [55:48] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
                 ix             = (CPU_DATA)(val >> 48u);                        /* .. lookup tbl ix  = 'val' >> 48 bits */
-                nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] +  8u);     /* .. plus nbr msb lead zeros =  8 bits.*/
+                nbr_lead_zeros = (CPU_DATA)((CPU_INT64U)CPU_CntLeadZerosTbl[ix] +  8u);/* .. plus nbr msb lead zeros =  8 bits.*/
             }
 
         } else {
-            if (val > 0x000000FFFFFFFFFFu) {                                    /* Chk bits [47:40] :                   */
+            if (val > 0x000000FFFFFFFFFFull) {                                  /* Chk bits [47:40] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
                 ix             = (CPU_DATA)(val >> 40u);                        /* .. lookup tbl ix  = 'val' >> 40 bits */
-                nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] + 16u);     /* .. plus nbr msb lead zeros = 16 bits.*/
+                nbr_lead_zeros = (CPU_DATA)((CPU_INT64U)CPU_CntLeadZerosTbl[ix] + 16u);/* .. plus nbr msb lead zeros = 16 bits.*/
 
             } else {                                                            /* Chk bits [39:32] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
                 ix             = (CPU_DATA)(val >> 32u);                        /* .. lookup tbl ix  = 'val' >> 32 bits */
-                nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] + 24u);     /* .. plus nbr msb lead zeros = 24 bits.*/
+                nbr_lead_zeros = (CPU_DATA)((CPU_INT64U)CPU_CntLeadZerosTbl[ix] + 24u);/* .. plus nbr msb lead zeros = 24 bits.*/
             }
         }
 
     } else {
-        if (val > 0x000000000000FFFFu) {
-            if (val > 0x0000000000FFFFFFu) {                                    /* Chk bits [31:24] :                   */
+        if (val > 0x000000000000FFFFull) {
+            if (val > 0x0000000000FFFFFFull) {                                  /* Chk bits [31:24] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
                 ix             = (CPU_DATA)(val >> 24u);                        /* .. lookup tbl ix  = 'val' >> 24 bits */
-                nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] + 32u);     /* .. plus nbr msb lead zeros = 32 bits.*/
+                nbr_lead_zeros = (CPU_DATA)((CPU_INT64U)CPU_CntLeadZerosTbl[ix] + 32u);/* .. plus nbr msb lead zeros = 32 bits.*/
 
             } else {                                                            /* Chk bits [23:16] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
                 ix             = (CPU_DATA)(val >> 16u);                        /* .. lookup tbl ix  = 'val' >> 16 bits */
-                nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] + 40u);     /* .. plus nbr msb lead zeros = 40 bits.*/
+                nbr_lead_zeros = (CPU_DATA)((CPU_INT64U)CPU_CntLeadZerosTbl[ix] + 40u);/* .. plus nbr msb lead zeros = 40 bits.*/
             }
 
         } else {
-            if (val > 0x00000000000000FFu) {                                    /* Chk bits [15:08] :                   */
+            if (val > 0x00000000000000FFull) {                                  /* Chk bits [15:08] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
                 ix             = (CPU_DATA)(val >>  8u);                        /* .. lookup tbl ix  = 'val' >>  8 bits */
-                nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] + 48u);     /* .. plus nbr msb lead zeros = 48 bits.*/
+                nbr_lead_zeros = (CPU_DATA)((CPU_INT64U)CPU_CntLeadZerosTbl[ix] + 48u);/* .. plus nbr msb lead zeros = 48 bits.*/
 
             } else {                                                            /* Chk bits [07:00] :                   */
                                                                                 /* .. Nbr lead zeros =               .. */
-                ix             = (CPU_DATA)(val >>  0u);                        /* .. lookup tbl ix  = 'val' >>  0 bits */
-                nbr_lead_zeros = (CPU_DATA)(CPU_CntLeadZerosTbl[ix] + 56u);     /* .. plus nbr msb lead zeros = 56 bits.*/
+                ix             = (CPU_DATA)(val);                               /* .. lookup tbl ix  = 'val' >>  0 bits */
+                nbr_lead_zeros = (CPU_DATA)((CPU_INT64U)CPU_CntLeadZerosTbl[ix] + 56u);/* .. plus nbr msb lead zeros = 56 bits.*/
             }
         }
     }
@@ -1513,7 +1506,6 @@ CPU_DATA  CPU_CntLeadZeros64 (CPU_INT64U  val)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                         CPU_CntTrailZeros()
@@ -1526,7 +1518,7 @@ CPU_DATA  CPU_CntLeadZeros64 (CPU_INT64U  val)
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY 
+*               This function is a CPU module application programming interface (API) function & MAY
 *               be called by application function(s).
 *
 * Note(s)     : (1) (a) Supports the following data value sizes :
@@ -1603,14 +1595,13 @@ CPU_DATA  CPU_CntLeadZeros64 (CPU_INT64U  val)
 *                              1    0    0    0    0         0    0    0           63
 *                              0    0    0    0    0         0    0    0           64
 *
-*$PAGE*
-*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing 
+*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing
 *                   zero bits is also equivalent to the bit position of the least-significant set bit.
 *
 *               (3) 'val' SHOULD be validated for non-'0' PRIOR to all other counting zero calculations :
 *
-*                   (a) CPU_CntTrailZeros()'s final conditional statement calculates 'val's number of 
-*                       trailing zeros based on its return data size, 'CPU_CFG_DATA_SIZE', & 'val's 
+*                   (a) CPU_CntTrailZeros()'s final conditional statement calculates 'val's number of
+*                       trailing zeros based on its return data size, 'CPU_CFG_DATA_SIZE', & 'val's
 *                       calculated number of lead zeros ONLY if the initial 'val' is non-'0' :
 *
 *                           if (val != 0u) {
@@ -1619,7 +1610,7 @@ CPU_DATA  CPU_CntLeadZeros64 (CPU_INT64U  val)
 *                               nbr_trail_zeros = nbr_lead_zeros;
 *                           }
 *
-*                       Therefore, initially validating all non-'0' values avoids having to conditionally 
+*                       Therefore, initially validating all non-'0' values avoids having to conditionally
 *                       execute the final 'if' statement.
 *********************************************************************************************************
 */
@@ -1648,7 +1639,6 @@ CPU_DATA  CPU_CntTrailZeros (CPU_DATA  val)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_CntTrailZeros08()
@@ -1661,7 +1651,7 @@ CPU_DATA  CPU_CntTrailZeros (CPU_DATA  val)
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : (1) Supports  8-bit values :
@@ -1679,15 +1669,15 @@ CPU_DATA  CPU_CntTrailZeros (CPU_DATA  val)
 *                                0    0    0    0    0    0    0    0            8
 *
 *
-*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing 
+*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing
 *                   zero bits is also equivalent to the bit position of the least-significant set bit.
 *
 *               (3) 'val' SHOULD be validated for non-'0' PRIOR to all other counting zero calculations :
 *
-*                   (a) For assembly-optimized implementations, CPU_CntTrailZeros() returns 'val's 
-*                       number of trailing zeros via CPU's native data size, 'CPU_CFG_DATA_SIZE'.  
-*                       If the returned number of zeros exceeds CPU_CntTrailZeros08()'s  8-bit return 
-*                       data size, then the returned number of zeros must be offset by the difference 
+*                   (a) For assembly-optimized implementations, CPU_CntTrailZeros() returns 'val's
+*                       number of trailing zeros via CPU's native data size, 'CPU_CFG_DATA_SIZE'.
+*                       If the returned number of zeros exceeds CPU_CntTrailZeros08()'s  8-bit return
+*                       data size, then the returned number of zeros must be offset by the difference
 *                       between CPU_CntTrailZeros()'s  & CPU_CntTrailZeros08()'s return data size :
 *
 *                           nbr_trail_zeros = CPU_CntTrailZeros((CPU_DATA)val);
@@ -1695,16 +1685,16 @@ CPU_DATA  CPU_CntTrailZeros (CPU_DATA  val)
 *                               nbr_trail_zeros -= (CPU_CFG_DATA_SIZE - CPU_WORD_SIZE_08) * DEF_OCTET_NBR_BITS;
 *                           }
 *
-*                       However, this ONLY occurs for an initial 'val' of '0' since all non-'0'  8-bit 
+*                       However, this ONLY occurs for an initial 'val' of '0' since all non-'0'  8-bit
 *                       values would return a number of trailing zeros less than or equal to  8 bits.
 *
 *                       Therefore, initially validating all non-'0' values prior to calling assembly-
-*                       optimized CPU_CntTrailZeros() avoids having to offset the number of returned 
+*                       optimized CPU_CntTrailZeros() avoids having to offset the number of returned
 *                       trailing zeros by the difference in CPU data size and  8-bit data value bits.
 *
-*                   (b) For CPU_CntTrailZeros08()'s C implementation, the final conditional statement 
-*                       calculates 'val's number of trailing zeros based on CPU_CntTrailZeros08()'s 
-*                        8-bit return data size & 'val's calculated number of lead zeros ONLY if the 
+*                   (b) For CPU_CntTrailZeros08()'s C implementation, the final conditional statement
+*                       calculates 'val's number of trailing zeros based on CPU_CntTrailZeros08()'s
+*                        8-bit return data size & 'val's calculated number of lead zeros ONLY if the
 *                       initial 'val' is non-'0' :
 *
 *                           if (val != 0u) {
@@ -1713,11 +1703,11 @@ CPU_DATA  CPU_CntTrailZeros (CPU_DATA  val)
 *                               nbr_trail_zeros = nbr_lead_zeros;
 *                           }
 *
-*                       Therefore, initially validating all non-'0' values avoids having to conditionally 
+*                       Therefore, initially validating all non-'0' values avoids having to conditionally
 *                       execute the final 'if' statement.
 *********************************************************************************************************
 */
-/*$PAGE*/
+
 #if (CPU_CFG_DATA_SIZE_MAX >= CPU_WORD_SIZE_08)
 CPU_DATA  CPU_CntTrailZeros08 (CPU_INT08U  val)
 {
@@ -1751,7 +1741,6 @@ CPU_DATA  CPU_CntTrailZeros08 (CPU_INT08U  val)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_CntTrailZeros16()
@@ -1764,7 +1753,7 @@ CPU_DATA  CPU_CntTrailZeros08 (CPU_INT08U  val)
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : (1) Supports 16-bit values :
@@ -1784,15 +1773,15 @@ CPU_DATA  CPU_CntTrailZeros08 (CPU_INT08U  val)
 *                           0    0    0    0    0         0    0    0           16
 *
 *
-*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing 
+*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing
 *                   zero bits is also equivalent to the bit position of the least-significant set bit.
 *
 *               (3) 'val' SHOULD be validated for non-'0' PRIOR to all other counting zero calculations :
 *
-*                   (a) For assembly-optimized implementations, CPU_CntTrailZeros() returns 'val's 
-*                       number of trailing zeros via CPU's native data size, 'CPU_CFG_DATA_SIZE'.  
-*                       If the returned number of zeros exceeds CPU_CntTrailZeros16()'s 16-bit return 
-*                       data size, then the returned number of zeros must be offset by the difference 
+*                   (a) For assembly-optimized implementations, CPU_CntTrailZeros() returns 'val's
+*                       number of trailing zeros via CPU's native data size, 'CPU_CFG_DATA_SIZE'.
+*                       If the returned number of zeros exceeds CPU_CntTrailZeros16()'s 16-bit return
+*                       data size, then the returned number of zeros must be offset by the difference
 *                       between CPU_CntTrailZeros()'s  & CPU_CntTrailZeros16()'s return data size :
 *
 *                           nbr_trail_zeros = CPU_CntTrailZeros((CPU_DATA)val);
@@ -1800,16 +1789,16 @@ CPU_DATA  CPU_CntTrailZeros08 (CPU_INT08U  val)
 *                               nbr_trail_zeros -= (CPU_CFG_DATA_SIZE - CPU_WORD_SIZE_16) * DEF_OCTET_NBR_BITS;
 *                           }
 *
-*                       However, this ONLY occurs for an initial 'val' of '0' since all non-'0' 16-bit 
+*                       However, this ONLY occurs for an initial 'val' of '0' since all non-'0' 16-bit
 *                       values would return a number of trailing zeros less than or equal to 16 bits.
 *
 *                       Therefore, initially validating all non-'0' values prior to calling assembly-
-*                       optimized CPU_CntTrailZeros() avoids having to offset the number of returned 
+*                       optimized CPU_CntTrailZeros() avoids having to offset the number of returned
 *                       trailing zeros by the difference in CPU data size and 16-bit data value bits.
 *
-*                   (b) For CPU_CntTrailZeros16()'s C implementation, the final conditional statement 
-*                       calculates 'val's number of trailing zeros based on CPU_CntTrailZeros16()'s 
-*                       16-bit return data size & 'val's calculated number of lead zeros ONLY if the 
+*                   (b) For CPU_CntTrailZeros16()'s C implementation, the final conditional statement
+*                       calculates 'val's number of trailing zeros based on CPU_CntTrailZeros16()'s
+*                       16-bit return data size & 'val's calculated number of lead zeros ONLY if the
 *                       initial 'val' is non-'0' :
 *
 *                           if (val != 0u) {
@@ -1818,11 +1807,11 @@ CPU_DATA  CPU_CntTrailZeros08 (CPU_INT08U  val)
 *                               nbr_trail_zeros = nbr_lead_zeros;
 *                           }
 *
-*                       Therefore, initially validating all non-'0' values avoids having to conditionally 
+*                       Therefore, initially validating all non-'0' values avoids having to conditionally
 *                       execute the final 'if' statement.
 *********************************************************************************************************
 */
-/*$PAGE*/
+
 #if (CPU_CFG_DATA_SIZE_MAX >= CPU_WORD_SIZE_16)
 CPU_DATA  CPU_CntTrailZeros16 (CPU_INT16U  val)
 {
@@ -1856,7 +1845,6 @@ CPU_DATA  CPU_CntTrailZeros16 (CPU_INT16U  val)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_CntTrailZeros32()
@@ -1869,7 +1857,7 @@ CPU_DATA  CPU_CntTrailZeros16 (CPU_INT16U  val)
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : (1) Supports 32-bit values :
@@ -1889,15 +1877,15 @@ CPU_DATA  CPU_CntTrailZeros16 (CPU_INT16U  val)
 *                           0    0    0    0    0         0    0    0           32
 *
 *
-*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing 
+*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing
 *                   zero bits is also equivalent to the bit position of the least-significant set bit.
 *
 *               (3) 'val' SHOULD be validated for non-'0' PRIOR to all other counting zero calculations :
 *
-*                   (a) For assembly-optimized implementations, CPU_CntTrailZeros() returns 'val's 
-*                       number of trailing zeros via CPU's native data size, 'CPU_CFG_DATA_SIZE'.  
-*                       If the returned number of zeros exceeds CPU_CntTrailZeros32()'s 32-bit return 
-*                       data size, then the returned number of zeros must be offset by the difference 
+*                   (a) For assembly-optimized implementations, CPU_CntTrailZeros() returns 'val's
+*                       number of trailing zeros via CPU's native data size, 'CPU_CFG_DATA_SIZE'.
+*                       If the returned number of zeros exceeds CPU_CntTrailZeros32()'s 32-bit return
+*                       data size, then the returned number of zeros must be offset by the difference
 *                       between CPU_CntTrailZeros()'s  & CPU_CntTrailZeros32()'s return data size :
 *
 *                           nbr_trail_zeros = CPU_CntTrailZeros((CPU_DATA)val);
@@ -1905,16 +1893,16 @@ CPU_DATA  CPU_CntTrailZeros16 (CPU_INT16U  val)
 *                               nbr_trail_zeros -= (CPU_CFG_DATA_SIZE - CPU_WORD_SIZE_32) * DEF_OCTET_NBR_BITS;
 *                           }
 *
-*                       However, this ONLY occurs for an initial 'val' of '0' since all non-'0' 32-bit 
+*                       However, this ONLY occurs for an initial 'val' of '0' since all non-'0' 32-bit
 *                       values would return a number of trailing zeros less than or equal to 32 bits.
 *
 *                       Therefore, initially validating all non-'0' values prior to calling assembly-
-*                       optimized CPU_CntTrailZeros() avoids having to offset the number of returned 
+*                       optimized CPU_CntTrailZeros() avoids having to offset the number of returned
 *                       trailing zeros by the difference in CPU data size and 32-bit data value bits.
 *
-*                   (b) For CPU_CntTrailZeros32()'s C implementation, the final conditional statement 
-*                       calculates 'val's number of trailing zeros based on CPU_CntTrailZeros32()'s 
-*                       32-bit return data size & 'val's calculated number of lead zeros ONLY if the 
+*                   (b) For CPU_CntTrailZeros32()'s C implementation, the final conditional statement
+*                       calculates 'val's number of trailing zeros based on CPU_CntTrailZeros32()'s
+*                       32-bit return data size & 'val's calculated number of lead zeros ONLY if the
 *                       initial 'val' is non-'0' :
 *
 *                           if (val != 0u) {
@@ -1923,11 +1911,11 @@ CPU_DATA  CPU_CntTrailZeros16 (CPU_INT16U  val)
 *                               nbr_trail_zeros = nbr_lead_zeros;
 *                           }
 *
-*                       Therefore, initially validating all non-'0' values avoids having to conditionally 
+*                       Therefore, initially validating all non-'0' values avoids having to conditionally
 *                       execute the final 'if' statement.
 *********************************************************************************************************
 */
-/*$PAGE*/
+
 #if (CPU_CFG_DATA_SIZE_MAX >= CPU_WORD_SIZE_32)
 CPU_DATA  CPU_CntTrailZeros32 (CPU_INT32U  val)
 {
@@ -1961,7 +1949,6 @@ CPU_DATA  CPU_CntTrailZeros32 (CPU_INT32U  val)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_CntTrailZeros64()
@@ -1974,7 +1961,7 @@ CPU_DATA  CPU_CntTrailZeros32 (CPU_INT32U  val)
 *
 * Caller(s)   : Application.
 *
-*               This function is a CPU module application programming interface (API) function & MAY be 
+*               This function is a CPU module application programming interface (API) function & MAY be
 *               called by application function(s).
 *
 * Note(s)     : (1) Supports 64-bit values :
@@ -1994,15 +1981,15 @@ CPU_DATA  CPU_CntTrailZeros32 (CPU_INT32U  val)
 *                           0    0    0    0    0         0    0    0           64
 *
 *
-*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing 
+*               (2) For non-zero values, the returned number of contiguous, least-significant, trailing
 *                   zero bits is also equivalent to the bit position of the least-significant set bit.
 *
 *               (3) 'val' SHOULD be validated for non-'0' PRIOR to all other counting zero calculations :
 *
-*                   (a) For assembly-optimized implementations, CPU_CntTrailZeros() returns 'val's 
-*                       number of trailing zeros via CPU's native data size, 'CPU_CFG_DATA_SIZE'.  
-*                       If the returned number of zeros exceeds CPU_CntTrailZeros64()'s 64-bit return 
-*                       data size, then the returned number of zeros must be offset by the difference 
+*                   (a) For assembly-optimized implementations, CPU_CntTrailZeros() returns 'val's
+*                       number of trailing zeros via CPU's native data size, 'CPU_CFG_DATA_SIZE'.
+*                       If the returned number of zeros exceeds CPU_CntTrailZeros64()'s 64-bit return
+*                       data size, then the returned number of zeros must be offset by the difference
 *                       between CPU_CntTrailZeros()'s  & CPU_CntTrailZeros64()'s return data size :
 *
 *                           nbr_trail_zeros = CPU_CntTrailZeros((CPU_DATA)val);
@@ -2010,16 +1997,16 @@ CPU_DATA  CPU_CntTrailZeros32 (CPU_INT32U  val)
 *                               nbr_trail_zeros -= (CPU_CFG_DATA_SIZE - CPU_WORD_SIZE_64) * DEF_OCTET_NBR_BITS;
 *                           }
 *
-*                       However, this ONLY occurs for an initial 'val' of '0' since all non-'0' 64-bit 
+*                       However, this ONLY occurs for an initial 'val' of '0' since all non-'0' 64-bit
 *                       values would return a number of trailing zeros less than or equal to 64 bits.
 *
 *                       Therefore, initially validating all non-'0' values prior to calling assembly-
-*                       optimized CPU_CntTrailZeros() avoids having to offset the number of returned 
+*                       optimized CPU_CntTrailZeros() avoids having to offset the number of returned
 *                       trailing zeros by the difference in CPU data size and 64-bit data value bits.
 *
-*                   (b) For CPU_CntTrailZeros64()'s C implementation, the final conditional statement 
-*                       calculates 'val's number of trailing zeros based on CPU_CntTrailZeros64()'s 
-*                       64-bit return data size & 'val's calculated number of lead zeros ONLY if the 
+*                   (b) For CPU_CntTrailZeros64()'s C implementation, the final conditional statement
+*                       calculates 'val's number of trailing zeros based on CPU_CntTrailZeros64()'s
+*                       64-bit return data size & 'val's calculated number of lead zeros ONLY if the
 *                       initial 'val' is non-'0' :
 *
 *                           if (val != 0u) {
@@ -2028,11 +2015,11 @@ CPU_DATA  CPU_CntTrailZeros32 (CPU_INT32U  val)
 *                               nbr_trail_zeros = nbr_lead_zeros;
 *                           }
 *
-*                       Therefore, initially validating all non-'0' values avoids having to conditionally 
+*                       Therefore, initially validating all non-'0' values avoids having to conditionally
 *                       execute the final 'if' statement.
 *********************************************************************************************************
 */
-/*$PAGE*/
+
 #if (CPU_CFG_DATA_SIZE_MAX >= CPU_WORD_SIZE_64)
 CPU_DATA  CPU_CntTrailZeros64 (CPU_INT64U  val)
 {
@@ -2066,7 +2053,73 @@ CPU_DATA  CPU_CntTrailZeros64 (CPU_INT64U  val)
 #endif
 
 
-/*$PAGE*/
+/*
+*********************************************************************************************************
+*                                           CRCUtil_PopCnt_32()
+*
+* Description : Compute population count (hamming weight) for value (number of bits set).
+*
+* Argument(s) : value           Value to compute population count on.
+*
+*
+* Return(s)   : value's population count.
+*
+* Caller(s)   : various.
+*
+* Note(s)     : (1) Algorithm taken from http://en.wikipedia.org/wiki/Hamming_weight
+*********************************************************************************************************
+*/
+
+CPU_INT08U  CPU_PopCnt32 (CPU_INT32U  value)
+{
+    CPU_INT32U  even_cnt;
+    CPU_INT32U  odd_cnt;
+    CPU_INT32U  result;
+
+
+    odd_cnt  = (value >> 1u) & CRC_UTIL_POPCNT_MASK01010101_32; /* 2-bits pieces.                                       */
+    result   =  value - odd_cnt;                                /* Same result as result=odd_cnt+(value & 0x55555555).  */
+
+    even_cnt =  result & CRC_UTIL_POPCNT_MASK00110011_32;       /* 4-bits pieces.                                       */
+    odd_cnt  = (result >> 2u) & CRC_UTIL_POPCNT_MASK00110011_32;
+    result   =  even_cnt + odd_cnt;
+
+    even_cnt =  result & CRC_UTIL_POPCNT_MASK00001111_32;       /* 8-bits pieces.                                       */
+    odd_cnt  = (result >> 4u) & CRC_UTIL_POPCNT_MASK00001111_32;
+    result   =  even_cnt + odd_cnt;
+
+    result = (result * CRC_UTIL_POPCNT_POWERSOF256_32) >> 24u;
+
+    return ((CPU_INT08U)result);
+}
+
+
+/*
+*********************************************************************************************************
+*                                            CPU_StatReset()
+*
+* Description : Reset all performance monitors.
+*
+* Argument(s) : none.
+*
+* Return(s)   : none.
+*
+* Caller(s)   : OSStatReset().
+*
+* Note(s)     : Critical section provided by caller.
+*********************************************************************************************************
+*/
+
+#if (CPU_CFG_PERF_MON_EN == DEF_ENABLED)
+void  CPU_StatReset (void)
+{
+#ifdef  CPU_CFG_INT_DIS_MEAS_EN
+    CPU_IntDisMeasMax_cnts = 0u;
+#endif
+}
+#endif
+
+
 /*
 *********************************************************************************************************
 *********************************************************************************************************
@@ -2099,7 +2152,6 @@ static  void  CPU_NameInit (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                            CPU_TS_Init()
@@ -2169,7 +2221,6 @@ static  void  CPU_TS_Init (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                        CPU_IntDisMeasInit()
@@ -2243,7 +2294,6 @@ static  void  CPU_IntDisMeasInit (void)
 #endif
 
 
-/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                       CPU_IntDisMeasMaxCalc()
@@ -2299,12 +2349,12 @@ static  void  CPU_IntDisMeasInit (void)
 *                                             ovrhd                 stop time (in timer counts)
 *
 *
-*                   (b) To expedite & reduce interrupts disabled time measurement overhead, the final 
-*                       calculations to subtract the interrupts disabled time measurement overhead is 
+*                   (b) To expedite & reduce interrupts disabled time measurement overhead, the final
+*                       calculations to subtract the interrupts disabled time measurement overhead is
 *                       performed asynchronously in API functions.
 *
 *                       See also 'CPU_IntDisMeasStop()  Note #1b2'.
-*$PAGE*
+*
 *                   (c) The amount of time interrupts are disabled is calculated by either of the
 *                       following equations :
 *

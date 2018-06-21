@@ -512,8 +512,7 @@ u8 MX25L3206_Erase(u32 sec1, u32 sec2)
 *******************************************************************************/
 u8 WriteFlsh(u32 adr,u8 *buf,u32 len)
 {
-    u32  i = 0;
-        
+    u32     i = 0;
     /*******************************************************************************
     * Description  : 进入写操作前，判断数据是否跨扇区（跨越扇区需先擦除）
     * Author       : 2018/5/15 星期二, by redmorningcn
@@ -522,10 +521,13 @@ u8 WriteFlsh(u32 adr,u8 *buf,u32 len)
     {
         if(((adr +i)&0x0FFF)==0)                                //在块边界，需要擦除块
         {
+            
             EEP_WaitEvent();
-            MX25L3206_Erase((adr>>12)&0x3FF,(adr>>12)&0x3FF);
+            MX25L3206_Erase(((adr +i)>>12)&0x3FF,((adr +i)>>12)&0x3FF);
+            
+            i += 0x0FFF;
             EEP_SendEvent();
-            break;                                              
+            //break;                                              
         }
     }
     

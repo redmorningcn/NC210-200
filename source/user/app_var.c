@@ -120,5 +120,7 @@ void app_init_sctrl(void)
     */
     Ctrl.Rec.CmdTpye    = 0;                            //默认值为0
     memset((u8 *)Ctrl.Rec.rsvbyte,0,sizeof(Ctrl.Rec.rsvbyte));    //预留数值置零
+    
+    Ctrl.sProductInfo.SwVer = SOFT_VERSION;             //软件版本，和程序一起，写死。
 
 }

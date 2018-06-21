@@ -87,7 +87,6 @@ static  void  AppTaskStart  (void *p_arg);
 */
 int  main (void)
 {
-
 /**************************************************************
 * Description  : 设置中断向量表
 * Author       : 2018/6/8 星期五, by redmorningcn
@@ -117,11 +116,7 @@ int  main (void)
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                  (OS_ERR     *)&err);
 
-//    offset = USER_APP_START_ADDR-NVIC_VectTab_FLASH;
-//    NVIC_SetVectorTable(NVIC_VectTab_FLASH, offset);
-    
 
-    
     OSStart(&err);                                              /* Start multitasking (i.e. give control to uC/OS-III). */
 }
 

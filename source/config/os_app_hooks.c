@@ -3,7 +3,7 @@
 *                                                     uC/OS-III
 *                                                The Real-Time Kernel
 *
-*                                  (c) Copyright 2009-2010; Micrium, Inc.; Weston, FL
+*                                  (c) Copyright 2009-2012; Micrium, Inc.; Weston, FL
 *                          All rights reserved.  Protected by international copyright laws.
 *
 *                                                  APPLICATION HOOKS
@@ -14,9 +14,9 @@
 *
 * LICENSING TERMS:
 * ---------------
-*               uC/OS-III is provided in source form to registered licensees ONLY.  It is 
-*               illegal to distribute this source code to any third party unless you receive 
-*               written permission by an authorized Micrium representative.  Knowledge of 
+*               uC/OS-III is provided in source form to registered licensees ONLY.  It is
+*               illegal to distribute this source code to any third party unless you receive
+*               written permission by an authorized Micrium representative.  Knowledge of
 *               the source code may NOT be used to develop a similar product.
 *
 *               Please help us continue to provide the Embedded community with the finest
@@ -28,6 +28,7 @@
 
 #include <os.h>
 #include <os_app_hooks.h>
+#include <osal.h>
 
 /*$PAGE*/
 /*
@@ -47,7 +48,6 @@ void  App_OS_SetAllHooks (void)
 #if OS_CFG_APP_HOOKS_EN > 0u
     CPU_SR_ALLOC();
 
-
     CPU_CRITICAL_ENTER();
     OS_AppTaskCreateHookPtr = App_OS_TaskCreateHook;
     OS_AppTaskDelHookPtr    = App_OS_TaskDelHook;
@@ -57,6 +57,7 @@ void  App_OS_SetAllHooks (void)
     OS_AppStatTaskHookPtr   = App_OS_StatTaskHook;
     OS_AppTaskSwHookPtr     = App_OS_TaskSwHook;
     OS_AppTimeTickHookPtr   = App_OS_TimeTickHook;
+    
     CPU_CRITICAL_EXIT();
 #endif
 }
@@ -78,7 +79,6 @@ void  App_OS_ClrAllHooks (void)
 {
 #if OS_CFG_APP_HOOKS_EN > 0u
     CPU_SR_ALLOC();
-
 
     CPU_CRITICAL_ENTER();
     OS_AppTaskCreateHookPtr = (OS_APP_HOOK_TCB)0;
@@ -161,10 +161,10 @@ void  App_OS_TaskReturnHook (OS_TCB  *p_tcb)
 * Note(s)    : none
 ************************************************************************************************************************
 */
-
+extern void osalEventHandle(void);
 void  App_OS_IdleTaskHook (void)
 {
-
+    //osalEventHandle();
 }
 
 /*$PAGE*/
@@ -244,9 +244,10 @@ void  App_OS_TimeTickHook (void)
     /***********************************************
     * 描述： 添加OSAL支持
     */
-    extern void osalTimerUpdate(void);
-//#if ( OSAL_EN == DEF_ENABLED )
-    osalTimerUpdate();                              // OSAL定时器更新    
-//#endif
-    
+extern void osalTimerUpdate(void);
+#if ( OSAL_EN == DEF_ENABLED )
+    osalTimerUpdate();                              // OSAL定时器更新
+#else
+#endif
+
 }

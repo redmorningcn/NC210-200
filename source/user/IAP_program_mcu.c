@@ -121,7 +121,7 @@ void    app_iap_deal(void){
         */
         if(idx == sLocalIap.Idx)                        //序号相等，继续发送。
         {
-            BSP_FlashWriteBytes(sLocalIap.Addr,DtuCom->Rd.dtu.iap.buf,datalen); //将数据写入指定地址
+            BSP_FlashWriteBytes_Fast(sLocalIap.Addr,DtuCom->Rd.dtu.iap.buf,datalen); //将数据写入指定地址
             
             sLocalIap.Addr +=  datalen;
             
@@ -192,7 +192,7 @@ void    app_iap_deal(void){
                 u32 backupaddr  = sLocalIap.BackAddr;
                 for(u32 i= 0;i< framnum ;i++){
                     BSP_FlashReadBytes(backupaddr,DtuCom->Rd.dtu.iap.buf,IAP_DATA_BUF_LEN);
-                    BSP_FlashWriteBytes(bootaddr,DtuCom->Rd.dtu.iap.buf,IAP_DATA_BUF_LEN);
+                    BSP_FlashWriteBytes_Fast(bootaddr,DtuCom->Rd.dtu.iap.buf,IAP_DATA_BUF_LEN);
                     bootaddr    += IAP_DATA_BUF_LEN;
                     backupaddr  += IAP_DATA_BUF_LEN;
                 }

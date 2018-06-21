@@ -120,7 +120,7 @@ __root  const  APP_INTVECT_ELEM  __vector_table[] @ ".intvec" = {
     App_Spurious_ISR,                                           /* 11, SVCall.                                          */
     App_Spurious_ISR,                                           /* 12, Debug Monitor.                                   */
     App_Spurious_ISR,                                           /* 13, Reserved.                                        */
-    OS_CPU_PendSVHandler,                                       /* 14, PendSV Handler.                                  */
+    PendSV_Handler,                                       /* 14, PendSV Handler.                                  */
     OS_CPU_SysTickHandler,                                      /* 15, uC/OS-II Tick ISR Handler.                       */
 
     BSP_IntHandlerWWDG,                                         /* 16, INTISR[  0]  Window Watchdog.                    */

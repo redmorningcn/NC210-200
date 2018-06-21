@@ -222,7 +222,7 @@ static  void  MB_OS_InitSlave (void)
     OS_ERR      err;
     OSQCreate ( (OS_Q        *)&MB_OS_RxQ,
                 (CPU_CHAR    *)"RxQ",
-                (OS_MSG_QTY   )OS_CFG_INT_Q_SIZE,
+                (OS_MSG_QTY   )MODBUS_CFG_MAX_CH,
                 (OS_ERR      *)&err);
 #else
     CPU_INT08U  err;

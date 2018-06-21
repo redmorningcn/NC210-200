@@ -2323,6 +2323,9 @@
       <name>$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\bsp_periph.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\core_cm3.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\IAR\cstartup.c</name>
     </file>
     <file>

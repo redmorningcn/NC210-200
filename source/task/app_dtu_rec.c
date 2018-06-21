@@ -11,6 +11,7 @@
 #include    <app_dtu_rec.h>
 #include    <ds3231.h>
 #include    <string.h>
+#include    <bsp_time.h>
 
 typedef  void (*pFunction)(void);			    //定义一个函数类型的参数.
 pFunction   pApp;
@@ -65,12 +66,21 @@ void    app_operate_para(void)
     u8  len;
 
     code = DtuCom->Rd.dtu.code;
-    
+    App_DispDelay(2000);
+
     switch(code)
     {
     case    CMD_TIME_SET:               //设置时间
         BSP_RTC_WriteTime(DtuCom->Rd.dtu.time);
         DtuCom->Rd.dtu.reply.ack = 1;   //表示设置成功
+        
+        
+        tm_now  = TIME_GetCalendarTime(); 
+
+        uprintf("%02d-%02d-%02d",
+                tm_now.tm_hour,
+                tm_now.tm_min,
+                tm_now.tm_sec);  
         break;
         
     case    CMD_LOCO_SET:               //设置机车号
@@ -81,6 +91,11 @@ void    app_operate_para(void)
         osal_set_event(OS_TASK_ID_STORE,OS_EVT_STORE_FRAM); //设置存储事件，启动储存任务
         
         DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
+        
+        
+        uprintf("%4d.%4d",
+        Ctrl.sProductInfo.LocoId.Type,
+        Ctrl.sProductInfo.LocoId.Nbr); 
         break;
         
     case    CMD_REC_CLR:                                    //数据清零
@@ -93,7 +108,8 @@ void    app_operate_para(void)
         osal_set_event(OS_TASK_ID_STORE,OS_EVT_STORE_FRAM); //设置存储事件，启动储存任务
 
         DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
-
+        
+        uprintf("CALL"); 
         break;
         
     case    CMD_SYS_RST:                                    //系统重启
@@ -107,9 +123,9 @@ void    app_operate_para(void)
         
     case    CMD_PARA_SET:                                   //参数设置 
         
-            for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen);i++ ){
+            for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen) / 2;i++ ){
 
-                MB_HoldingRegWr (  (DtuCom->Rd.dtu.paraaddr)+i,
+                MB_HoldingRegWr (  (DtuCom->Rd.dtu.paraaddr / 2)+i,
                                     DtuCom->Rd.dtu.parabuf[i],
                                     &err);   
                 

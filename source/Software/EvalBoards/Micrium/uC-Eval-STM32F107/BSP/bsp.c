@@ -310,12 +310,18 @@ void  BSP_Init (void)
     FLASH_SetLatency(FLASH_Latency_2);                          /* 2 Flash wait states when HCLK > 48MHz.               */
     FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
 
+    int time = 10000;       //redmorningcn 180530 ∑¿÷πø®À¿              
     while (RCC_GetFlagStatus(RCC_FLAG_PLL2RDY) == RESET) {      /* Wait for PLL2 to lock.                               */
-        ;
+        time--;
+        if(time == 0)
+            break;
     }
 
+    time = 10000;           //redmorningcn 180530 ∑¿÷πø®À¿              
     while (RCC_GetFlagStatus(RCC_FLAG_PLL3RDY) == RESET) {      /* Wait for PLL3 to lock.                               */
-        ;
+        time--;
+        if(time == 0)
+            break;
     }
                                                                 /* Fprediv1 = PLL2 / 5 =  8MHz.                         */
     RCC_PREDIV1Config(RCC_PREDIV1_Source_PLL2, RCC_PREDIV1_Div5);

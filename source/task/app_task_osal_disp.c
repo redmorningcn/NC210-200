@@ -215,7 +215,7 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
             */
         case 3: 
             dis_mode++;
-                uprintf("SV_%05d",Ctrl.sProductInfo.SwVer);  
+                uprintf("SV_%2d.%02d",Ctrl.sProductInfo.SwVer/100,Ctrl.sProductInfo.SwVer%100);  
             break;
 
         default: 
