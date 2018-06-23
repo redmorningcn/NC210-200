@@ -80,6 +80,7 @@ typedef struct _stcRunPara_
     u8   		        SysErr;                     // 1    系统错误代码
 	u8   		        StoreType ;                 // 1    存储类型
 	u8                  AvgCnt;                     // 1    测量平均次数
+	u8					rec0;						// 1    预留
 
     /**************************************************************
     * Description  : 参数保存控制
@@ -104,6 +105,28 @@ typedef struct _stcRunPara_
         } ;
         u16                 Flags;
     } FramFlg;
+    
+   union ___u_err_mask_flag {
+        struct  {
+            u16   		        ALFlag          : 1;        //低油位报警禁止
+            u16   		        AHFlag          : 1;        //高油位报警禁止
+            u16   		        Mtr1Flag        : 1;        //测量模块1禁止
+            u16   		        Mtr2Flag        : 1;        //测量模块2禁止
+            
+            u16   		        EngMtrFlag      : 1;        //柴速测量禁止    
+            u16   	            SpdMtrFlag      : 1;        //速度测量禁止
+            u16   		        ExtCommFlag     : 1;        //扩展通讯禁止
+            u16   		        ExtDispFlag     : 1;        //扩展显示禁止
+            
+            u16   		        PwrCommFlag     : 1;        //电量模块模块禁止
+            u16   	            TaxCommFlag     : 1;        //TAX箱测量禁止    
+            u16   	            IcCommFlag      : 1;        //IC卡模块禁止
+            u16   	            DtuCommFlag     : 1;        //无线模块禁止
+            
+            u16   	            Rsv             : 4;        //保留
+        } Flag;
+        u16                 Flags;
+    }Mask;                                          // 故障屏蔽    
     
     union ___u_init_flag {
         struct  {
@@ -136,28 +159,7 @@ typedef struct _stcRunPara_
         u32                 Flags;
     } InitFlag;
     
-    union ___u_err_mask_flag {
-        struct  {
-            u16   		        ALFlag          : 1;        //低油位报警禁止
-            u16   		        AHFlag          : 1;        //高油位报警禁止
-            u16   		        Mtr1Flag        : 1;        //测量模块1禁止
-            u16   		        Mtr2Flag        : 1;        //测量模块2禁止
-            
-            u16   		        EngMtrFlag      : 1;        //柴速测量禁止    
-            u16   	            SpdMtrFlag      : 1;        //速度测量禁止
-            u16   		        ExtCommFlag     : 1;        //扩展通讯禁止
-            u16   		        ExtDispFlag     : 1;        //扩展显示禁止
-            
-            u16   		        PwrCommFlag     : 1;        //电量模块模块禁止
-            u16   	            TaxCommFlag     : 1;        //TAX箱测量禁止    
-            u16   	            IcCommFlag      : 1;        //IC卡模块禁止
-            u16   	            DtuCommFlag     : 1;        //无线模块禁止
-            
-            u16   	            Rsv             : 4;        //保留
-        } Flag;
-        u16                 Flags;
-    }Mask;                                          // 故障屏蔽
-    
+   
     union ___u_dev_cfg {
         struct  {
             u8   		        PwrEnFlag       : 1;        //
@@ -172,6 +174,9 @@ typedef struct _stcRunPara_
         } Flag;
         u8                      Flags;                      // 设备配置B0:电量模块;B1:扩展通讯模块；B2:显示模块1；B3显示模块2；B4:GPS模块；B5~B7预留
     } DevCfg; 
+    
+    u8	rec1;												// 预留1
+
     union ___u_system_sts {
         struct  {
             u16                 DispLevel       : 4;        // 4        显示亮度 1~15 
@@ -189,7 +194,7 @@ typedef struct _stcRunPara_
     
     strDeviceErr            ErrMask;
     
-    u8                  Rsv2[7];                    // 预留16个字节
+    u8                  Rsv2[8];                    // 预留4个字节
 }stcRunPara;
 
 //OS 系统运行参数。

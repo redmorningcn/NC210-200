@@ -118,18 +118,18 @@
 /*******************************************************************************
 * 描述： OSAL任务优先级定义
 */
-#define	OS_TASK_PRO_TMR                 OS_TASK_PRIO_HIGHEST - 0
-#define	OS_TASK_PRO_DISP                OS_TASK_PRIO_HIGHEST - 1
-#define	OS_TASK_PRO_STORE               OS_TASK_PRIO_HIGHEST - 2
+#define	OS_TASK_PRO_TMR                 OS_TASK_PRIO_HIGHEST - 2
+#define	OS_TASK_PRO_DISP                OS_TASK_PRIO_HIGHEST - 3
+#define	OS_TASK_PRO_STORE               OS_TASK_PRIO_HIGHEST - 4
 #define	OS_TASK_PRO_LED                 OS_TASK_PRIO_HIGHEST - 5
 
 
 /***************************************************
 * 描述： OSAL任务ID定义
 */
-#define OS_TASK_ID_TMR                  0x00
-#define OS_TASK_ID_DISP                 0x01
-#define OS_TASK_ID_STORE		        0x02
+#define OS_TASK_ID_TMR                  0x02
+#define OS_TASK_ID_DISP                 0x03
+#define OS_TASK_ID_STORE		        0x04
 #define OS_TASK_ID_LED		            0x05
 
 

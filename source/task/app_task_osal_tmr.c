@@ -72,6 +72,7 @@ osalEvt  TaskTmrEvtProcess(osalTid task_id, osalEvt task_event)
         App_CommIdle();                         //串口周期处理
          
         int8 temp =   BSP_RTC_ReadTemp();
+        
         return ( task_event ^ OS_EVT_TMR_MSEC );
     }
     return 0;

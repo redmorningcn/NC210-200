@@ -334,6 +334,10 @@ static  void  AppTaskComm (void *p_arg)
         dly   = CYCLE_TIME_TICKS - ( OSTimeGet(&err) - ticks );
         if ( dly  < 1 ) {
             dly = 1;
+            OSTimeDlyHMSM(0, 0, 0, 1,
+                      OS_OPT_TIME_HMSM_STRICT,
+                      &err);
+                        //延时，执行其他任务
         } else if ( dly > CYCLE_TIME_TICKS ) {
             dly = CYCLE_TIME_TICKS;
         }

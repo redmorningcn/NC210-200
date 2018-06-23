@@ -66,7 +66,6 @@ void    app_operate_para(void)
     u8  len;
 
     code = DtuCom->Rd.dtu.code;
-    App_DispDelay(2000);
 
     switch(code)
     {
@@ -76,6 +75,8 @@ void    app_operate_para(void)
         
         
         tm_now  = TIME_GetCalendarTime(); 
+
+        App_DispDelay(2000);
 
         uprintf("%02d-%02d-%02d",
                 tm_now.tm_hour,
@@ -92,7 +93,8 @@ void    app_operate_para(void)
         
         DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
         
-        
+        App_DispDelay(2000);
+
         uprintf("%4d.%4d",
         Ctrl.sProductInfo.LocoId.Type,
         Ctrl.sProductInfo.LocoId.Nbr); 
@@ -109,6 +111,8 @@ void    app_operate_para(void)
 
         DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
         
+        App_DispDelay(2000);
+
         uprintf("CALL"); 
         break;
         
@@ -139,6 +143,11 @@ void    app_operate_para(void)
             break;
             
     case    CMD_PARA_GET:                                   //参数设置 
+        
+        if(DtuCom->Rd.dtu.paralen > sizeof(DtuCom->Rd.dtu.parabuf)){
+            DtuCom->Rd.dtu.paralen = 0;
+            break;
+        }
         //调用参数设置函数
         for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen);i++ ){
             
@@ -193,7 +202,7 @@ void    app_operate_para(void)
         
         if(len == 0)
             break;
-        
+               
         extern  void    MtrRdSpecial(u16 addr,u8  len);
         MtrRdSpecial(addr,len);                                 //读入数据
         
