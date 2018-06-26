@@ -64,6 +64,7 @@ void    app_operate_para(void)
     u16 err;
     u16 addr;
     u8  len;
+    u8  node;
 
     code = DtuCom->Rd.dtu.code;
 
@@ -149,9 +150,9 @@ void    app_operate_para(void)
             break;
         }
         //调用参数设置函数
-        for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen);i++ ){
+        for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen)/2;i++ ){
             
-            data = MB_HoldingRegRd((DtuCom->Rd.dtu.paraaddr)+i,&err);
+            data = MB_HoldingRegRd((DtuCom->Rd.dtu.paraaddr/2)+i,&err);
             if(err != MODBUS_ERR_NONE){
                 //DtuCom->Rd.dtu.reply.ack = 0;             //表示设置失败
                 DtuCom->Rd.dtu.paralen = 0;
@@ -177,36 +178,45 @@ void    app_operate_para(void)
         break;
         
     case    CMD_DETECT_SET:                                     //写检测板数据记录
-        MtrCom->ConnCtrl.MB_Node = (u8)DtuCom->Rd.dtu.paralen;  //低字节为node号
-        len     = (u8)DtuCom->Rd.dtu.paralen >> 8;              //高字节为len
-        
+        node    = DtuCom->Rd.dtu.paralen >> 8;                  //取node
+        MtrCom->ConnCtrl.MB_Node = node;  //低字节为node号
+        //len     = (u8)DtuCom->Rd.dtu.paralen >> 8;              //高字节为len
+        len     = (u8)DtuCom->Rd.dtu.paralen ;                  //高字节为len
         if(len == 0)
             break;
         
+
         memcpy((u8 *)&MtrCom->Wr,DtuCom->Rd.dtu.parabuf,len);   //准备写入的数据
-        addr    = (u8)DtuCom->Rd.dtu.paraaddr;
+        addr    = DtuCom->Rd.dtu.paraaddr;
+        
         
         extern  void    MtrWrSpecial(u16 addr,u8  len);
-        MtrWrSpecial(addr,len);                                 //写入数据
+        MtrWrSpecial(addr/2,len/2);                              //写入数据 (16位计算)
         
         DtuCom->Rd.dtu.reply.ack = 0;
-        if(MtrCom->ConnCtrl.datalen == len)                     //判断写入是否正确
+        if(MtrCom->ConnCtrl.datalen == len/2)                     //判断写入是否正确
             DtuCom->Rd.dtu.reply.ack = 1;                       //表示设置成功
 
         break;
         
     case    CMD_DETECT_GET:                                     //读检测板数据记录
-        MtrCom->ConnCtrl.MB_Node = (u8)DtuCom->Rd.dtu.paralen;  //低字节为node号
-        len     = (u8)DtuCom->Rd.dtu.paralen >> 8;              //高字节为len
-        addr    = (u8)DtuCom->Rd.dtu.paraaddr;
+        //MtrCom->ConnCtrl.MB_Node = (u8)DtuCom->Rd.dtu.paralen;  //低字节为node号
+        //len     = (u8)DtuCom->Rd.dtu.paralen >> 8;              //高字节为len
+        
+        node    = DtuCom->Rd.dtu.paralen >> 8;                  //取node
+        MtrCom->ConnCtrl.MB_Node = node;  //低字节为node号
+        //len     = (u8)DtuCom->Rd.dtu.paralen >> 8;              //高字节为len
+        len     = (u8)DtuCom->Rd.dtu.paralen ;                  //高字节为len
+        addr    = DtuCom->Rd.dtu.paraaddr;
         
         if(len == 0)
             break;
                
-        extern  void    MtrRdSpecial(u16 addr,u8  len);
-        MtrRdSpecial(addr,len);                                 //读入数据
         
-        if(MtrCom->RxCtrl.Len == len)                           //判断写入是否正确
+        extern  void    MtrRdSpecial(u16 addr,u8  len);
+        MtrRdSpecial(addr/2,len/2);                             //读入数据(16位计算)
+        
+        if(MtrCom->RxCtrl.Len == len/2)                           //判断写入是否正确
         {
             memcpy(DtuCom->Rd.dtu.parabuf,(u8 *)&MtrCom->Rd,len);//取出数据
         }else{
@@ -321,7 +331,8 @@ void    app_dtu_rec(void)
         */
     case GPS_COMM:
         
-        enablesend = 0;                 
+        enablesend = 0;   
+        DtuCom->ConnCtrl.ConnType       = RECORD_SEND_COMM; //默认为数据发送
         break;
     default:
         break;

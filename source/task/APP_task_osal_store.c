@@ -161,6 +161,9 @@ static  void    FmtRecord(void)
     Ctrl.Rec.Min    = t_tm.tm_min;	
     Ctrl.Rec.Sec    = t_tm.tm_sec;   
     
+    Ctrl.Rec.LocoNbr = Ctrl.sProductInfo.LocoId.Nbr;                //机车信息
+    Ctrl.Rec.LocoType= Ctrl.sProductInfo.LocoId.Type;                
+    
 }
 
 /*******************************************************************************

@@ -290,16 +290,16 @@ void NMB_Tx(MODBUS_CH    *pch,
     
     /**************************************************************
     * Description  : 等发送完成
-    * Author       : 2018/5/21 星期一, by redmorningcn
+    * Author       : 2018/5/21 星期一, by redmorningcn  (pch->TxBufByteCtr 标识已置位（bug）)
     */
-    retry = 100;           //防死循环
-    while (pch->TxBufByteCtr != 0 && retry--){
-        u8  dly = (CPU_INT32U)((float)pch->TxBufByteCtr * 1000.0 * 10.0 / (float)pch->BaudRate);
-        if(dly == 0)
-            dly = 1;
-        
-        BSP_OS_TimeDlyMs( dly );
-    }
+//    retry = 100;           //防死循环
+//    while (pch->TxBufByteCtr != 0 && retry--){
+//        u8  dly = (CPU_INT32U)((float)pch->TxBufByteCtr * 1000.0 * 10.0 / (float)pch->BaudRate);
+//        if(dly == 0)
+//            dly = 1;
+//        
+//        BSP_OS_TimeDlyMs( dly );
+//    }
     
     /***********************************************
     * 描述： 2018/1/16,无名沈：将数据写入发送缓冲区 

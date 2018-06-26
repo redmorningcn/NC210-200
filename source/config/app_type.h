@@ -24,6 +24,7 @@
 * Description  : 控制结构体头部（程序识别）
 * Author       : 2018/5/16 星期三, by redmorningcn
 */
+__packed
 typedef struct { 
     u16                 Password;                       // 	2  	用于MODEBUS通讯确认密钥，默认为6237，防止非法改数据
     u32                 systime;                        //  4   系统时间

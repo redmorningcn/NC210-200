@@ -135,7 +135,10 @@ unsigned char   DataUnpack_CSNC(strCsnrProtocolPara *sprotocolpara)
 		  )															//±¨Í·
 		{
 			DataLen = sprotocolpara->rxtxbuf[i+6];
-
+            
+            if((DataLen + i) > 512 )
+                continue;
+            
 			if(
 			 		(sprotocolpara->rxtxbuf[i+10+DataLen] 	!= FRAM_END0)	||
 			 	 	(sprotocolpara->rxtxbuf[i+11+DataLen] 	!= FRAM_END1)

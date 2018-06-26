@@ -79,13 +79,18 @@ void    app_dtu_send(void)
             break;
         case CMD_PARA_GET:
         case CMD_DETECT_GET:
-            replylen    =   DtuCom->Rd.dtu.paralen;
+            replylen    =       DtuCom->Rd.dtu.paralen 
+                            +   sizeof(DtuCom->Rd.dtu.paralen ) 
+                            +   sizeof(DtuCom->Rd.dtu.paraaddr )
+                            +   sizeof(DtuCom->Rd.dtu.code );
             break;
         default:
             replylen    =   SET_REPLY_DATA_LEN;
             break;
         }
             
+        DtuCom->ConnCtrl.sCsnc.sourceaddr   = DtuCom->RxCtrl.sCsnc.destaddr;
+        DtuCom->ConnCtrl.sCsnc.destaddr     = DtuCom->RxCtrl.sCsnc.sourceaddr;
         DtuCom->ConnCtrl.sCsnc.datalen      = replylen;                         //应答长度
 
         DtuCom->ConnCtrl.sCsnc.databuf      = (u8 *)&DtuCom->Rd;                //数据内容
