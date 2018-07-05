@@ -108,6 +108,8 @@ void app_init_sctrl(void)
     }
    
     Ctrl.sRunPara.SysSts.StartFlg   = 1;                //开始标示(开机置位，存储完第一条数据记录后置零) 
+    Ctrl.sRunPara.SysSts.SetBitFlg  = 0;                //正常时，未进行参数设置
+    Ctrl.sRunPara.SetOutTimes       = 0;
     
     if ( ( Ctrl.sRunPara.StoreTime < 5 ) ||             //数据存储周期
          ( Ctrl.sRunPara.StoreTime > 10*60 ) ) {

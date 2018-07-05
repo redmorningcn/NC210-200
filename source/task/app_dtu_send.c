@@ -38,6 +38,7 @@ void    app_dtu_send(void)
         */
     case RECORD_SEND_COMM:     
         
+        //debug2018 
         if(Ctrl.sRecNumMgr.Current == 0)
             return;
         
@@ -79,7 +80,7 @@ void    app_dtu_send(void)
             break;
         case CMD_PARA_GET:
         case CMD_DETECT_GET:
-            replylen    =       DtuCom->Rd.dtu.paralen 
+            replylen    =       (u8)DtuCom->Rd.dtu.paralen 
                             +   sizeof(DtuCom->Rd.dtu.paralen ) 
                             +   sizeof(DtuCom->Rd.dtu.paraaddr )
                             +   sizeof(DtuCom->Rd.dtu.code );
@@ -134,6 +135,8 @@ void    app_dtu_send(void)
         break;
         
     case GPS_COMM:                          //定位模块
+//        //debug2018
+//        return;
         /**************************************************************
         * Description  : 查询模块的信号强度
         * Author       : 2018/6/4 星期一, by redmorningcn

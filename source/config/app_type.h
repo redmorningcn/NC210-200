@@ -195,7 +195,9 @@ typedef struct _stcRunPara_
     
     strDeviceErr            ErrMask;
     
-    u8                  Rsv2[8];                    // 预留4个字节
+    u8                  SetOutTimes;                //
+    
+    u8                  Rsv2[7];                    // 预留4个字节
 }stcRunPara;
 
 //OS 系统运行参数。

@@ -112,16 +112,19 @@ void    App_CommIdle(void)
     
     static  u16  recordtime = 0;
     static  u8   mod = 0;
+    
     recordtime++;
     /**************************************************************
     * Description  : 数据发送判断（DTU）
     有数据没有发送。且串口不在发送状态，且串口在数据通讯状态，发送时间间隔。
     * Author       : 2018/5/18 星期五, by redmorningcn
+    //2018.07.04   如果有参数正在设置，取消数据发送。
     */
     if(     Ctrl.sRecNumMgr.GrsRead < Ctrl.sRecNumMgr.Current
        //&&   DtuCom->ConnCtrl[0].SendFlg     == 0  //(状态不好判断)
        &&   DtuCom->ConnCtrl.ConnType       == RECORD_SEND_COMM
-       &&   (u16)Ctrl.sRunPara.StoreTime*5  == recordtime       
+       &&   (u16)Ctrl.sRunPara.StoreTime    == recordtime  
+       &&   Ctrl.sRunPara.SysSts.SetBitFlg         == 0        //未进行参数设置或iap。（在参数设置或IAP状态设置为清零）
       )       
     {
         recordtime = 0;
@@ -139,6 +142,14 @@ void    App_CommIdle(void)
                    ( OS_ERR       *)&err);
     }
     
+    if(Ctrl.sRunPara.SetOutTimes){                              //准备清除参数设置状态
+        Ctrl.sRunPara.SetOutTimes--;
+        if(Ctrl.sRunPara.SetOutTimes == 0)
+            Ctrl.sRunPara.SysSts.SetBitFlg = 0;
+    }
+    
+    static  u8  mtrtimes = 0;
+    mtrtimes++;
     /**************************************************************
     * Description  : MTR数据通讯
     没有进行其他曹组时（读写sys或cali），周期性读检测板数据。
@@ -147,10 +158,12 @@ void    App_CommIdle(void)
     MtrCom->ConnCtrl.protocol = MODBUS_PROTOCOL;
     if(
             MtrCom->ConnCtrl.ConnType == MTR_RD_DETECT 
-       &&   MtrCom->ConnCtrl.protocol == MODBUS_PROTOCOL) 
+       &&   MtrCom->ConnCtrl.protocol == MODBUS_PROTOCOL
+       &&   mtrtimes > 5) 
     {
         static  u8 node = 0;
         
+        mtrtimes = 0;
         node++;                     
         node %= 4;
         MtrCom->ConnCtrl.MB_Node = node+1;                      //modbus协议的端口号
@@ -207,6 +220,7 @@ static  void  AppTaskComm (void *p_arg)
     OS_ERR          err;
     OS_TICK         ticks;
     OS_TICK         dly     = CYCLE_TIME_TICKS;
+    static         u8   times = 0;
     /***********************************************
     * 描述： 任务初始化
     */
@@ -315,7 +329,11 @@ static  void  AppTaskComm (void *p_arg)
             * 描述： 清除标志
             */
             if ( !flagClr ) {
-                flagClr = flags;
+                times++;
+                if(times > 1)   //容错
+                    flagClr = flags;
+            }else{
+               times = 0; 
             }
             
             /***********************************************
@@ -326,7 +344,6 @@ static  void  AppTaskComm (void *p_arg)
                        ( OS_OPT        )OS_OPT_POST_FLAG_CLR,
                        ( OS_ERR       *)&err);
         }
-        
         
         /***********************************************
         * 描述： 计算剩余时间

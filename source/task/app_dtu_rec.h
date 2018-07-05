@@ -11,6 +11,8 @@
 #include <app_dtu_send.h>
 #include <bsp_q560.h>
 
+#define		CMD_REC_START       0x00000001			//记录马上启动发送
+
 #define		CMD_TIME_SET        0x00000100			//时间卡（IC/无线）
 #define		CMD_LOCO_SET        0x00002000			//装车卡（IC/无线）
 #define		CMD_REC_CLR			0x00080000			//记录清零（无线）

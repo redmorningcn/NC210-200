@@ -65,7 +65,7 @@ void    app_operate_para(void)
     u16 addr;
     u8  len;
     u8  node;
-
+    
     code = DtuCom->Rd.dtu.code;
 
     switch(code)
@@ -145,10 +145,13 @@ void    app_operate_para(void)
             
     case    CMD_PARA_GET:                                   //参数设置 
         
-        if(DtuCom->Rd.dtu.paralen > sizeof(DtuCom->Rd.dtu.parabuf)){
+        
+        if((u8)DtuCom->Rd.dtu.paralen > sizeof(DtuCom->Rd.dtu.parabuf)){
             DtuCom->Rd.dtu.paralen = 0;
             break;
         }
+        
+        
         //调用参数设置函数
         for(u16 i = 0; i < (DtuCom->Rd.dtu.paralen)/2;i++ ){
             
@@ -179,16 +182,14 @@ void    app_operate_para(void)
         
     case    CMD_DETECT_SET:                                     //写检测板数据记录
         node    = DtuCom->Rd.dtu.paralen >> 8;                  //取node
-        MtrCom->ConnCtrl.MB_Node = node;  //低字节为node号
+        MtrCom->ConnCtrl.MB_Node = node;                        //低字节为node号
         //len     = (u8)DtuCom->Rd.dtu.paralen >> 8;              //高字节为len
         len     = (u8)DtuCom->Rd.dtu.paralen ;                  //高字节为len
         if(len == 0)
             break;
         
-
         memcpy((u8 *)&MtrCom->Wr,DtuCom->Rd.dtu.parabuf,len);   //准备写入的数据
         addr    = DtuCom->Rd.dtu.paraaddr;
-        
         
         extern  void    MtrWrSpecial(u16 addr,u8  len);
         MtrWrSpecial(addr/2,len/2);                              //写入数据 (16位计算)
@@ -216,15 +217,21 @@ void    app_operate_para(void)
         extern  void    MtrRdSpecial(u16 addr,u8  len);
         MtrRdSpecial(addr/2,len/2);                             //读入数据(16位计算)
         
-        if(MtrCom->RxCtrl.Len == len/2)                           //判断写入是否正确
+        if(MtrCom->RxCtrl.Len == len/2)                         //判断写入是否正确
         {
             memcpy(DtuCom->Rd.dtu.parabuf,(u8 *)&MtrCom->Rd,len);//取出数据
         }else{
             DtuCom->Rd.dtu.paralen = 0;                         //将数据长度置0，表示错误
         }       
             
-        break;        
+        break; 
+        
+    case    CMD_REC_START:                                      //马上启动数据发送
+        Ctrl.sRunPara.SysSts.SetBitFlg     = 0;                        //不是参数设置状态
+        DtuCom->ConnCtrl.ConnType   = RECORD_SEND_COMM;         //默认为数据发送
+        break;
     default:
+        Ctrl.sRunPara.SysSts.SetBitFlg     = 0;                        //不是参数设置状态
         DtuCom->ConnCtrl.ConnType   = RECORD_SEND_COMM;         //默认为数据发送
         break;
     }
@@ -237,8 +244,8 @@ extern  void app_iap_deal(void);
 */
 void    app_dtu_rec(void)
 {
-    u8  conntype;               //数据通许、参数设置、IAP
-    u8  enablesend = 0;         //数据发送标识
+    u8  conntype;                       //数据通许、参数设置、IAP
+    u8  enablesend = 0;                 //数据发送标识
     OS_ERR  err;
     
     /**************************************************************
@@ -252,9 +259,12 @@ void    app_dtu_rec(void)
         {
         case IAP_FRAME_CODE:
             DtuCom->ConnCtrl.ConnType = IAP_COMM;               //IAP通讯
+            Ctrl.sRunPara.SysSts.SetBitFlg  = 1;                //表示正在设置参数
+            Ctrl.sRunPara.SetOutTimes       = 60;
             break;
         case SET_FRAME_CODE:
             DtuCom->ConnCtrl.ConnType = SET_COMM;               //参数读取
+
             break;
         case RECORD_FRAME_CODE:
             if(DtuCom->ConnCtrl.RecordSendFlg == 1){            //有数据发送，通讯类型不变。
@@ -300,6 +310,7 @@ void    app_dtu_rec(void)
             {
                 enablesend = 1;                                             //再次启动数据发送    
             }
+            
         }
         
         DtuCom->ConnCtrl.RecordSendFlg = 0;
@@ -308,9 +319,12 @@ void    app_dtu_rec(void)
         
     case SET_COMM:
         
-        app_operate_para();             //参数设置（读取）
+        Ctrl.sRunPara.SysSts.SetBitFlg  = 1;                                //表示正在设置参数
+        Ctrl.sRunPara.SetOutTimes       = 60;        
+        
+        app_operate_para();                                                 //参数设置（读取）
 
-        enablesend = 1;                 //启动数据发送
+        enablesend = 1;                                                     //启动数据发送
         break;
         
         /**************************************************************
@@ -332,14 +346,14 @@ void    app_dtu_rec(void)
     case GPS_COMM:
         
         enablesend = 0;   
-        DtuCom->ConnCtrl.ConnType       = RECORD_SEND_COMM; //默认为数据发送
+        DtuCom->ConnCtrl.ConnType       = RECORD_SEND_COMM;                 //默认为数据发送
         break;
     default:
         break;
     }
     
     if( enablesend == 1 ){
-        OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,    //通知DTU，可以进行数据发送
+        OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,               //通知DTU，可以进行数据发送
                    ( OS_FLAGS      )COMM_EVT_FLAG_DTU_TX,
                    ( OS_OPT        )OS_OPT_POST_FLAG_SET,
                    ( OS_ERR       *)&err

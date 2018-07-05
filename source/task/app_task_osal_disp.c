@@ -82,6 +82,7 @@ void    LkjDisplayInfo(void)
     u8              groupunm;
     u8              chnum;
     u8              phasenum;
+    u8              disbuf[10];
     
     //计算占空比的组及通道号
     if(     times > (DIS_MAX_ERR_NUM-1) 
@@ -124,14 +125,17 @@ void    LkjDisplayInfo(void)
         case 7:         //通道5，占空比 
         case 8:         //通道5，占空比 
             times++;
-            uprintf("CH%d-%3.1f",(groupunm*2 + chnum +1),Ctrl.Rec.speed[groupunm].ch[chnum].ratio);
+            snprintf(disbuf,6,"%3d.%1d",Ctrl.Rec.speed[groupunm].ch[chnum].ratio/100,(Ctrl.Rec.speed[groupunm].ch[chnum].ratio%100)/10);
+            uprintf("CH%d-%s",(groupunm*2 + chnum +1),disbuf);
             break;  
             
         case 9:         //A组，相位差
         case 10:        //B组，相位差
         case 11:        //C组，相位差
             times++;
-            uprintf("CH%c-%3.1f",groupstring[phasenum],Ctrl.Rec.speed[phasenum].phase);
+            
+            snprintf(disbuf,6,"%3d.%1d",Ctrl.Rec.speed[phasenum].phase/100,(Ctrl.Rec.speed[phasenum].phase%100)/10);
+            uprintf("CH%c-%s",groupstring[phasenum],disbuf);
             
             if(times == mod)  //重新循环
                 times = 0;
