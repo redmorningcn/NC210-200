@@ -14,7 +14,7 @@ TraceBufferSize=0x00010000
 TraceStallIfFIFOFull=0x00000000
 TracePortSize=0x00000004
 [DebugChecksum]
-Checksum=-614826140
+Checksum=-1748219112
 [CodeCoverage]
 Enabled=_ 0
 [Exceptions]
@@ -52,7 +52,9 @@ Fmt6=stcFlshRec-EvtType	4	0
 Fmt7=stcFlshRec-LocoNbr	4	0
 Fmt8=stcFlshRec-LocoType	4	0
 Fmt9=stcFlshRec-RecordId	4	0
-Fmt10=stcRunPara-SetOutTimes	3	0
+Fmt10=stcIAPPara-Addr	4	0
+Fmt11=stcIAPPara-BackAddr	4	0
+Fmt12=stcRunPara-SetOutTimes	3	0
 [array_types]
 Fmt0=CPU_INT08U[256]	4	0
 Fmt1=CPU_INT08U[512]	4	0
@@ -131,9 +133,7 @@ Bp16=_ 0 "EMUL_CODE" "0x08014760" 0 0 1 "" 0 "" 0
 Bp17=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\uCOS-III\Ports\ARM-Cortex-M3\Generic\IAR\os_cpu_a.asm}.94.1" 0 0 1 "" 0 "" 0
 Bp18=_ 0 "EMUL_CODE" "0x08018094" 0 0 1 "" 0 "" 0
 Bp19=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.150.13" 0 0 1 "" 0 "" 0
-Bp20=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.263.13" 0 0 1 "" 0 "" 0
-Bp21=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.268.13" 0 0 1 "" 0 "" 0
-Count=22
+Count=20
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""

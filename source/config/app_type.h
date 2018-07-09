@@ -10,7 +10,7 @@
 #include    <RecDataTypeDef.h>
 #include    <bsp_q560.h>
 
-#define     SOFT_VERSION                (101)          /* 软件版本         */
+#define     SOFT_VERSION                (102)          /* 软件版本         */
 #define     MODBUS_PASSWORD             (6237)          /* modbus通讯密码   */
 
 /**************************************************************

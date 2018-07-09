@@ -26,9 +26,10 @@
 */
 void    app_iap_deal(void){
     static          stcIAPPara      sLocalIap;                      //存储的iap参数
-    stcIAPPara      *sServerIap = (stcIAPPara *)&DtuCom->Rd.dtu.iap.para; //服务器下发的iap参数 
     static          u32             softver;
-    static          u32             time = 0;
+    static          u32             time = 0;    
+    stcIAPPara      *sServerIap = (stcIAPPara *)&DtuCom->Rd.dtu.iap.para; //服务器下发的iap参数 
+
 
     u8      code = DtuCom->Rd.dtu.iap.code;             //IAP指令位
     u8      sta  = DtuCom->Rd.dtu.iap.sta;              //IAP状态位
@@ -37,6 +38,8 @@ void    app_iap_deal(void){
     u16     datalen;
     u16     Chklen;
     u32     datasize;
+    u32     softsize;
+    u16     storeCrc;
     
     switch(code)
     {
@@ -48,15 +51,19 @@ void    app_iap_deal(void){
         Chklen = (u32)&sLocalIap.Chk - (u32)&sLocalIap;
         crc16 = GetCrc16Chk((uint8 *)&sLocalIap,Chklen);
         
+         storeCrc= GetCrc16Chk((uint8 *)&sLocalIap,sizeof(sLocalIap) -2);
+
+        
         //对比接收到的iappara信息（版本、大小、已发帧序号、校验、帧号）
         if ( ( sta == 1 )                           ||      // 重新下载
-            ( sLocalIap.Idx    == 0xffffffff ) ||          // 存储序号为-1
-            ( sLocalIap.Idx    == 0 )          ||          // 存储序号为零
-            ( sServerIap->Idx  == 0 )          ||          // 发送下来的序号为零
-            ( sLocalIap.Chk    != crc16)       ||          // 校验码不正确
-            ( sServerIap->Size != sLocalIap.Size ) ||      // 程序大小不符
+            ( sLocalIap.Idx    == 0xffffffff )      ||          // 存储序号为-1
+            ( sLocalIap.Idx    == 0 )               ||          // 存储序号为零
+            ( sServerIap->Idx  == 0 )               ||          // 发送下来的序号为零
+            ( sLocalIap.Chk    != crc16)            ||          // 校验码不正确
+            ( sServerIap->Size != sLocalIap.Size )  ||      // 程序大小不符
                                 //( IapServer.Crc32 != IapInfo.Crc32 ) 
-            ( sServerIap->SwVer!= sLocalIap.SwVer )        // 版本不符
+            ( sServerIap->SwVer!= sLocalIap.SwVer ) ||       // 版本不符
+            ( storeCrc         != sLocalIap.storeCrc)        // 校验码不正确
             ) 
         {
             /**************************************************************
@@ -91,6 +98,14 @@ void    app_iap_deal(void){
         memcpy((u8 *)&DtuCom->Rd.dtu.iap.para,(u8 *)&sLocalIap,sizeof(stcIAPPara)); 
         //未发送改写程序，不存储更改后的sLocalIap值。
         sLocalIap.SwVer = softver;
+        
+        Chklen = (u32)&sLocalIap.Chk - (u32)&sLocalIap;
+        crc16 = GetCrc16Chk((uint8 *)&sLocalIap,Chklen);
+        sLocalIap.Chk = crc16;
+        
+        sLocalIap.storeCrc = GetCrc16Chk((uint8 *)&sLocalIap,sizeof(sLocalIap)-2);  //计算存储校验
+
+        BSP_FlashWriteBytes(IAP_PARA_START_ADDR,(uint8 *)&sLocalIap,sizeof(stcIAPPara));        
         
         time = Ctrl.sHeadInfo.systime;
         break;
@@ -143,8 +158,9 @@ void    app_iap_deal(void){
             DtuCom->Rd.dtu.iap.replyIdx = sLocalIap.Idx;            //应答当前序号。    
             sLocalIap.Idx++;                                        //序号++，数据往下进行。
 
-        }else if(idx == sLocalIap.Idx -1){                      //重复帧，不处理（上一帧重复发送）
-
+        }else if(idx == sLocalIap.Idx -1){                          //重复帧，不处理（上一帧重复发送）
+            DtuCom->Rd.dtu.iap.replyIdx = idx;
+            
         }else{                                                  //帧序号错误。
             DtuCom->Rd.dtu.iap.sta  = IAP_IDX_ERR;
         }
