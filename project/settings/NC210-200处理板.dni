@@ -14,7 +14,7 @@ TraceBufferSize=0x00010000
 TraceStallIfFIFOFull=0x00000000
 TracePortSize=0x00000004
 [DebugChecksum]
-Checksum=-1748219112
+Checksum=-182873262
 [CodeCoverage]
 Enabled=_ 0
 [Exceptions]
@@ -110,6 +110,31 @@ ShowTimeLog=1
 SumEnabled=0
 ShowTimeSum=1
 SumSortOrder=0
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.132.1" 0 0 1 "" 0 "" 0
+Bp1=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
+Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
+Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
+Bp4=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
+Bp5=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
+Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.306.13" 0 0 1 "" 0 "" 0
+Bp7=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.32.9" 0 0 1 "" 0 "" 0
+Bp8=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.81.17" 0 0 1 "" 0 "" 0
+Bp9=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.112.9" 0 0 1 "" 0 "" 0
+Bp10=_ 0 "EMUL_CODE" "0x0800CE80" 0 0 1 "" 0 "" 0
+Bp11=_ 0 "EMUL_CODE" "0x0800CE7C" 0 0 1 "" 0 "" 0
+Bp12=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\ST\STM32\src\stm32f10x_nvic.c}.401.3" 0 0 1 "" 0 "" 0
+Bp13=_ 0 "EMUL_CODE" "0x080129BA" 0 0 1 "" 0 "" 0
+Bp14=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\config\app.c}.103.5" 0 0 1 "" 0 "" 0
+Bp15=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\config\app.c}.103.5" 0 0 1 "" 0 "" 0
+Bp16=_ 0 "EMUL_CODE" "0x08014760" 0 0 1 "" 0 "" 0
+Bp17=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\uCOS-III\Ports\ARM-Cortex-M3\Generic\IAR\os_cpu_a.asm}.94.1" 0 0 1 "" 0 "" 0
+Bp18=_ 0 "EMUL_CODE" "0x08018094" 0 0 1 "" 0 "" 0
+Bp19=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.150.13" 0 0 1 "" 0 "" 0
+Bp20=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.127.9" 0 0 1 "" 0 "" 0
+Count=21
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -117,6 +142,9 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
+[Aliases]
+Count=0
+SuppressDialog=0
 [DriverProfiling]
 Enabled=0
 Mode=1
@@ -131,30 +159,3 @@ ShowTiming=1
 Frequency=10000
 Probe0=I0
 ProbeSetup0=2 1 1 2 0 0
-[Disassemble mode]
-mode=0
-[Breakpoints2]
-Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.132.1" 0 0 1 "" 0 "" 0
-Bp1=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
-Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
-Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
-Bp4=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
-Bp5=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.176.1" 0 0 1 "" 0 "" 0
-Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.304.13" 0 0 1 "" 0 "" 0
-Bp7=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.32.9" 0 0 1 "" 0 "" 0
-Bp8=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.81.17" 0 0 1 "" 0 "" 0
-Bp9=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.112.9" 0 0 1 "" 0 "" 0
-Bp10=_ 0 "EMUL_CODE" "0x0800CE80" 0 0 1 "" 0 "" 0
-Bp11=_ 0 "EMUL_CODE" "0x0800CE7C" 0 0 1 "" 0 "" 0
-Bp12=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\ST\STM32\src\stm32f10x_nvic.c}.401.3" 0 0 1 "" 0 "" 0
-Bp13=_ 0 "EMUL_CODE" "0x080129BA" 0 0 1 "" 0 "" 0
-Bp14=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\config\app.c}.103.5" 0 0 1 "" 0 "" 0
-Bp15=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\config\app.c}.103.5" 0 0 1 "" 0 "" 0
-Bp16=_ 0 "EMUL_CODE" "0x08014760" 0 0 1 "" 0 "" 0
-Bp17=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\uCOS-III\Ports\ARM-Cortex-M3\Generic\IAR\os_cpu_a.asm}.94.1" 0 0 1 "" 0 "" 0
-Bp18=_ 0 "EMUL_CODE" "0x08018094" 0 0 1 "" 0 "" 0
-Bp19=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.150.13" 0 0 1 "" 0 "" 0
-Count=20
-[Aliases]
-Count=0
-SuppressDialog=0

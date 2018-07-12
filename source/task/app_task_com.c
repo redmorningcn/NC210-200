@@ -7,6 +7,8 @@
 * INCLUDES
 */
 #include <includes.h>
+#include <app_dtu_send.h>
+
 
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *app_task_comm__c = "$Id: $";
@@ -285,9 +287,8 @@ static  void  AppTaskComm (void *p_arg)
             if( flags   & COMM_EVT_FLAG_DTU_RX  ) {    
                 //app_comm_dtu(flags); 
                 
-                extern  void app_dtu_rec(void);
-                app_dtu_rec();                      //和DTU模块，接收部分。
-                DtuCom->ConnCtrl.Connflg = 1;       //连接成功
+                app_dtu_rec(DtuCom);                         //和DTU模块，接收部分。
+                DtuCom->ConnCtrl.Connflg = 1;               //连接成功
                 
                 if( flags &      COMM_EVT_FLAG_DTU_RX ) { 
                     flagClr |=   COMM_EVT_FLAG_DTU_RX;   
@@ -295,8 +296,7 @@ static  void  AppTaskComm (void *p_arg)
             }
             if(    flags & COMM_EVT_FLAG_DTU_TX ) {
                 
-                extern  void app_dtu_send(void);
-                app_dtu_send();                     //和DTU模块，发送部分
+                app_dtu_send(DtuCom);                     //和DTU模块，发送部分
                 
                 if(flags &      COMM_EVT_FLAG_DTU_TX) {      
                     flagClr |=  COMM_EVT_FLAG_DTU_TX;   
@@ -310,15 +310,17 @@ static  void  AppTaskComm (void *p_arg)
             if(    flags & COMM_EVT_FLAG_TAX_RX ) {
                 //app_comm_tax(flags);
                 //发送数据
-                NMB_Tx(TaxCom->pch,(u8 *)&TaxCom->Rd,TaxCom->RxCtrl.Len);
-                TaxCom->ConnCtrl.Connflg = 1;           //连接成功
-                
-                if(flags &      COMM_EVT_FLAG_TAX_RX) {      
+   
+                app_dtu_rec(TaxCom);                         //和DTU模块，接收部分。
+                TaxCom->ConnCtrl.Connflg = 1;               //连接成功
+                                if(flags &      COMM_EVT_FLAG_TAX_RX) {      
                     flagClr |=  COMM_EVT_FLAG_TAX_RX;   
                 }                
             }
             if(    flags & COMM_EVT_FLAG_TAX_TX ) {
                 //app_comm_tax(flags);
+                app_dtu_send(TaxCom);                     //和DTU模块，发送部分
+ 
                 
                 if(flags &      COMM_EVT_FLAG_TAX_TX) {      
                     flagClr |=  COMM_EVT_FLAG_TAX_TX;   

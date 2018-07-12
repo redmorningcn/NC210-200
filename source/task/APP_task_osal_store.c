@@ -508,12 +508,12 @@ void    app_ReadOneRecord(stcFlshRec *pRec,u32 num)
     u8          retrys = 2;
     
     do {
-        ReadFlshRec(pRec, num); //读取指定记录号的数据
+        ReadFlshRec(pRec, num);     //读取指定记录号的数据
         
         crc1 = GetCrc16Chk((u8 *)pRec,sizeof(stcFlshRec)-2); 
         crc2 = pRec->CrcCheck;
         
-        if(crc1 == crc2) {      //如果校验通过，数据读取完成，退出
+        if(crc1 == crc2) {          //如果校验通过，数据读取完成，退出
             return;
         }
     } while ( --retrys );

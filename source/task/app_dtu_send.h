@@ -15,5 +15,10 @@
 #define SET_REPLY_DATA_LEN          (4+4+1)   /* 查询或设置参数，应答数据长度*/
 #define IAP_REPLY_DATA_LEN          (4)       /* IAP数据升级，数据帧应答长度 */
 
+
+
+extern  void app_dtu_send(StrCOMCtrl *Com);
+
+
 #endif
 

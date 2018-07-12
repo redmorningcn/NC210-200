@@ -23,5 +23,9 @@
 #define		CMD_DETECT_SET      0x02000000		    //读检测板参数（无线）
 #define		CMD_DETECT_GET      0x02000001		    //写检测板参数（无线）
 
+
+
+extern  void app_dtu_rec(StrCOMCtrl *Com);
+
 #endif
 
