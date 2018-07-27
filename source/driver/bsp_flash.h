@@ -73,7 +73,9 @@ void    BSP_FlashWrite          (u32 addr,u16 *pbuffer,u16 num);
 u16     BSP_FlashReadBytes      (u32 addr, u8 *buf, u16 len);
 u16     BSP_FlashWriteBytes     (u32 addr, u8 *buf, u16 len);
 
-u8     FlashWriteNoCheck        (u32 addr,u16 *pbuffer,u16 num);
+u8      FlashWriteNoCheck        (u32 addr,u16 *pbuffer,u16 num);
+u16     BSP_FlashWriteBytes_Fast     (u32 addr, u8 *pbuf, u16 len);
+
 
 
 #endif

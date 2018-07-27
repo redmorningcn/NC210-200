@@ -43,8 +43,6 @@ void    app_dtu_send(StrCOMCtrl *Com)
         if(Ctrl.sRecNumMgr.Current == 0)
             return;
         
-        
-            
         //取数据记录号
         if(Ctrl.sRecNumMgr.Current <= Ctrl.sRecNumMgr.GrsRead )  {
             Ctrl.sRecNumMgr.GrsRead = 0;
@@ -62,7 +60,7 @@ void    app_dtu_send(StrCOMCtrl *Com)
         app_ReadOneRecord((stcFlshRec *)&Com->Wr,recordnum);     
         
         //数据记录按csnc协议打包 DataPackage_CSNC(strCsnrProtocolPara * sprotocolpara);
-        Com->ConnCtrl.sCsnc.framcode     = SET_FRAME_CODE;                   //新数据格式
+        Com->ConnCtrl.sCsnc.framcode     = SET_FRAME_CODE;                  //新数据格式
         Com->ConnCtrl.sCsnc.framnum      = Com->ConnCtrl.SendRecordNum;     //发送记录号
         Com->ConnCtrl.RecordSendFlg      = 1;        
 

@@ -100,16 +100,19 @@ void app_init_sctrl(void)
     
     App_FramPara();
     
-    Ctrl.sRunPara.Err.Flags         = 0;                //清零故障代码
+    Ctrl.sRunPara.Err.Flags         = 0;                // 清零故障代码
     
-    if(Ctrl.sHeadInfo.Password != MODBUS_PASSWORD){     //通讯密码
-        Ctrl.sHeadInfo.Password = MODBUS_PASSWORD;
-        Ctrl.sRunPara.Err.FramErr   = 1;                //铁电故障（指定地址读出的值错误）
+    if(Ctrl.sHeadInfo.Password != MODBUS_PASSWORD){     // 通讯密码
+        Ctrl.sHeadInfo.Password = MODBUS_PASSWORD; 
+        Ctrl.sRunPara.Err.FramErr   = 1;                // 铁电故障（指定地址读出的值错误）
     }
    
-    Ctrl.sRunPara.SysSts.StartFlg   = 1;                //开始标示(开机置位，存储完第一条数据记录后置零) 
-    Ctrl.sRunPara.SysSts.SetBitFlg  = 0;                //正常时，未进行参数设置
+    Ctrl.sRunPara.SysSts.StartFlg   = 1;                // 开始标示(开机置位，存储完第一条数据记录后置零) 
+    Ctrl.sRunPara.SysSts.SetBitFlg  = 0;                // 正常时，未进行参数设置
     Ctrl.sRunPara.SetOutTimes       = 0;
+    Ctrl.sRunPara.WdtOutTimes       = 120;              // 喂狗超时时间         
+    Ctrl.sRunPara.SysSts.SysReset   = 0;                // 系统默认不重启
+
     
     if ( ( Ctrl.sRunPara.StoreTime < 5 ) ||             //数据存储周期
          ( Ctrl.sRunPara.StoreTime > 10*60 ) ) {

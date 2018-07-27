@@ -62,7 +62,7 @@ osalEvt  TaskTmrEvtProcess(osalTid task_id, osalEvt task_event)
     /***********************************************
     * 描述： 本任务看门狗标志置位
     */
-    //OSSetWdtFlag(( OS_FLAGS     ) WDT_FLAG_TMR);
+    OSSetWdtFlag(( OS_FLAGS     ) WDT_FLAG_TMR);
  
     /***************************************************************************
     * 描述： 
@@ -87,12 +87,13 @@ void TaskInitTmr(void)
     /***********************************************
     * 描述： 在看门狗标志组注册本任务的看门狗标志
     */
-//    OSRegWdtFlag(( OS_FLAGS     )WDT_FLAG_TMR );
+    OSRegWdtFlag(( OS_FLAGS     )WDT_FLAG_TMR );
     
     /*************************************************
     * 描述：启动事件查询
     */
     osal_start_timerRl( OS_TASK_ID_TMR, OS_EVT_TMR_MSEC,CYCLE_SAMPLE_MSEC_TICKS);  
+
 }
 
 /*******************************************************************************

@@ -120,7 +120,6 @@ int  main (void)
     OSStart(&err);                                              /* Start multitasking (i.e. give control to uC/OS-III). */
 }
 
-
 /*
 *********************************************************************************************************
 *                                          STARTUP TASK
@@ -143,42 +142,94 @@ static  void  AppTaskStart (void *p_arg)
     CPU_INT32U  cnts;
     OS_ERR      err;
     
-   (void)p_arg;
+    (void)p_arg;
     BSP_Init();                                                 /* Initialize BSP functions                             */
     CPU_Init();
-
+    
     cpu_clk_freq = BSP_CPU_ClkFreq();                           /* Determine SysTick reference freq.                    */
     cnts = cpu_clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;        /* Determine nbr SysTick increments                     */
     OS_CPU_SysTickInit(cnts);                                   /* Init uC/OS periodic time src (SysTick).              */
-
+    
     Mem_Init();                                                 /* Initialize Memory Management Module                  */
-
+    
 #if OS_CFG_STAT_TASK_EN > 0u
     OSStatTaskCPUUsageInit(&err);                               /* Compute CPU capacity with no task running            */
 #endif
-
+    
     CPU_IntDisMeasMaxCurReset();
+    
+    BSP_WDT_Init(BSP_WDT_MODE_ALL);                             // 初始化看门狗
     
     AppTaskCreate();                                            /* Create Application Tasks                             */
     
     AppObjCreate();                                             /* Create Application Objects                           */
     
     BSP_LED_Off(0);
-
+    
     while (DEF_TRUE) {                                          /* Task body, always written as an infinite loop.       */
         
-//        char buf[4] = {0,1,2,3};
-//        
-//        for(int i =0 ; i < 3;i++)
-//        {
-//            memcpy(sCtrl.ComCtrl[i].pch->TxBuf,buf,sizeof(buf));
-//            sCtrl.ComCtrl[i].pch->TxBufByteCtr = sizeof(buf);
-//            MB_Tx (sCtrl.ComCtrl[i].pch);
-//        }
-
-        OSTimeDlyHMSM(0, 0, 0, 500,
-                      OS_OPT_TIME_HMSM_STRICT,
-                      &err);
+        /**************************************************************
+        * Description  : 系统重启。通过看门狗超时，调用重启
+        * Author       : 2018/7/26 星期四, by redmorningcn
+        */
+        if(Ctrl.sRunPara.SysSts.SysReset){
+            while(1){
+                BSP_OS_TimeDlyMs(100); 
+            }
+        }
+        
+        /***********************************************
+        * 描述： 喂狗
+        */
+        WdtReset();
+        
+        /***********************************************
+        * 描述： 得到系统当前时间
+        */
+        u32 ticks = OSTimeGet(&err);        
+        /***********************************************************************
+        * 描述： 独立看门狗标志组检查， 判断是否所有任务已喂狗
+        */
+        OSFlagPend(( OS_FLAG_GRP *)&Ctrl.Os.WdtEvtFlagGRP,
+                   ( OS_FLAGS     ) Ctrl.Os.WdtEvtFlags,
+                   ( OS_TICK      ) 50,
+                   ( OS_OPT       ) OS_OPT_PEND_FLAG_SET_ALL,                   //全部置一
+                   ( CPU_TS      *) NULL,
+                   ( OS_ERR      *)&err);
+        
+        if(err == OS_ERR_NONE) {                                                //所有任务已喂狗
+            Ctrl.sRunPara.WdtOutTimes = 120;                                    //超时计数器给初值
+            OSFlagPost ((OS_FLAG_GRP *)&Ctrl.Os.WdtEvtFlagGRP,                  //清零所有标志
+                        (OS_FLAGS     ) Ctrl.Os.WdtEvtFlags,
+                        (OS_OPT       ) OS_OPT_POST_FLAG_CLR,
+                        (OS_ERR      *) &err);
+        } else {                                                                //不是所有任务都喂狗
+            if(Ctrl.sRunPara.WdtOutTimes ) {                                                   //喂狗超时 
+                Ctrl.sRunPara.WdtOutTimes--;
+                if(Ctrl.sRunPara.WdtOutTimes == 0 )                                            //超时重启
+                    
+                    BSP_LED_Flash( 1, 5, 450, 450);
+                /***********************************************
+                * 描述： 2017/12/1,无名沈：系统重启
+                */
+#if defined     (RELEASE)
+                SystemReset();        
+#endif  
+            } else {
+                BSP_LED_Flash( 1, 1, 450, 450);  
+            }
+        }
+        
+        /***********************************************
+        * 描述： 去除任务运行的时间，等到一个控制周期里剩余需要延时的时间
+        */
+        u32 dly   = OS_TICKS_PER_SEC - ( OSTimeGet(&err) - ticks );
+        if ( dly  < 1 ) {
+            dly = 1;
+        } else if ( dly > OS_TICKS_PER_SEC ) {
+            dly = OS_TICKS_PER_SEC;
+        }
+        BSP_OS_TimeDlyMs(dly); 
     }
 }
 
@@ -215,3 +266,46 @@ static  void  AppTaskCreate (void)
 static  void  AppObjCreate (void)
 {
 }
+
+/*******************************************************************************
+* 名    称： OSSetWdtFlag
+* 功    能： 任务喂狗
+* 入口参数： 无
+* 出口参数： 无
+* 作    者： 无名沈
+* 创建日期： 2017/11/18
+* 修    改： 
+* 修改日期： 
+* 备    注： 
+*******************************************************************************/
+void OSRegWdtFlag( OS_FLAGS flag )
+{
+    /***********************************************
+    * 描述： 在看门狗标志组注册本任务的看门狗标志
+    */
+    Ctrl.Os.WdtEvtFlags |= flag;
+}
+
+/*******************************************************************************
+* 名    称： OSSetWdtFlag
+* 功    能： 任务喂狗
+* 入口参数： 无
+* 出口参数： 无
+* 作    者： 无名沈
+* 创建日期： 2017/11/18
+* 修    改： 
+* 修改日期： 
+* 备    注： 
+*******************************************************************************/
+void OSSetWdtFlag( OS_FLAGS flag )
+{
+    OS_ERR    err;
+    
+    /***********************************************
+    * 描述： 本任务看门狗标志置位
+    */
+    OSFlagPost(( OS_FLAG_GRP  *)&Ctrl.Os.WdtEvtFlagGRP,
+                ( OS_FLAGS     ) flag,
+                ( OS_OPT       ) OS_OPT_POST_FLAG_SET,
+                ( OS_ERR      *) &err);
+} 

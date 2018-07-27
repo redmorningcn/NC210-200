@@ -2261,6 +2261,12 @@
         <name>$PROJ_DIR$\..\source\driver\bsp_time.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_wdt.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\source\driver\bsp_wdt.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\source\driver\drives.h</name>
       </file>
       <file>

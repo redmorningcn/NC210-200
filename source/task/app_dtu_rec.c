@@ -121,10 +121,11 @@ void    app_operate_para(StrCOMCtrl *Com)
         //重启
         Ctrl.sRunPara.SysSts.SysReset = 1;                  //重启标识置位，准备重启
         
-        Com->Rd.dtu.reply.ack = 1;                       //表示设置成功
+        Com->Rd.dtu.reply.ack = 1;                          //表示设置成功
         
-        
-        //IAP_JumpTo(0);
+        App_DispDelay(2000);
+        uprintf("rst...");                                  //系统准备重启    
+
         break;
         
     case    CMD_PARA_SET:                                   //参数设置 
@@ -139,6 +140,8 @@ void    app_operate_para(StrCOMCtrl *Com)
                     Com->Rd.dtu.reply.ack = 0;           //表示设置失败
                     break;
                 }
+                
+                osal_set_event(OS_TASK_ID_STORE,OS_EVT_STORE_FRAM); //设置存储事件，启动储存任务
             }
             Com->Rd.dtu.reply.ack = 1;                   //表示设置成功
 

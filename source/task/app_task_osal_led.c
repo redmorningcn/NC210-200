@@ -73,7 +73,7 @@ osalEvt  TaskLedEvtProcess(osalTid task_id, osalEvt task_event)
     /***********************************************
     * 描述： 本任务看门狗标志置位
     */
-    //OSSetWdtFlag(( OS_FLAGS     ) WDT_FLAG_LED);
+    OSSetWdtFlag(( OS_FLAGS     ) WDT_FLAG_LED);
 
     if( task_event & OS_EVT_LED_TICKS ) {
         static  uint8   mode = 0;
@@ -135,7 +135,7 @@ void TaskInitLed(void)
     /***********************************************
     * 描述： 在看门狗标志组注册本任务的看门狗标志
     */
-    //OSRegWdtFlag(( OS_FLAGS     )WDT_FLAG_LED );
+    OSRegWdtFlag(( OS_FLAGS     )WDT_FLAG_LED );
     
     /*************************************************
     * 描述：启动事件查询

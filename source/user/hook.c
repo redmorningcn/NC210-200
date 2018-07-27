@@ -5,8 +5,8 @@
 *******************************************************************************/
 #include <tasks.h>
 
-extern  void App_ModbusInit(void);
-extern  void  App_OS_SetAllHooks (void);
+extern  void    App_ModbusInit (void);
+extern  void    App_OS_SetAllHooks (void);
 
 /*******************************************************************************
 * Description  : BSP初始化钩子函数，在任务执行前运行(不能有和操作系统有关的操作)
@@ -15,7 +15,16 @@ extern  void  App_OS_SetAllHooks (void);
 void    BSP_Init_Hook(void)
 {
     App_ModbusInit();                   //初始化串口及串口控制信息（启动串口Modbus接收任务）
+
+    OS_ERR    err;
     
+    /***********************************************
+    * 描述：创建看门狗标志组
+    */
+    OSFlagCreate(( OS_FLAG_GRP  *)&Ctrl.Os.WdtEvtFlagGRP,
+                 ( CPU_CHAR     *)"Wdt Flag",
+                 ( OS_FLAGS      )0,
+                 ( OS_ERR       *)&err);
 }
 
 extern  void app_init_sctrl(void);

@@ -125,7 +125,7 @@ void    LkjDisplayInfo(void)
         case 7:         //通道5，占空比 
         case 8:         //通道5，占空比 
             times++;
-            snprintf(disbuf,6,"%3d.%1d",Ctrl.Rec.speed[groupunm].ch[chnum].ratio/100,(Ctrl.Rec.speed[groupunm].ch[chnum].ratio%100)/10);
+            snprintf((char *)disbuf,6,"%3d.%1d",Ctrl.Rec.speed[groupunm].ch[chnum].ratio/100,(Ctrl.Rec.speed[groupunm].ch[chnum].ratio%100)/10);
             uprintf("CH%d-%s",(groupunm*2 + chnum +1),disbuf);
             break;  
             
@@ -134,7 +134,7 @@ void    LkjDisplayInfo(void)
         case 11:        //C组，相位差
             times++;
             
-            snprintf(disbuf,6,"%3d.%1d",Ctrl.Rec.speed[phasenum].phase/100,(Ctrl.Rec.speed[phasenum].phase%100)/10);
+            snprintf((char *)disbuf,6,"%3d.%1d",Ctrl.Rec.speed[phasenum].phase/100,(Ctrl.Rec.speed[phasenum].phase%100)/10);
             uprintf("CH%c-%s",groupstring[phasenum],disbuf);
             
             if(times == mod)  //重新循环
@@ -163,7 +163,7 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
     /***********************************************
     * 描述： 本任务看门狗标志置位
     */
-    //OSSetWdtFlag(( OS_FLAGS     ) WDT_FLAG_DISP);
+    OSSetWdtFlag(( OS_FLAGS     ) WDT_FLAG_DISP);
     
     /***********************************************
     * 描述： 2017/11/27,无名沈：
@@ -316,7 +316,7 @@ void TaskInitDisp(void)
     /***********************************************
     * 描述： 在看门狗标志组注册本任务的看门狗标志
     */
-    //OSRegWdtFlag(( OS_FLAGS     )WDT_FLAG_DISP );
+    OSRegWdtFlag(( OS_FLAGS     )WDT_FLAG_DISP );
     
     /*************************************************
     * 描述：启动事件查询

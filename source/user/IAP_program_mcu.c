@@ -38,7 +38,7 @@ void    app_iap_deal(void){
     u16     datalen;
     u16     Chklen;
     u32     datasize;
-    u32     softsize;
+    //u32     softsize;
     u16     storeCrc;
     
     switch(code)
@@ -80,8 +80,7 @@ void    app_iap_deal(void){
             sLocalIap.Size        = sServerIap->Size;           
             sLocalIap.Crc32       = sServerIap->Crc32;
             
-            softver               = sServerIap->SwVer;              //保存版本信息，结束时校验使用
-
+            softver               = sServerIap->SwVer;          //保存版本信息，结束时校验使用
         }else{
             /**************************************************************
             * Description  : 续传，按存储的地址发送
@@ -164,7 +163,6 @@ void    app_iap_deal(void){
         }else{                                                  //帧序号错误。
             DtuCom->Rd.dtu.iap.sta  = IAP_IDX_ERR;
         }
-        
         
         time = Ctrl.sHeadInfo.systime;
         break;

@@ -39,8 +39,6 @@ void    MtrCommErrjudge(u8   node,u16    sta)
     default:
         break;
     }
-    
-    
 }
                                         
 /**************************************************************
@@ -58,10 +56,10 @@ void    MtrRdSpecial(u16 addr,u8  len)
                                     (u16 *)&MtrCom->Rd,
                                     len);
 
-    MtrCommErrjudge(node,sta);              //故障判断，置runpara中的故障标识位。异常置1，正常置0    
+    MtrCommErrjudge(node,sta);                  //故障判断，置runpara中的故障标识位。异常置1，正常置0    
     
-    MtrCom->RxCtrl.Len      = sta;            //置数据长度。（长度控制在255以内）
-    MtrCom->RxCtrl.RecvFlg  = 1;             //置接收完成标识。协调其他任务。
+    MtrCom->RxCtrl.Len      = sta;              //置数据长度。（长度控制在255以内）
+    MtrCom->RxCtrl.RecvFlg  = 1;                //置接收完成标识。协调其他任务。
 }                                        
 
 /**************************************************************

@@ -172,7 +172,7 @@
 */
 #define OS_EVT_STORE_TICKS              0X00000001
 #define OS_EVT_STORE_FRAM               0X00000002
-#define OS_EVT_STORE_2                  0X00000004
+#define OS_EVT_STORE_WDT                0X00000004
 #define OS_EVT_STORE_3                  0X00000008
 #define OS_EVT_STORE_4                  0X00000010
 #define OS_EVT_STORE_5                  0X00000020
@@ -189,4 +189,21 @@
 #define COMM_EVT_FLAG_MTR_TX            (0x1 << 3)	/* MTR 发送事件                 */
 #define COMM_EVT_FLAG_DTU_TX            (0x1 << 4)	/* DTU 发送事件                 */
 #define COMM_EVT_FLAG_TAX_TX            (0x1 << 5)	/* TAX 发送事件                 */
+
+
+/***********************************************************
+* 描述： 看门狗标志组位说明:
+*        每个任务分配一个看门狗标志位，以防任务出现异常死掉。
+*        例程只写了4个标志位，可自行添加。
+*        标志组是32位，一个标志组最多可添加32个标志位
+*/
+#define WDT_FLAG_COMM               (1<< 0)         // 
+#define WDT_FLAG_DTU                (1<< 1)         // 
+#define WDT_FLAG_OSAL               (1<< 2)         // 
+#define WDT_FLAG_DISP               (1<< 3)         // 
+#define WDT_FLAG_MTR                (1<< 4)         // 
+#define WDT_FLAG_LED                (1<< 5)         // 
+#define WDT_FLAG_STORE              (1<< 6)         // 
+#define WDT_FLAG_TMR                (1<< 7)         // 
+
 #endif

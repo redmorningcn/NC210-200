@@ -35,5 +35,9 @@ void    App_CommIdle(void);
 void    NMB_Tx( MODBUS_CH    *pch,
                 CPU_INT08U   *p_reg_tbl,
                 CPU_INT16U   nbr_bytes);
+
+void OSSetWdtFlag( OS_FLAGS flag );
+void OSRegWdtFlag( OS_FLAGS flag );
+
 #endif
 

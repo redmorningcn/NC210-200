@@ -151,6 +151,7 @@ static  void    FmtRecord(void)
         Ctrl.sRunPara.SysSts.StartFlg   = 0;
         Ctrl.Rec.EvtType =  START_EVT;                              //开机事件
     }
+    Ctrl.Rec.RecordId = Ctrl.sRecNumMgr.Current;
     
     time_s t_tm  = TIME_GetCalendarTime();                          //取记录时间
     
@@ -389,7 +390,7 @@ void App_FramPara(void)
         if(Ctrl.sRunPara.FramFlg.WrRunPara == 1)
         {
             Ctrl.sRunPara.FramFlg.WrRunPara = 0;
-            add = (int)&Ctrl.sProductInfo - (int)&Ctrl;
+            add = (int)&Ctrl.sRunPara - (int)&Ctrl;
             
             WriteFM24CL64(add,(u8 *)&Ctrl.sRunPara,sizeof(Ctrl.sRunPara));
         } 
@@ -401,7 +402,7 @@ void App_FramPara(void)
         if(Ctrl.sRunPara.FramFlg.RdRunPara == 1)
         {
             Ctrl.sRunPara.FramFlg.RdRunPara = 0;
-            add = (int)&Ctrl.sProductInfo - (int)&Ctrl;
+            add = (int)&Ctrl.sRunPara - (int)&Ctrl;
             
             ReadFM24CL64(add,(u8 *)&Ctrl.sRunPara,sizeof(Ctrl.sRunPara));
         }    
@@ -426,6 +427,8 @@ osalEvt  TaskStoreEvtProcess(osalTid task_id, osalEvt task_event)
     * 描述： 本任务看门狗标志置位
     */
     //OSSetWdtFlag(( OS_FLAGS     ) WDT_FLAG_STORE);
+    static  u8     cnts;
+    u8              base = 3;
     
     /*******************************************************************************
     * Description  : 保存数据记录（按Ctrl.sRunPara.StoreTime时间间隔进行数据保存）
@@ -434,14 +437,18 @@ osalEvt  TaskStoreEvtProcess(osalTid task_id, osalEvt task_event)
     if( task_event & OS_EVT_STORE_TICKS ) {
         osal_start_timerRl( OS_TASK_ID_STORE,
                             OS_EVT_STORE_TICKS,
-                            OS_TICKS_PER_SEC * Ctrl.sRunPara.StoreTime);
+                            OS_TICKS_PER_SEC * Ctrl.sRunPara.StoreTime/base);       //防止长时间未喂狗
         /***************************************************
         * 描述： 置位保存数据标志位，启动数据保存FLASH
         */
-        App_SaveRecord();                                       //保存数据记录
+        cnts++;
+        if(cnts > base){
+            cnts = 0;
+            App_SaveRecord();                                                       //保存数据记录
+        }
                                                 
         OS_ERR      err;
-        OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,   //通知DTU，可以进行数据发送
+        OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,                       //通知DTU，可以进行数据发送
                    ( OS_FLAGS      )COMM_EVT_FLAG_DTU_TX,
                    ( OS_OPT        )OS_OPT_POST_FLAG_SET,
                    ( OS_ERR       *)&err);
@@ -461,6 +468,8 @@ osalEvt  TaskStoreEvtProcess(osalTid task_id, osalEvt task_event)
         
         return ( task_event ^ OS_EVT_STORE_FRAM );
     }
+    
+
     return 0;
 }
 

@@ -635,6 +635,56 @@ void  BSP_LED_Toggle (CPU_INT08U led)
     }
 }
 
+
+/*
+*********************************************************************************************************
+*                                            BSP_LED_Flash()
+*
+* Description : Flash any or all the LEDs on the board.
+*
+* Argument(s) : led     The ID of the LED to control:
+*
+*                       0    TOGGLE all LEDs on the board
+*                       1    TOGGLE LED 1
+*                       2    TOGGLE LED 2
+*                       3    TOGGLE LED 3
+*                       4    TOGGLE LED 4
+*
+* Return(s)   : none.
+*
+* Caller(s)   : Application.
+*
+* Note(s)     : none.
+*********************************************************************************************************
+*/
+void BSP_LED_Flash( CPU_INT08U led, CPU_INT16U cnt, CPU_INT32U cycle, CPU_INT32U duty)
+{
+    CPU_INT32U  timeOn;
+    CPU_INT32U  timeOff;
+    CPU_INT32U  i;
+
+    if ( cycle < duty )
+      return;
+    if( duty == 0 )
+      return;
+
+    timeOn      = duty;
+    timeOff     = cycle - duty;
+
+    /***********************************************
+    * ÃèÊö£º ÉùÒôÌáÊ¾
+    */
+    for ( i = 0; i < cnt; i++  ) {
+      BSP_LED_On(led);
+      void   BSP_OS_TimeDlyMs (CPU_INT32U  dly_ms);
+      BSP_OS_TimeDlyMs(timeOn);
+      BSP_LED_Off(led);
+      if ( i+1 == cnt)
+        break;
+      BSP_OS_TimeDlyMs(timeOff);
+    }
+}
+
 /*
 *********************************************************************************************************
 *                                            BSP_StatusInit()

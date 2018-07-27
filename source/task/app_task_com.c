@@ -236,7 +236,7 @@ static  void  AppTaskComm (void *p_arg)
         /***********************************************
         * 描述： 本任务看门狗标志置位
         */
-        //OSSetWdtFlag(( OS_FLAGS     ) WDT_FLAG_COMM);
+        OSSetWdtFlag(( OS_FLAGS     ) WDT_FLAG_COMM);
         
         /***********************************************
         * 描述： 等待COMM的标识组
@@ -395,14 +395,14 @@ void APP_CommInit(void)
     
 
     /***********************************************
-    * 描述： 初始化MODBUS通信(已在hook.c中处理)
+    * 描述： 初始化MODBUS通信(已在hook.c中处理 redmorningcn)
     */        
     //App_ModbusInit();
     
     /***********************************************
     * 描述： 在看门狗标志组注册本任务的看门狗标志
     */
-    //OSRegWdtFlag(( OS_FLAGS     ) WDT_FLAG_COMM);
+    OSRegWdtFlag(( OS_FLAGS     ) WDT_FLAG_COMM);
 }
 
 /*******************************************************************************

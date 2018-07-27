@@ -501,8 +501,33 @@ void  MB_HoldingRegWr (CPU_INT16U   reg,
     if ( reg < sizeof(Ctrl.buf) / 2 ) {
         preg    += reg;
         /***********************************************
-        * 描述： 写入测量模块校准参数
+        * 描述： 设置写铁电标识
         */    
+        u32 startaddr,endaddr;
+        startaddr   = (u32)&Ctrl.sHeadInfo ;
+        endaddr     = (u32)&Ctrl.sRecNumMgr;
+        if((u32)preg >= startaddr && (u32)preg < endaddr ){
+            Ctrl.sRunPara.FramFlg.WrHead = 1;       //写head
+        }
+
+        startaddr   = (u32)&Ctrl.sRecNumMgr  ;
+        endaddr     = (u32)&Ctrl.sProductInfo;      
+        if((u32)preg >= startaddr && (u32)preg < endaddr ){
+            Ctrl.sRunPara.FramFlg.WrNumMgr = 1;     //NumMgr
+        }
+        
+        startaddr   = (u32)&Ctrl.sProductInfo;
+        endaddr     = (u32)&Ctrl.sRunPara    ;      
+        if((u32)preg >= startaddr && (u32)preg < endaddr ){
+            Ctrl.sRunPara.FramFlg.WrProduct = 1;     //
+        }
+        
+        startaddr   = (u32)&Ctrl.sRunPara   ;
+        endaddr     = (u32)&Ctrl.Rec        ;      
+        if((u32)preg >= startaddr && (u32)preg < endaddr ){
+            Ctrl.sRunPara.FramFlg.WrRunPara = 1;    //
+        }
+
         //CPU_SR_ALLOC();
         //CPU_CRITICAL_ENTER();
         *preg       = reg_val;
@@ -573,7 +598,9 @@ void  MB_HoldingRegWrFP (CPU_INT16U   reg,
         preg    += reg;
         //CPU_SR_ALLOC();
         //CPU_CRITICAL_ENTER();
+        
         *preg    = reg_val_fp;
+        
         //CPU_CRITICAL_EXIT();
         *perr = MODBUS_ERR_NONE;
     } else {

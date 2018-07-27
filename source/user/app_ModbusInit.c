@@ -279,8 +279,8 @@ void NMB_Tx(MODBUS_CH    *pch,
     CPU_INT08U  *ptx_data;
     CPU_INT08U  *pbuf;
     CPU_INT08U   i;
-    int         retry = 100;
-    
+    //int         retry = 100;
+    //
     /**************************************************************
     * Description  : 发送长度为0，退出
     * Author       : 2018/5/21 星期一, by redmorningcn

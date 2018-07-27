@@ -196,8 +196,9 @@ typedef struct _stcRunPara_
     strDeviceErr            ErrMask;
     
     u8                  SetOutTimes;                //
+    u8                  WdtOutTimes;                //
     
-    u8                  Rsv2[7];                    // 预留4个字节
+    u8                  Rsv2[6];                    // 预留4个字节
 }stcRunPara;
 
 //OS 系统运行参数。
@@ -206,6 +207,11 @@ __packed
 typedef struct {
     OS_FLAG_GRP             CommEvtFlagGrp;		// 串口通讯标示组
     OS_FLAGS                CommEvtFlag;        // 串口通讯标示
+    /***********************************************
+    * 描述： 看门狗标志组外部引用声明
+    */
+     OS_FLAG_GRP            WdtEvtFlagGRP;      //看门狗标志组
+     OS_FLAGS               WdtEvtFlags;
 } StrCtrlOS;
 
 typedef union _Unnctrl_ {
