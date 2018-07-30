@@ -519,11 +519,11 @@ u8 WriteFlsh(u32 adr,u8 *buf,u32 len)
     *******************************************************************************/
     for(i = 0;i < len;i++)                                       
     {
-        if(((adr +i)&0x0FFF)==0)                                //在块边界，需要擦除块
+        if(((adr +i)&(SEC_SIZE -1))==0)                                //在块边界，需要擦除块
         {
             
             EEP_WaitEvent();
-            MX25L3206_Erase(((adr +i)>>12)&0x3FF,((adr +i)>>12)&0x3FF);
+            MX25L3206_Erase(((adr +i)>>SEC_LEFT_MOVE)&(SEC_MAX-1),((adr +i)>>SEC_LEFT_MOVE)&(SEC_MAX-1));
             
             i += 0x0FFF;
             EEP_SendEvent();

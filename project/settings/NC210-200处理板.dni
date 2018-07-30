@@ -14,7 +14,7 @@ TraceBufferSize=0x00010000
 TraceStallIfFIFOFull=0x00000000
 TracePortSize=0x00000004
 [DebugChecksum]
-Checksum=685718328
+Checksum=1486099933
 [CodeCoverage]
 Enabled=_ 0
 [Exceptions]
@@ -121,7 +121,7 @@ Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.174.1" 0 0 1 "" 0
 Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.174.1" 0 0 1 "" 0 "" 0
 Bp4=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.174.1" 0 0 1 "" 0 "" 0
 Bp5=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.174.1" 0 0 1 "" 0 "" 0
-Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.310.9" 0 0 1 "" 0 "" 0
+Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.312.9" 0 0 1 "" 0 "" 0
 Bp7=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.32.9" 0 0 1 "" 0 "" 0
 Bp8=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.81.17" 0 0 1 "" 0 "" 0
 Bp9=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.112.9" 0 0 1 "" 0 "" 0
@@ -132,7 +132,8 @@ Bp13=_ 0 "EMUL_CODE" "0x080129BA" 0 0 1 "" 0 "" 0
 Bp14=_ 0 "EMUL_CODE" "0x08014760" 0 0 1 "" 0 "" 0
 Bp15=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\uCOS-III\Ports\ARM-Cortex-M3\Generic\IAR\os_cpu_a.asm}.94.1" 0 0 1 "" 0 "" 0
 Bp16=_ 0 "EMUL_CODE" "0x08018094" 0 0 1 "" 0 "" 0
-Count=17
+Bp17=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\driver\MX25.c}.386.9" 0 0 1 "" 0 "" 0
+Count=18
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""

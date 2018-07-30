@@ -6,11 +6,13 @@
 #define  _MX25_H_
 
 #include    <includes.h>
-#define FLSH_MAX_SIZE   0x2000000               /* 32M     33554432byte  */
+//#define FLSH_MAX_SIZE   0x2000000             /* 32M     33554432byte  */
+#define FLSH_MAX_SIZE   (0x1000000)             /* 16M     33554432byte  */
 //#define MAX_ADDR		(32/8*1024*1024-256)	/* 定义芯片内部最大地址 */
-#define MAX_ADDR		(32/8*1024*1024)	/* 定义芯片内部最大地址 */
-#define	SEC_MAX     	4096		            /* 定义最大扇区号      */
-#define SEC_SIZE		0x1000                  /* 扇区大小		4kByte */
+#define MAX_ADDR		(FLSH_MAX_SIZE)	        /* 定义芯片内部最大地址 */
+#define	SEC_MAX     	(4096)		            /* 定义最大扇区号      */
+#define SEC_SIZE		(0x1000)                  /* 扇区大小		4kByte */
+#define SEC_LEFT_MOVE   (12)                    /* 扇区擦除，移位（SEC_SIZE 位数 -1 ）*/
 
 extern void SPI_FLASH_Init(void) ;
 extern u32 MX25L3206_RdID(void);

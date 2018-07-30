@@ -267,11 +267,12 @@ void    app_dtu_rec(StrCOMCtrl *Com)
         {
         case IAP_FRAME_CODE:
             Com->ConnCtrl.ConnType = IAP_COMM;               //IAP通讯
-            Ctrl.sRunPara.SysSts.SetBitFlg  = 1;                //表示正在设置参数
-            Ctrl.sRunPara.SetOutTimes       = 60;
+            Ctrl.sRunPara.SysSts.SetBitFlg  = 1;            //表示正在设置参数
+            Ctrl.sRunPara.SetOutTimes       = 90;
             break;
         case SET_FRAME_CODE:
             Com->ConnCtrl.ConnType = SET_COMM;               //参数读取
+
 
             break;
         case RECORD_FRAME_CODE:
@@ -343,6 +344,8 @@ void    app_dtu_rec(StrCOMCtrl *Com)
         
         app_iap_deal();                 //iap升级处理
         
+        Ctrl.sRunPara.SysSts.SetBitFlg  = 1;            //表示正在设置参数
+        Ctrl.sRunPara.SetOutTimes       = 90;        
         enablesend = 1;                 //启动数据发送
         break;
         
