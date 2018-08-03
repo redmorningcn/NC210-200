@@ -125,7 +125,7 @@ void    App_CommIdle(void)
     if(     Ctrl.sRecNumMgr.GrsRead < Ctrl.sRecNumMgr.Current
        //&&   DtuCom->ConnCtrl[0].SendFlg     == 0  //(状态不好判断)
        &&   DtuCom->ConnCtrl.ConnType       == RECORD_SEND_COMM
-       &&   (u16)Ctrl.sRunPara.StoreTime    == recordtime  
+       &&   (u16)Ctrl.sRunPara.StoreTime    < recordtime  
        &&   Ctrl.sRunPara.SysSts.SetBitFlg         == 0        //未进行参数设置或iap。（在参数设置或IAP状态设置为清零）
       )       
     {

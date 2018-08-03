@@ -36,7 +36,11 @@
 #define	USER_APP_PRO_SIZE			0x00017FFE	
 
 #define	USER_BACK_START_ADDR		0x08028000
-#define	USER_BACK_PRO_SIZE			0x00017FFF	
+#define	USER_BACK_PRO_SIZE			0x00016FFF	
+
+//CTRL参数备份区
+#define USER_PARA_BACKUP_ADDR       (0x08040000 - 0x1000)
+#define USER_PARA_BACKUP_SIZE       (0x1000-1)
 
 //存放IAP参数地址
 #define	IAP_PARA_START_ADDR     	0X0800D000	
@@ -45,6 +49,7 @@
 
 #define	IAP_DATA_BUF_LEN            (128)
 #define SEC_DIV_TIMENS              (IAP_WRITE_1024/IAP_DATA_BUF_LEN)
+
 
 
 /**************************************************************

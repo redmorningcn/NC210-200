@@ -33,6 +33,8 @@ extern "C" {
 #define     GPS_INFO_ASK    ("AT*GPSINFO?")             /* 请求GPS信息 */
 #define     GPS_RSSI_ASK    ("AT*CSQ?")                 /* 请求网络信号强度 */
 #define     GPS_RSSI_GET    ("+CSQ:")                   /* 请求网络信号强度 */
+     
+#define     GPS_SCFG_SET    ("AT*GPSCFG=4,5#")          /*  请求gps定位，但只响应查询 */     
 
      
 /*******************************************************************************

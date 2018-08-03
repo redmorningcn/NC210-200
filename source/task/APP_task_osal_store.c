@@ -147,6 +147,7 @@ static u32  GetRecFlashAddr(u32 FlshRecNum)
 static  void    FmtRecord(void)
 {
     
+    Ctrl.Rec.EvtType = 0;
     if(Ctrl.sRunPara.SysSts.StartFlg    == 1){
         Ctrl.sRunPara.SysSts.StartFlg   = 0;
         Ctrl.Rec.EvtType =  START_EVT;                              //开机事件
@@ -162,9 +163,22 @@ static  void    FmtRecord(void)
     Ctrl.Rec.Min    = t_tm.tm_min;	
     Ctrl.Rec.Sec    = t_tm.tm_sec;   
     
+    
     Ctrl.Rec.LocoNbr = Ctrl.sProductInfo.LocoId.Nbr;                //机车信息
     Ctrl.Rec.LocoType= Ctrl.sProductInfo.LocoId.Type;                
     
+    Ctrl.Rec.Latitude         = (u32)(1000000 * Ctrl.Gps.DecInfo.Latitude);
+    Ctrl.Rec.Longitude        = (u32)(1000000 * Ctrl.Gps.DecInfo.Longitude);
+    
+    /**************************************************************
+    * Description  : 时间总线故障判断
+    * Author       : 2018/8/3 星期五, by redmorningcn
+    */
+    if(Ctrl.Rec.Sec > 60 ||  Ctrl.Rec.Min > 60 || Ctrl.Rec.Hour > 24){
+        Ctrl.sRunPara.Err.TimeErr = 1;
+    }
+
+    Ctrl.Rec.Err = Ctrl.sRunPara.Err;
 }
 
 /*******************************************************************************
@@ -310,6 +324,8 @@ void    BSP_StoreInit(void)
 void App_FramPara(void)
 {
     int     add;
+    u8       writeflashflg = 0;             //将参数保存到备份区
+
     
     if(Ctrl.sRunPara.FramFlg.Flags)                                        
     {
@@ -323,6 +339,9 @@ void App_FramPara(void)
             add = (int)&Ctrl.sHeadInfo - (int)&Ctrl;                                
             
             WriteFM24CL64(add,(u8 *)&Ctrl.sHeadInfo,sizeof(Ctrl.sHeadInfo));  
+            
+            writeflashflg = 1;            //参数写到flash取备份
+
         }
         /***********************************************************************
         * Description  : 读HEAD
@@ -346,6 +365,10 @@ void App_FramPara(void)
             add = (int)&Ctrl.sRecNumMgr - (int)&Ctrl;
             
             WriteFM24CL64(add,(u8 *)&Ctrl.sRecNumMgr,sizeof(Ctrl.sRecNumMgr));
+            
+            if(Ctrl.sRecNumMgr.Current % 15 ){      //15次保存一次，减少写flash次数
+                writeflashflg = 1;       //参数写到flash取备份
+            }
         }
         /***********************************************************************
         * Description  : 读NumMgr
@@ -369,13 +392,16 @@ void App_FramPara(void)
             add = (int)&Ctrl.sProductInfo - (int)&Ctrl;
             
             WriteFM24CL64(add,(u8 *)&Ctrl.sProductInfo,sizeof(Ctrl.sProductInfo));
+            
+            writeflashflg = 1;       //参数写到flash取备份
+
         }
         
         /***********************************************************************
         * Description  : 读产品信息
         * Author       : 2018/5/16 星期三, by redmorningcn
         */
-        if(Ctrl.sRunPara.FramFlg.RdProduct == 1)
+        if(Ctrl.sRunPara.FramFlg.RdProduct == 1 && Ctrl.sRunPara.Err.FramErr == 0)
         {
             Ctrl.sRunPara.FramFlg.RdProduct = 0;
             add = (int)&Ctrl.sProductInfo - (int)&Ctrl;
@@ -393,19 +419,42 @@ void App_FramPara(void)
             add = (int)&Ctrl.sRunPara - (int)&Ctrl;
             
             WriteFM24CL64(add,(u8 *)&Ctrl.sRunPara,sizeof(Ctrl.sRunPara));
+            
+            writeflashflg = 1;       //参数写到flash取备份
         } 
         
         /***********************************************************************
-        * Description  : 读运行信息
+        * Description  : 读运行信息(铁电异常，不读运行参数)
         * Author       : 2018/5/16 星期三, by redmorningcn
         */
-        if(Ctrl.sRunPara.FramFlg.RdRunPara == 1)
+        if(Ctrl.sRunPara.FramFlg.RdRunPara == 1 && Ctrl.sRunPara.Err.FramErr == 0)
         {
             Ctrl.sRunPara.FramFlg.RdRunPara = 0;
             add = (int)&Ctrl.sRunPara - (int)&Ctrl;
             
             ReadFM24CL64(add,(u8 *)&Ctrl.sRunPara,sizeof(Ctrl.sRunPara));
-        }    
+        }
+        
+        /**************************************************************
+        * Description  : 将参数写到flash区备份
+        * Author       : 2018/8/3 星期五, by redmorningcn
+        */
+        if(writeflashflg == 1){
+            u32 ctrlparalen = sizeof(Ctrl.sHeadInfo) 
+                            + sizeof( Ctrl.sRecNumMgr )
+                            + sizeof(Ctrl.sProductInfo)
+                            + sizeof(Ctrl.sRunPara) ;
+            
+            BSP_FlashWriteBytes(USER_PARA_BACKUP_ADDR,(u8 *)&Ctrl,ctrlparalen);        
+        }
+        if(Ctrl.sRunPara.Err.FramErr == 1){      //铁电异常，从flash中读取数据
+            u32 ctrlparalen = sizeof(Ctrl.sHeadInfo) 
+                            + sizeof( Ctrl.sRecNumMgr )
+                            + sizeof(Ctrl.sProductInfo)
+                            + sizeof(Ctrl.sRunPara) ;
+            BSP_FlashReadBytes(USER_PARA_BACKUP_ADDR,(u8 *)&Ctrl,ctrlparalen);        
+        }
+
     }
         
     Ctrl.sRunPara.FramFlg.Flags = 0;               //清标识
@@ -523,21 +572,31 @@ void    app_ReadOneRecord(stcFlshRec *pRec,u32 num)
         crc2 = pRec->CrcCheck;
         
         if(crc1 == crc2) {          //如果校验通过，数据读取完成，退出
+            pRec->Err.FlashErr = 0; 
             return;
         }
     } while ( --retrys );
     
-    /**************************************************
-    * 描述： 重新赋值机车信息，数据记录信息，故障状态信息及校验
-    */ 
+    /**************************************************************
+    * Description  : 如果请求的记录号是最近的记录号。则直接发送内存数据；
+    否则重新赋值机车信息，数据记录信息，故障状态信息及校验
+    * Author       : 2018/8/3 星期五, by redmorningcn
+    */
     
-    pRec->RecordId    = num;         //记录号
-    pRec->LocoType    = Ctrl.sProductInfo.LocoId.Type  ;//机车型号       2  
-    pRec->LocoNbr     = Ctrl.sProductInfo.LocoId.Nbr   ;//机 车 号       2 
-    //pRec->Err.= 1;        //flash故障
-    crc1              = GetCrc16Chk((u8 *)pRec,sizeof(stcFlshRec)-2);
-    pRec->CrcCheck    = crc1;
+    if(num == Ctrl.sRecNumMgr.Current - 1 || num == Ctrl.sRecNumMgr.Current - 2){
+        memcpy((u8 *)pRec,(u8 *)&Ctrl.Rec,sizeof(Ctrl.Rec));
+        pRec->Err         = Ctrl.sRunPara.Err;              // 將当前故障状态保存
+
+    }else{
+        pRec->RecordId  = num;                            // 记录号
+        pRec->LocoType  = Ctrl.sProductInfo.LocoId.Type  ;// 机车型号       2  
+        pRec->LocoNbr   = Ctrl.sProductInfo.LocoId.Nbr   ;// 机 车 号       2 
+    }
     
+    pRec->Err.FlashErr  = 1;                                  //flash故障(该故障不能在flash中保存)
+        
+    crc1                = GetCrc16Chk((u8 *)pRec,sizeof(stcFlshRec)-2);
+    pRec->CrcCheck      = crc1;
 }
 
 /*******************************************************************************

@@ -190,10 +190,19 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
             uprintf("8.8.8.8.8.8.8.8.");
 
             break;
+        case 1: 
+            /**************************************************************
+            * Description  : 机车信息
+            * Author       : 2018/7/30 星期一, by redmorningcn
+            */
+            dis_mode++;
+            uprintf("%4d.%4d",Ctrl.sProductInfo.LocoId.Type,Ctrl.sProductInfo.LocoId.Nbr);  
+            break;
+            
+        case 2: 
             /*******************************************************************
             * 描述： 显示装置时间:时分秒
-            */            
-        case 1: 
+            */       
             dis_mode++;
 
             tm_now  = TIME_GetCalendarTime(); 
@@ -202,10 +211,11 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
                     tm_now.tm_mon,
                     tm_now.tm_mday );
             break;
+            
             /*******************************************************************
             * 描述： 显示装置时间:时分秒
             */
-        case 2: 
+        case 3: 
             dis_mode++;
             
             uprintf("%02d-%02d-%02d",
@@ -213,15 +223,16 @@ osalEvt  TaskDispEvtProcess(osalTid task_id, osalEvt task_event)
                     tm_now.tm_min,
                     tm_now.tm_sec);  
             break;
+            
             /*******************************************************************
             * 描述： 显示软件版本
             *        
             */
-        case 3: 
+        case 4: 
             dis_mode++;
-                uprintf("SV_%2d.%02d",Ctrl.sProductInfo.SwVer/100,Ctrl.sProductInfo.SwVer%100);  
+            uprintf("SV_%2d.%02d",Ctrl.sProductInfo.SwVer/100,Ctrl.sProductInfo.SwVer%100);  
             break;
-
+            
         default: 
             
             LkjDisplayInfo();       //正常运行时显示内容

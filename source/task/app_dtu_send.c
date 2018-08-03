@@ -24,6 +24,7 @@ void    app_dtu_send(StrCOMCtrl *Com)
     u8  replylen;
     u8  iapcode;
     u32 recordnum;
+    static u16 gpsmode = 0;     
     //地址设置
     Com->ConnCtrl.sCsnc.sourceaddr   = LKJ_MAINBOARD_ADDR;
     Com->ConnCtrl.sCsnc.destaddr     = DTU_ADDR;
@@ -39,6 +40,8 @@ void    app_dtu_send(StrCOMCtrl *Com)
         */
     case RECORD_SEND_COMM:     
         
+        if(Ctrl.sRunPara.SysSts.SetBitFlg )     //正在设置参数，不传输数据
+            return;
         //debug2018 
         if(Ctrl.sRecNumMgr.Current == 0)
             return;
@@ -144,15 +147,62 @@ void    app_dtu_send(StrCOMCtrl *Com)
     case GPS_COMM:                          //定位模块
 //        //debug2018
 //        return;
-        /**************************************************************
-        * Description  : 查询模块的信号强度
-        * Author       : 2018/6/4 星期一, by redmorningcn
-        */
-        strcpy((char *)Com->pch->TxBuf,(const char *)GPS_RSSI_ASK);
-        Com->pch->TxBufByteCtr = strlen(GPS_RSSI_ASK);
         
-        Com->ConnCtrl.ConnType = RECORD_SEND_COMM;                           //默认状态位数据发送
-        enablesend = 1;                     //数据发送标识1
+        /**************************************************************
+        * Description  :  设置GPS模块工作模式
+        * Author       : 2018/8/2 星期四, by redmorningcn
+        */
+        
+        switch(gpsmode %3)
+        {
+        case 0:
+            if(gpsmode == 0){        //设置模块的工作模式
+                
+                /**************************************************************
+                * Description  : 设置GPS信息只查询才能发送
+                * Author       : 2018/8/2 星期四, by redmorningcn
+                */
+                //if(Ctrl.sRunPara.DevCfg.Flag.GpsEnFlag)
+                {        //
+                    strcpy((char *)Com->pch->TxBuf,(const char *)GPS_SCFG_SET);
+                    Com->pch->TxBufByteCtr = strlen(GPS_SCFG_SET);
+                    
+                    Com->ConnCtrl.ConnType = RECORD_SEND_COMM;                       //默认状态位数据发送
+                    enablesend = 1;  
+                }
+            }
+            break;
+        case 1:
+            /**************************************************************
+            * Description  : 请求GPS坐标信息
+            * Author       : 2018/8/2 星期四, by redmorningcn
+            */
+            if(Ctrl.sRunPara.DevCfg.Flag.GpsEnFlag){                                //允许查询坐标信息，才发送查询指令
+
+                strcpy((char *)Com->pch->TxBuf,(const char *)GPS_INFO_ASK);
+                Com->pch->TxBufByteCtr = strlen(GPS_INFO_ASK);
+                
+                Com->ConnCtrl.ConnType = RECORD_SEND_COMM;                           //默认状态位数据发送
+                enablesend = 1;   
+            }
+            break;
+        case 2:
+            /**************************************************************
+            * Description  : 查询模块的信号强度
+            * Author       : 2018/6/4 星期一, by redmorningcn
+            */
+            strcpy((char *)Com->pch->TxBuf,(const char *)GPS_RSSI_ASK);
+            Com->pch->TxBufByteCtr = strlen(GPS_RSSI_ASK);
+            
+            Com->ConnCtrl.ConnType = RECORD_SEND_COMM;                           //默认状态位数据发送
+            enablesend = 1;                                                     //数据发送标识1
+            break;
+        default:
+            break;
+      
+        }
+        gpsmode++;
+
         break;
         
     default:

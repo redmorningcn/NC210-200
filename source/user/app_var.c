@@ -102,9 +102,25 @@ void app_init_sctrl(void)
     
     Ctrl.sRunPara.Err.Flags         = 0;                // 清零故障代码
     
+    /**************************************************************
+    * Description  : 铁电故障判断
+    * Author       : 2018/8/3 星期五, by redmorningcn
+    */
     if(Ctrl.sHeadInfo.Password != MODBUS_PASSWORD){     // 通讯密码
+        //先写密码
         Ctrl.sHeadInfo.Password = MODBUS_PASSWORD; 
-        Ctrl.sRunPara.Err.FramErr   = 1;                // 铁电故障（指定地址读出的值错误）
+        Ctrl.sRunPara.FramFlg.WrHead    = 1;
+        App_FramPara();
+
+        //再读密码
+        Ctrl.sRunPara.FramFlg.RdHead    = 1;
+        App_FramPara();
+
+        //判断读写正确
+        if(Ctrl.sHeadInfo.Password != MODBUS_PASSWORD){
+            Ctrl.sHeadInfo.Password = MODBUS_PASSWORD;  
+            Ctrl.sRunPara.Err.FramErr   = 1;                // 铁电故障（指定地址读出的值错误）
+        }
     }
    
     Ctrl.sRunPara.SysSts.StartFlg   = 1;                // 开始标示(开机置位，存储完第一条数据记录后置零) 

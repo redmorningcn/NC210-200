@@ -124,23 +124,39 @@ void app_mtr_com(void)
                         Ctrl.Rec.speed[node-1].ch[i].raise  =  MtrCom->Rd.speed.para[i].raise;
                         Ctrl.Rec.speed[node-1].ch[i].ratio  =  MtrCom->Rd.speed.para[i].ratio;
                         Ctrl.Rec.speed[node-1].sta.flgs[i]  =  (u8)MtrCom->Rd.speed.para[i].status;
+                        
+                        /**************************************************************
+                        * Description  : 加速度判断
+                        * Author       : 2018/7/31 星期二, by redmorningcn
+                        */
+                        s8    acceleration;
+                        acceleration    =     (s8)(MtrCom->Rd.speed.para[i].status>>8);
+                        
+                        Ctrl.Rec.speed[node-1].sta.Err[i].addspeed      = 0;
+                        Ctrl.Rec.speed[node-1].sta.Err[i].minusspeed    = 0;
+
+                        if(acceleration > 0){
+                            Ctrl.Rec.speed[node-1].sta.Err[i].addspeed      = 1;
+                        }else if(acceleration < 0){
+                            Ctrl.Rec.speed[node-1].sta.Err[i].minusspeed    = 1;
+                        }
+                        
                         freq[i]                             =  MtrCom->Rd.speed.para[i].freq;
                     }
                     
-                    if(fabs(freq[1]-freq[0]) < 5){
+                    if(fabs(freq[1]-freq[0]) < 50){                             // 速度信号，速度差值50
                         Ctrl.Rec.speed[node-1].freq     =   (freq[1] + freq[0])/2;
                     }else {
                         if(freq[1] > freq[0]){
                             Ctrl.Rec.speed[node-1].freq     =   freq[1];
-                            Ctrl.Rec.speed[node-1].sta.Err[0].FreqLess  = 1;    //通道0，频率小
-                            Ctrl.Rec.speed[node-1].sta.Err[1].FreqMore  = 1;    //通道1，频率大
+                            Ctrl.Rec.speed[node-1].sta.Err[0].FreqLess  = 1;    // 通道0，频率小
+                            Ctrl.Rec.speed[node-1].sta.Err[1].FreqMore  = 1;    // 通道1，频率大
                         }else{
                             Ctrl.Rec.speed[node-1].freq     =   freq[0];
-                            Ctrl.Rec.speed[node-1].sta.Err[1].FreqLess  = 1;    //通道0，频率小
-                            Ctrl.Rec.speed[node-1].sta.Err[0].FreqMore  = 1;    //通道1，频率大
+                            Ctrl.Rec.speed[node-1].sta.Err[1].FreqLess  = 1;    // 通道0，频率小
+                            Ctrl.Rec.speed[node-1].sta.Err[0].FreqMore  = 1;    // 通道1，频率大
                         }
                     }
-                    
                     
                     Ctrl.Rec.speed[node-1].phase    =   MtrCom->Rd.speed.ch1_2phase;
                     Ctrl.Rec.speed[node-1].vcc      =   MtrCom->Rd.speed.vcc_vol;

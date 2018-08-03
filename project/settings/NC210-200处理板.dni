@@ -14,7 +14,7 @@ TraceBufferSize=0x00010000
 TraceStallIfFIFOFull=0x00000000
 TracePortSize=0x00000004
 [DebugChecksum]
-Checksum=1486099933
+Checksum=-795322742
 [CodeCoverage]
 Enabled=_ 0
 [Exceptions]
@@ -47,20 +47,23 @@ Fmt1=OS_FLAG_GRP-TS	1	0
 Fmt2=StrCtrlOS-CommEvtFlag	1	0
 Fmt3=StrProductInfo-Id	3	0
 Fmt4=StrRecHeadInfo-systime	3	0
-Fmt5=stcFlshRec-CmdTpye	4	0
-Fmt6=stcFlshRec-CrcCheck	4	0
-Fmt7=stcFlshRec-EvtType	4	0
-Fmt8=stcFlshRec-LocoNbr	4	0
-Fmt9=stcFlshRec-LocoType	4	0
-Fmt10=stcFlshRec-RecordId	4	0
-Fmt11=stcIAPPara-Addr	4	0
-Fmt12=stcIAPPara-BackAddr	4	0
-Fmt13=stcRunPara-SetOutTimes	3	0
+Fmt5=StrRecNumMgr-Current	3	0
+Fmt6=stcFlshRec-CmdTpye	4	0
+Fmt7=stcFlshRec-CrcCheck	4	0
+Fmt8=stcFlshRec-EvtType	4	0
+Fmt9=stcFlshRec-LocoNbr	4	0
+Fmt10=stcFlshRec-LocoType	4	0
+Fmt11=stcFlshRec-RecordId	3	0
+Fmt12=stcFlshRec-Rssi	3	0
+Fmt13=stcIAPPara-Addr	4	0
+Fmt14=stcIAPPara-BackAddr	4	0
+Fmt15=stcRunPara-SetOutTimes	3	0
 [array_types]
 Fmt0=CPU_INT08U[256]	4	0
 Fmt1=CPU_INT08U[512]	4	0
-Fmt2=u16[512]	4	0
-Fmt3=u16[5]	4	0
+Fmt2=char[12]	2	0
+Fmt3=u16[512]	4	0
+Fmt4=u16[5]	4	0
 [Trace1]
 Enabled=0
 ShowSource=1
@@ -112,28 +115,6 @@ ShowTimeLog=1
 SumEnabled=0
 ShowTimeSum=1
 SumSortOrder=0
-[Disassemble mode]
-mode=0
-[Breakpoints2]
-Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.132.1" 0 0 1 "" 0 "" 0
-Bp1=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.174.1" 0 0 1 "" 0 "" 0
-Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.174.1" 0 0 1 "" 0 "" 0
-Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.174.1" 0 0 1 "" 0 "" 0
-Bp4=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.174.1" 0 0 1 "" 0 "" 0
-Bp5=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.174.1" 0 0 1 "" 0 "" 0
-Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.312.9" 0 0 1 "" 0 "" 0
-Bp7=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.32.9" 0 0 1 "" 0 "" 0
-Bp8=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.81.17" 0 0 1 "" 0 "" 0
-Bp9=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.112.9" 0 0 1 "" 0 "" 0
-Bp10=_ 0 "EMUL_CODE" "0x0800CE80" 0 0 1 "" 0 "" 0
-Bp11=_ 0 "EMUL_CODE" "0x0800CE7C" 0 0 1 "" 0 "" 0
-Bp12=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\ST\STM32\src\stm32f10x_nvic.c}.401.3" 0 0 1 "" 0 "" 0
-Bp13=_ 0 "EMUL_CODE" "0x080129BA" 0 0 1 "" 0 "" 0
-Bp14=_ 0 "EMUL_CODE" "0x08014760" 0 0 1 "" 0 "" 0
-Bp15=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\uCOS-III\Ports\ARM-Cortex-M3\Generic\IAR\os_cpu_a.asm}.94.1" 0 0 1 "" 0 "" 0
-Bp16=_ 0 "EMUL_CODE" "0x08018094" 0 0 1 "" 0 "" 0
-Bp17=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\driver\MX25.c}.386.9" 0 0 1 "" 0 "" 0
-Count=18
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -141,9 +122,6 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Aliases]
-Count=0
-SuppressDialog=0
 [DriverProfiling]
 Enabled=0
 Mode=1
@@ -158,3 +136,30 @@ ShowTiming=1
 Frequency=10000
 Probe0=I0
 ProbeSetup0=2 1 1 2 0 0
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\app_com_type.h}.132.1" 0 0 1 "" 0 "" 0
+Bp1=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.190.1" 0 0 1 "" 0 "" 0
+Bp2=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.190.1" 0 0 1 "" 0 "" 0
+Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.190.1" 0 0 1 "" 0 "" 0
+Bp4=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.190.1" 0 0 1 "" 0 "" 0
+Bp5=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_mtr_com.c}.190.1" 0 0 1 "" 0 "" 0
+Bp6=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.312.9" 0 0 1 "" 0 "" 0
+Bp7=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.32.9" 0 0 1 "" 0 "" 0
+Bp8=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.81.17" 0 0 1 "" 0 "" 0
+Bp9=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\csnr_package_deal.c}.112.9" 0 0 1 "" 0 "" 0
+Bp10=_ 0 "EMUL_CODE" "0x0800CE80" 0 0 1 "" 0 "" 0
+Bp11=_ 0 "EMUL_CODE" "0x0800CE7C" 0 0 1 "" 0 "" 0
+Bp12=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\EvalBoards\Micrium\uC-Eval-STM32F107\BSP\ST\STM32\src\stm32f10x_nvic.c}.401.3" 0 0 1 "" 0 "" 0
+Bp13=_ 0 "EMUL_CODE" "0x080129BA" 0 0 1 "" 0 "" 0
+Bp14=_ 0 "EMUL_CODE" "0x08014760" 0 0 1 "" 0 "" 0
+Bp15=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\uCOS-III\Ports\ARM-Cortex-M3\Generic\IAR\os_cpu_a.asm}.94.1" 0 0 1 "" 0 "" 0
+Bp16=_ 0 "EMUL_CODE" "0x08018094" 0 0 1 "" 0 "" 0
+Bp17=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\driver\MX25.c}.386.9" 0 0 1 "" 0 "" 0
+Bp18=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.270.13" 0 0 1 "" 0 "" 0
+Bp19=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\task\app_dtu_rec.c}.347.9" 0 0 1 "" 0 "" 0
+Count=20
+[Aliases]
+Count=0
+SuppressDialog=0

@@ -29,11 +29,13 @@ typedef struct _stcSpeed
 {
     union{
         struct{
-            u8  Freq1Lose   :1 ;   //丢脉冲；
-            u8  Freq1None   :1 ;   //无信号；
-            u8  rec         :4 ;   //预留
-            u8  FreqLess    :1 ;   //频率少
-            u8  FreqMore    :1 ;   //频率多 
+            u8  Freq1Lose   :1 ;   // 丢脉冲；
+            u8  Freq1None   :1 ;   // 无信号；
+            u8  addspeed    :1 ;   // 加速
+            u8  minusspeed  :1 ;   // 减速
+            u8  rec         :2 ;   // 预留
+            u8  FreqLess    :1 ;   // 频率少
+            u8  FreqMore    :1 ;   // 频率多 
         }Err[2];
         u8 flgs[2];
     }sta;

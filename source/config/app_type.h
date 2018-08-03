@@ -10,7 +10,7 @@
 #include    <RecDataTypeDef.h>
 #include    <bsp_q560.h>
 
-#define     SOFT_VERSION                (102)          /* 软件版本         */
+#define     SOFT_VERSION                (110)          /* 软件版本         */
 #define     MODBUS_PASSWORD             (6237)          /* modbus通讯密码   */
 
 /**************************************************************
@@ -166,12 +166,10 @@ typedef struct _stcRunPara_
             u8   		        PwrEnFlag       : 1;        //
             u8   		        OtrEnFlag       : 1;        //
             u8   		        ExtComEnFlag    : 1;        //
-            u8   		        Dsp1EnFlag      : 1;        //
-            
-            u8   		        Dsp2EnFlag      : 1;        //
             u8   		        TaxEnFlag       : 1;        //    
+            
             u8   		        GpsEnFlag       : 1;        //
-            u8   	            Rsv             : 1;        //保留
+            u8   	            Rsv             : 3;        //保留
         } Flag;
         u8                      Flags;                      // 设备配置B0:电量模块;B1:扩展通讯模块；B2:显示模块1；B3显示模块2；B4:GPS模块；B5~B7预留
     } DevCfg; 
