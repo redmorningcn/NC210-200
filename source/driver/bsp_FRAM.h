@@ -30,10 +30,11 @@ extern "C" {
  * MACROS
  */
    //铁电参数
-#define		FRAM_SIZE               		8192		//1024*8空间容量
-#define		FRAM_START_ADDR	        		0x0000	   	//铁电的起始地址
-#define		FRAM_DIVICE_ADDR     			0xa0	     	//铁电的设备地址
-#define		FRAM_END_ADDR	      			(FRAM_START_ADDR + FRAM_SIZE)	        
+#define		FRAM_SIZE               		8192		/* 1024*8空间容量 */
+#define		FRAM_START_ADDR	        		0x0000	   	/* 铁电的起始地址 */
+#define		FRAM_DIVICE_ADDR     			0xa0	    /* 铁电的设备地址 */
+#define		FRAM_END_ADDR	      			(FRAM_START_ADDR + FRAM_SIZE)
+#define     FRAM_IAP_PARA                   (FRAM_END_ADDR - 120)   /*IAP参数地址 */   
 				
     
 #define		FRAM_OIL_BOX_MODEL_ADDR		2000		//油箱模型地址	

@@ -47,13 +47,19 @@ void    app_iap_deal(void){
     case IAP_START:                                     //IAP启动,
         //读已存的iappara信息
         //memcpy((uint8 *)&sLocalIap,(uint8 *)IAP_PARA_START_ADDR,sizeof(stcIAPPara));
-        BSP_FlashReadBytes(IAP_PARA_START_ADDR,(uint8 *)&sLocalIap,sizeof(stcIAPPara));
+        
+        //BSP_FlashReadBytes(IAP_PARA_START_ADDR,(uint8 *)&sLocalIap,sizeof(stcIAPPara));
+        /**************************************************************
+        * Description  : 续传所需的参数，保存到fram中，提高速度
+        * Author       : 2018/8/27 星期一, by redmorningcn
+        */
+        ReadFM24CL64(FRAM_IAP_PARA,(uint8 *)&sLocalIap,sizeof(stcIAPPara));
+                    
         Chklen = (u32)&sLocalIap.Chk - (u32)&sLocalIap;
         crc16 = GetCrc16Chk((uint8 *)&sLocalIap,Chklen);
         
          storeCrc= GetCrc16Chk((uint8 *)&sLocalIap,sizeof(sLocalIap) -2);
 
-        
         //对比接收到的iappara信息（版本、大小、已发帧序号、校验、帧号）
         if ( ( sta == 1 )                           ||      // 重新下载
             ( sLocalIap.Idx    == 0xffffffff )      ||          // 存储序号为-1
@@ -95,6 +101,14 @@ void    app_iap_deal(void){
         
         //将升级信息返回给服务器，如硬件版本，软件版本，程序大小，当前地址，当前帧号
         memcpy((u8 *)&DtuCom->Rd.dtu.iap.para,(u8 *)&sLocalIap,sizeof(stcIAPPara)); 
+        
+        /**************************************************************
+        * Description  : 状态位改为没故障
+        * Author       : 2018/8/27 星期一, by redmorningcn
+        */
+
+        DtuCom->Rd.dtu.iap.sta = IAP_NO_ERR;
+
         //未发送改写程序，不存储更改后的sLocalIap值。
         sLocalIap.SwVer = softver;
         
@@ -104,7 +118,12 @@ void    app_iap_deal(void){
         
         sLocalIap.storeCrc = GetCrc16Chk((uint8 *)&sLocalIap,sizeof(sLocalIap)-2);  //计算存储校验
 
-        BSP_FlashWriteBytes(IAP_PARA_START_ADDR,(uint8 *)&sLocalIap,sizeof(stcIAPPara));        
+        BSP_FlashWriteBytes(IAP_PARA_START_ADDR,(uint8 *)&sLocalIap,sizeof(stcIAPPara));                
+        /**************************************************************
+        * Description  : 续传所需的参数，保存到fram中，提高速度
+        * Author       : 2018/8/27 星期一, by redmorningcn
+        */
+        WriteFM24CL64(FRAM_IAP_PARA,(uint8 *)&sLocalIap,sizeof(stcIAPPara));
         
         time = Ctrl.sHeadInfo.systime;
         break;
@@ -113,11 +132,11 @@ void    app_iap_deal(void){
         * Description  : 加入超时判断。长时间未操作(5s)，操作异常。
         * Author       : 2018/6/8 星期五, by redmorningcn
         */
-        if(Ctrl.sHeadInfo.systime > time + 5000 && Ctrl.sHeadInfo.systime > time)
-        {
-            DtuCom->Rd.dtu.iap.sta  = IAP_TIME_ERR;         //超时异常
-            break;
-        }
+//        if(Ctrl.sHeadInfo.systime > time + 5000 && Ctrl.sHeadInfo.systime > time)
+//        {
+//            DtuCom->Rd.dtu.iap.sta  = IAP_TIME_ERR;         //超时异常
+//            break;
+//        }
         sLocalIap.End   =   0;                          //End=1，程序下载完成，End=0，未完
         if(DtuCom->RxCtrl.Len < 4){
             DtuCom->Rd.dtu.iap.sta  = IAP_IDX_ERR;
@@ -152,7 +171,12 @@ void    app_iap_deal(void){
             sLocalIap.Chk = crc16;
             sLocalIap.storeCrc = GetCrc16Chk((uint8 *)&sLocalIap,sizeof(sLocalIap)-2);  //计算存储校验
 
-            BSP_FlashWriteBytes(IAP_PARA_START_ADDR,(uint8 *)&sLocalIap,sizeof(stcIAPPara));
+            //BSP_FlashWriteBytes(IAP_PARA_START_ADDR,(uint8 *)&sLocalIap,sizeof(stcIAPPara));
+            /**************************************************************
+            * Description  : 续传所需的参数，保存到fram中，提高速度
+            * Author       : 2018/8/27 星期一, by redmorningcn
+            */
+            WriteFM24CL64(FRAM_IAP_PARA,(uint8 *)&sLocalIap,sizeof(stcIAPPara));
             
             DtuCom->Rd.dtu.iap.replyIdx = sLocalIap.Idx;            //应答当前序号。    
             sLocalIap.Idx++;                                        //序号++，数据往下进行。
@@ -171,11 +195,11 @@ void    app_iap_deal(void){
         * Description  : 加入超时判断。长时间未操作(5s)，操作异常。
         * Author       : 2018/6/8 星期五, by redmorningcn
         */
-        if(Ctrl.sHeadInfo.systime > time + 5000 && Ctrl.sHeadInfo.systime > time)
-        {
-            DtuCom->Rd.dtu.iap.sta  = IAP_TIME_ERR;         //超时异常
-            break;
-        }
+//        if(Ctrl.sHeadInfo.systime > time + 5000 && Ctrl.sHeadInfo.systime > time)
+//        {
+//            DtuCom->Rd.dtu.iap.sta  = IAP_TIME_ERR;         //超时异常
+//            break;
+//        }
         //将显示任务显示暂停2秒钟
         App_DispDelay(2000); 
         
@@ -183,7 +207,7 @@ void    app_iap_deal(void){
         datasize = (u32)sLocalIap.Addr - (u32)sLocalIap.BackAddr;
         if((datasize > USER_BACK_PRO_SIZE) || (datasize > USER_APP_PRO_SIZE)){
             DtuCom->Rd.dtu.iap.sta  = IAP_END_ERR;      //结束时，信息错误。
-            uprintf("iap err.5");
+            uprintf("iap e.5");
             break;
         }
         
@@ -233,7 +257,7 @@ void    app_iap_deal(void){
             BSP_FlashWriteBytes(IAP_PARA_START_ADDR,(uint8 *)&sLocalIap,sizeof(stcIAPPara));
         }else{
             DtuCom->Rd.dtu.iap.sta  = IAP_END_ERR;      //结束时，信息错误。
-            uprintf("iap err.5");
+            uprintf("iap e.5");
         }
         
         break;

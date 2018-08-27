@@ -105,10 +105,10 @@ void    App_CommIdle(void)
             * Description  : 超时后，连接状态置默认值
             * Author       : 2018/5/21 星期一, by redmorningcn
             */
-            DtuCom->ConnCtrl.EnableConnFlg  = 1;        //允许连接    
-            DtuCom->ConnCtrl.RecvEndFlg     = 0;        //无数据接收
-            DtuCom->ConnCtrl.RecordSendFlg  = 0;        //无数发送
-            DtuCom->ConnCtrl.ConnType       = RECORD_SEND_COMM;//传输数据  
+            DtuCom->ConnCtrl.EnableConnFlg  = 1;                //允许连接    
+            DtuCom->ConnCtrl.RecvEndFlg     = 0;                //无数据接收
+            DtuCom->ConnCtrl.RecordSendFlg  = 0;                //无数发送
+            DtuCom->ConnCtrl.ConnType       = RECORD_SEND_COMM; //传输数据  
         }
     }
     
@@ -124,7 +124,7 @@ void    App_CommIdle(void)
     */
     if(     Ctrl.sRecNumMgr.GrsRead < Ctrl.sRecNumMgr.Current
        //&&   DtuCom->ConnCtrl[0].SendFlg     == 0  //(状态不好判断)
-       &&   DtuCom->ConnCtrl.ConnType       == RECORD_SEND_COMM
+       &&   (DtuCom->ConnCtrl.ConnType       == RECORD_SEND_COMM || DtuCom->ConnCtrl.ConnType   == GPS_COMM)   //
        &&   (u16)Ctrl.sRunPara.StoreTime    < recordtime  
        &&   Ctrl.sRunPara.SysSts.SetBitFlg         == 0        //未进行参数设置或iap。（在参数设置或IAP状态设置为清零）
       )       
@@ -135,7 +135,7 @@ void    App_CommIdle(void)
         * Author       : 2018/6/4 星期一, by redmorningcn
         */
         mod++;
-        if(mod %2 == 0)
+        if(mod % (Ctrl.sRunPara.StoreTime + 5) == 0)
             DtuCom->ConnCtrl.ConnType = GPS_COMM;               //查询gps
                 
         OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,   //通知DTU，可以进行数据发送
@@ -143,11 +143,12 @@ void    App_CommIdle(void)
                    ( OS_OPT        )OS_OPT_POST_FLAG_SET,
                    ( OS_ERR       *)&err);
     }
-    
-    if(Ctrl.sRunPara.SetOutTimes){                              //准备清除参数设置状态
+     
+    if( Ctrl.sRunPara.SetOutTimes ) {                              //准备清除参数设置状态
         Ctrl.sRunPara.SetOutTimes--;
         if(Ctrl.sRunPara.SetOutTimes == 0)
             Ctrl.sRunPara.SysSts.SetBitFlg = 0;
+            DtuCom->ConnCtrl.ConnType      = RECORD_SEND_COMM;
     }
     
     static  u8  mtrtimes = 0;
@@ -287,8 +288,25 @@ static  void  AppTaskComm (void *p_arg)
             if( flags   & COMM_EVT_FLAG_DTU_RX  ) {    
                 //app_comm_dtu(flags); 
                 
-                app_dtu_rec(DtuCom);                         //和DTU模块，接收部分。
-                DtuCom->ConnCtrl.Connflg = 1;               //连接成功
+                /**************************************************************
+                * Description  : 增加地址过滤，如果目标地址为油尺地址，只允许读指定地址指令
+                * Author       : 2018/8/27 星期一, by redmorningcn
+                */
+                if(DtuCom->RxCtrl.sCsnc.destaddr    == NDP_MAINBOARD_ADDR){     //油尺地址
+                    
+                    DtuCom->RxCtrl.sCsnc.destaddr   =  LKJ_MAINBOARD_ADDR ;     //重置为LKJ地址
+                    
+                    if(DtuCom->Rd.dtu.code == CMD_PARA_GET){                    //允许读指定参数
+                        app_dtu_rec(DtuCom);                                     //和DTU模块，接收部分。
+                    }
+                }else
+                {
+                    app_dtu_rec(DtuCom);                                        //和DTU模块，接收部分。
+                }
+                
+                DtuCom->ConnCtrl.Connflg = 1;                                   //连接成功                    
+
+                Ctrl.sRunPara.SysSts.dtucomflg = 1;                             //DTU正在通讯
                 
                 if( flags &      COMM_EVT_FLAG_DTU_RX ) { 
                     flagClr |=   COMM_EVT_FLAG_DTU_RX;   
@@ -296,8 +314,10 @@ static  void  AppTaskComm (void *p_arg)
             }
             if(    flags & COMM_EVT_FLAG_DTU_TX ) {
                 
-                app_dtu_send(DtuCom);                     //和DTU模块，发送部分
+                app_dtu_send(DtuCom);                       //和DTU模块，发送部分
                 
+                Ctrl.sRunPara.SysSts.dtucomflg = 1;         //DTU正在通讯
+
                 if(flags &      COMM_EVT_FLAG_DTU_TX) {      
                     flagClr |=  COMM_EVT_FLAG_DTU_TX;   
                 }                

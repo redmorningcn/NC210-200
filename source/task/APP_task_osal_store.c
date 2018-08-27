@@ -495,13 +495,18 @@ osalEvt  TaskStoreEvtProcess(osalTid task_id, osalEvt task_event)
             cnts = 0;
             App_SaveRecord();                                                       //保存数据记录
         }
-                                                
-        OS_ERR      err;
-        OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,                       //通知DTU，可以进行数据发送
-                   ( OS_FLAGS      )COMM_EVT_FLAG_DTU_TX,
-                   ( OS_OPT        )OS_OPT_POST_FLAG_SET,
-                   ( OS_ERR       *)&err);
-        
+          
+        /**************************************************************
+        * Description  : 在数据发送状态，启动数据传输
+        * Author       : 2018/8/27 星期一, by redmorningcn
+        */
+        if(DtuCom->ConnCtrl.ConnType       == RECORD_SEND_COMM){
+            OS_ERR      err;
+            OSFlagPost( ( OS_FLAG_GRP  *)&Ctrl.Os.CommEvtFlagGrp,                       //通知DTU，可以进行数据发送
+                       ( OS_FLAGS      )COMM_EVT_FLAG_DTU_TX,
+                       ( OS_OPT        )OS_OPT_POST_FLAG_SET,
+                       ( OS_ERR       *)&err);
+        }
         return ( task_event ^ OS_EVT_STORE_TICKS );
     }
     

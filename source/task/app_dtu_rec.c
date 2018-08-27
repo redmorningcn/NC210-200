@@ -273,7 +273,6 @@ void    app_dtu_rec(StrCOMCtrl *Com)
         case SET_FRAME_CODE:
             Com->ConnCtrl.ConnType = SET_COMM;               //参数读取
 
-
             break;
         case RECORD_FRAME_CODE:
             if(Com->ConnCtrl.RecordSendFlg == 1){            //有数据发送，通讯类型不变。
@@ -319,7 +318,6 @@ void    app_dtu_rec(StrCOMCtrl *Com)
             {
                 enablesend = 1;                                             //再次启动数据发送    
             }
-            
         }
         
         Com->ConnCtrl.RecordSendFlg = 0;

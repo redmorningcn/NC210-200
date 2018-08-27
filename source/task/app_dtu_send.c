@@ -152,6 +152,7 @@ void    app_dtu_send(StrCOMCtrl *Com)
         * Description  :  设置GPS模块工作模式
         * Author       : 2018/8/2 星期四, by redmorningcn
         */
+        Ctrl.sRunPara.SetOutTimes = 10;     //
         
         switch(gpsmode %3)
         {

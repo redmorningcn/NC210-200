@@ -144,8 +144,6 @@ unsigned char   DataUnpack_CSNC(strCsnrProtocolPara *sprotocolpara)
 			 	 	(sprotocolpara->rxtxbuf[i+11+DataLen] 	!= FRAM_END1)
 			 )
 			 {
-
-
 			 	i = (unsigned short)(i + 10 + DataLen);         //地址不对或帧尾错误，跳过此帧
 			 	continue;
 			 }

@@ -36,7 +36,9 @@
 #define     TAX_NODE            1               /* TAX modebus编号*/
 
 //csnc地址定义
-#define     LKJ_MAINBOARD_ADDR  (0x84)          /* LKJ接口在线处理处理板 CSNC 协议地址*/
+#define     LKJ_MAINBOARD_ADDR  (0x84)          /* LKJ接口在线处理处理板 CSNC 协议地址  */
+#define     NDP_MAINBOARD_ADDR  (0x80)          /* 油尺接口在线处理处理板 CSNC 协议地址 */
+
 #define     DTU_ADDR            (0xCA)          /* 无线发送模块 CSNC 协议地址 */
 #define     SET_ADDR            (0xC2)          /* 无线发送模块 CSNC 协议地址 */
 
@@ -81,7 +83,7 @@ typedef struct {
 } stcLocoId;
 
 typedef struct {
-    u8      buf[8];
+    u8      buf[4];
     u8      ack;
 } stcParaReply;
 

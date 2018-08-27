@@ -221,7 +221,9 @@ CPU_BOOLEAN  MBN_FCxx_Handler (MODBUS_CH  *pch)
                     * Author       : 2018/6/7 星期四, by redmorningcn
                     */
                     if(Ctrl.ComCtrl[i].RxCtrl.sCsnc.sourceaddr    == DTU_ADDR || Ctrl.ComCtrl[i].RxCtrl.sCsnc.sourceaddr == SET_ADDR){
-                        if(Ctrl.ComCtrl[i].RxCtrl.sCsnc.destaddr  == LKJ_MAINBOARD_ADDR){
+                        if(     Ctrl.ComCtrl[i].RxCtrl.sCsnc.destaddr  == LKJ_MAINBOARD_ADDR  
+                           ||   Ctrl.ComCtrl[i].RxCtrl.sCsnc.destaddr  == NDP_MAINBOARD_ADDR        //调试，油尺地址也可以
+                           ){
                             
                             Ctrl.ComCtrl[i].RxCtrl.Len          = Ctrl.ComCtrl[i].RxCtrl.sCsnc.datalen;
                             Ctrl.ComCtrl[i].RxCtrl.protocol     = CSNC_PROTOCOL;

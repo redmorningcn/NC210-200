@@ -116,7 +116,6 @@ int  main (void)
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                  (OS_ERR     *)&err);
 
-
     OSStart(&err);                                              /* Start multitasking (i.e. give control to uC/OS-III). */
 }
 

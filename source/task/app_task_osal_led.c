@@ -58,6 +58,8 @@ static  void    AppTaskLed           (void *p_arg);
 
 /*******************************************************************************/
 
+#define LOCO_WORK_VOL_PER       (100)
+#define LOCO_WORK_VOL_MIN       (40)
 /*******************************************************************************
 * 名    称： AppTaskLed
 * 功    能： 控制任务
@@ -100,14 +102,67 @@ osalEvt  TaskLedEvtProcess(osalTid task_id, osalEvt task_event)
         /***********************************************
         * 描述：根据状态控制指示灯闪烁
         */
-//        if( !Ctrl.Mtr.ConnCtrl[0].ErrFlg ){
-//            BSP_LED_Toggle(BSP_LED_DP1);                  //对应指示灯点亮
-//        }else{
-//            BSP_LED_Off(BSP_LED_DP1);                     //对应指示灯点关闭
-//        }      
-     
+  
+
+        /**************************************************************
+        * Description  : 速度通道有信号
+        * Author       : 2018/8/21 星期二, by redmorningcn
+        */
+        if(     Ctrl.Rec.speed[0].freq 
+            ||  Ctrl.Rec.speed[1].freq 
+            ||  Ctrl.Rec.speed[2].freq ){
+                BSP_LED_Toggle(X1_SPEED_LED);
+            }else{
+                BSP_LED_Off(X1_SPEED_LED);
+            }
         
-        BSP_LED_Toggle(RUN_LED);                            //运行指示灯                    
+        /**************************************************************
+        * Description  : 装置和无线发送模块通讯
+        * Author       : 2018/8/21 星期二, by redmorningcn
+        */
+        if(DtuCom->ConnectFlag == 1){        //有数据连接
+            
+            static  u8  dtuledtimes = 0;
+            static  u8  dtucomtimes = 0;
+            
+            if(Ctrl.sRunPara.SysSts.dtucomflg){ //装置正在通讯
+                
+                BSP_LED_Toggle(X2_DTU_LED);
+                
+                if(dtucomtimes++ > 10){
+                    Ctrl.sRunPara.SysSts.dtucomflg = 0;
+                    dtucomtimes = 0;
+                }
+            }else{
+                if(dtuledtimes++ % 5 == 0){     //慢闪
+                    BSP_LED_Toggle(X2_DTU_LED);
+                }
+            }
+            
+        }else{
+            BSP_LED_Off(X2_DTU_LED);
+        }
+        
+        /**************************************************************
+        * Description  : 工况信号指示
+        * Author       : 2018/8/27 星期一, by redmorningcn
+        */
+        if(     Ctrl.Rec.Vol.lw/LOCO_WORK_VOL_PER > LOCO_WORK_VOL_MIN
+           ||   Ctrl.Rec.Vol.qy/LOCO_WORK_VOL_PER > LOCO_WORK_VOL_MIN
+           ||   Ctrl.Rec.Vol.zd/LOCO_WORK_VOL_PER > LOCO_WORK_VOL_MIN
+           ||   Ctrl.Rec.Vol.xq/LOCO_WORK_VOL_PER > LOCO_WORK_VOL_MIN
+           ||   Ctrl.Rec.Vol.xh/LOCO_WORK_VOL_PER > LOCO_WORK_VOL_MIN
+
+          ){
+                BSP_LED_Toggle(X4_VOL_LED);
+
+            }else{
+                BSP_LED_Off(X4_VOL_LED);
+            }
+            
+               
+        BSP_LED_Toggle(RUN_LED);                //运行指示灯    
+        
         /***********************************************
         * 描述： 定时器重启
         */

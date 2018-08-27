@@ -10,7 +10,7 @@
 #include    <RecDataTypeDef.h>
 #include    <bsp_q560.h>
 
-#define     SOFT_VERSION                (110)          /* 软件版本         */
+#define     SOFT_VERSION                (113)          /* 软件版本         */
 #define     MODBUS_PASSWORD             (6237)          /* modbus通讯密码   */
 
 /**************************************************************
@@ -184,7 +184,8 @@ typedef struct _stcRunPara_
             u16   		        RecClear        : 1;        // 1		数据记录清零，清StrRecNumMgr内容
             u16   		        SysReset        : 1;        // 1    	系统参数重置，清StrRecNumMgr + StrOilPara 	中的内容。
             u16   		        SetBitFlg       : 1;        // 1        设置有效位指示
-            u16   	            Rsv2            : 4;        //保留
+            u16                 dtucomflg       : 1;        // 1        DTU正在通讯
+            u16   	            Rsv2            : 3;        //保留
         } ;
         u16                  Flags;                     // 
     } SysSts; 
