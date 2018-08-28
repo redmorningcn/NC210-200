@@ -58,7 +58,7 @@ static  void    AppTaskLed           (void *p_arg);
 
 /*******************************************************************************/
 
-#define LOCO_WORK_VOL_PER       (100)
+#define LOCO_WORK_VOL_PER       (10)
 #define LOCO_WORK_VOL_MIN       (40)
 /*******************************************************************************
 * Ãû    ³Æ£º AppTaskLed

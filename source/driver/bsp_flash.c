@@ -366,6 +366,8 @@ u16     BSP_FlashWriteBytes     (u32 addr, u8 *pbuf, u16 len)
         memcpy(&FlashBuf.buf1[copyLen], pbuf, size);
         // 整页探险当前页
 		FLASH_ErasePage ( pageAddr );
+
+        //nop();
         // 将缓冲区的数据写入当前页
         BSP_FLASH_WritePage( pageAddr , FlashBuf.buf1 , STM_SECTOR_SIZE );
         // 源数据地址、写入地址、写入字节数增加size，未写数据长度减少size
@@ -408,7 +410,11 @@ u16     BSP_FlashWriteBytes     (u32 addr, u8 *pbuf, u16 len)
         // 复制属于当前页的数据到缓冲区中
         memcpy(&FlashBuf.buf1[copyLen],pbuf,size);
 
-        // 整页探险当前页
+        //FLASH_Unlock();
+        
+        //擦除前，清所有标识位//redmorningcn 20180828
+        FLASH_ClearFlag(FLASH_FLAG_BSY | FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);//2.清除所有已有标志
+        // 整页探险当前页                                                    FLASH_FLAG_WRPRTERR
 		FLASH_ErasePage (pageAddr);
         // 将缓冲区的数据写入当前页
         BSP_FLASH_WritePage( pageAddr , (u8 *)FlashBuf.buf1 , STM_SECTOR_SIZE );
@@ -442,6 +448,7 @@ u16     BSP_FlashWriteBytes_Fast     (u32 addr, u8 *pbuf, u16 len)
     if ( (addr + len) > (STM32_FLASH_BASE + FLASH_SIZE_EEP) )
         return 0;
 
+    
 	FLASH_Unlock();             				        // 上锁
     u32     i = 0;
     
@@ -454,6 +461,8 @@ u16     BSP_FlashWriteBytes_Fast     (u32 addr, u8 *pbuf, u16 len)
     {
         if((writeaddr&(STM_SECTOR_SIZE -1))==0)        //在块边界，需要擦除块
         {
+            //擦除前，清所有标识位//redmorningcn 20180828
+            FLASH_ClearFlag(FLASH_FLAG_BSY | FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);//2.清除所有已有标志
             FLASH_ErasePage (writeaddr);                                
         }
         
@@ -476,7 +485,6 @@ u16     BSP_FlashWriteBytes_Fast     (u32 addr, u8 *pbuf, u16 len)
     bytes = len;
     
 	FLASH_Lock(); // 上锁
-            				                                
     
     return(bytes);
 }

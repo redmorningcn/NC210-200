@@ -14,7 +14,7 @@ TraceBufferSize=0x00010000
 TraceStallIfFIFOFull=0x00000000
 TracePortSize=0x00000004
 [DebugChecksum]
-Checksum=-1818609188
+Checksum=-1778550361
 [CodeCoverage]
 Enabled=_ 0
 [Exceptions]
@@ -57,7 +57,14 @@ Fmt11=stcFlshRec-RecordId	3	0
 Fmt12=stcFlshRec-Rssi	3	0
 Fmt13=stcIAPPara-Addr	4	0
 Fmt14=stcIAPPara-BackAddr	4	0
-Fmt15=stcRunPara-SetOutTimes	3	0
+Fmt15=stcIAPPara-Chk	4	0
+Fmt16=stcIAPPara-Crc32	4	0
+Fmt17=stcIAPPara-End	4	0
+Fmt18=stcIAPPara-Idx	3	0
+Fmt19=stcIAPPara-Size	4	0
+Fmt20=stcIAPPara-SwVer	4	0
+Fmt21=stcIAPPara-storeCrc	4	0
+Fmt22=stcRunPara-SetOutTimes	3	0
 [array_types]
 Fmt0=CPU_INT08U[256]	4	0
 Fmt1=CPU_INT08U[512]	4	0
@@ -115,6 +122,27 @@ ShowTimeLog=1
 SumEnabled=0
 ShowTimeSum=1
 SumSortOrder=0
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[DriverProfiling]
+Enabled=0
+Mode=1
+Graph=0
+Symbiont=0
+Exclusions=
+[CallStackLog]
+Enabled=0
+[CallStackStripe]
+ShowTiming=1
+[PowerProbe]
+Frequency=10000
+Probe0=I0
+ProbeSetup0=2 1 1 2 0 0
 [Disassemble mode]
 mode=0
 [Breakpoints2]
@@ -136,28 +164,10 @@ Bp14=_ 0 "EMUL_CODE" "0x08014760" 0 0 1 "" 0 "" 0
 Bp15=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\Software\uCOS-III\Ports\ARM-Cortex-M3\Generic\IAR\os_cpu_a.asm}.94.1" 0 0 1 "" 0 "" 0
 Bp16=_ 0 "EMUL_CODE" "0x08018094" 0 0 1 "" 0 "" 0
 Bp17=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\driver\MX25.c}.386.9" 0 0 1 "" 0 "" 0
-Count=18
-[Log file]
-LoggingEnabled=_ 0
-LogFile=_ ""
-Category=_ 0
-[TermIOLog]
-LoggingEnabled=_ 0
-LogFile=_ ""
+Bp18=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\IAP_program_mcu.c}.195.13" 0 0 1 "" 0 "" 0
+Bp19=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\IAP_program_mcu.c}.268.13" 0 0 1 "" 0 "" 0
+Bp20=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\source\user\IAP_program_mcu.c}.267.13" 0 0 1 "" 0 "" 0
+Count=21
 [Aliases]
 Count=0
 SuppressDialog=0
-[DriverProfiling]
-Enabled=0
-Mode=1
-Graph=0
-Symbiont=0
-Exclusions=
-[CallStackLog]
-Enabled=0
-[CallStackStripe]
-ShowTiming=1
-[PowerProbe]
-Frequency=10000
-Probe0=I0
-ProbeSetup0=2 1 1 2 0 0

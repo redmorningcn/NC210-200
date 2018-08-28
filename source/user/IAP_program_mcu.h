@@ -69,7 +69,7 @@ typedef  struct   _stcIAPPara_
     uint32          Crc32;          //程序校验码
     uint32          BackAddr;       //备份区地址
     uint16          IdxNbr;         //帧数
-    uint16          Rec;            //预留1
+    uint16          Continue;       //续传标识
     uint16          Rec1;           //预留2
     uint16          storeCrc;       //保存校验16
 }stcIAPPara;

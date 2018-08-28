@@ -58,7 +58,7 @@ void    app_iap_deal(void){
         Chklen = (u32)&sLocalIap.Chk - (u32)&sLocalIap;
         crc16 = GetCrc16Chk((uint8 *)&sLocalIap,Chklen);
         
-         storeCrc= GetCrc16Chk((uint8 *)&sLocalIap,sizeof(sLocalIap) -2);
+        storeCrc= GetCrc16Chk((uint8 *)&sLocalIap,sizeof(sLocalIap) -2);
 
         //对比接收到的iappara信息（版本、大小、已发帧序号、校验、帧号）
         if ( ( sta == 1 )                           ||      // 重新下载
@@ -96,6 +96,7 @@ void    app_iap_deal(void){
             //sLocalIap.SwVer       = Ctrl.sProductInfo.SwVer;  
             sLocalIap.Addr        = USER_BACK_START_ADDR + sLocalIap.Idx * 128;
             softver               = sLocalIap.SwVer;
+            sLocalIap.Continue    = 1;  
 
         }
         
@@ -106,7 +107,6 @@ void    app_iap_deal(void){
         * Description  : 状态位改为没故障
         * Author       : 2018/8/27 星期一, by redmorningcn
         */
-
         DtuCom->Rd.dtu.iap.sta = IAP_NO_ERR;
 
         //未发送改写程序，不存储更改后的sLocalIap值。
@@ -154,8 +154,15 @@ void    app_iap_deal(void){
         */
         if(idx == sLocalIap.Idx)                        //序号相等，继续发送。
         {
-            BSP_FlashWriteBytes_Fast(sLocalIap.Addr,DtuCom->Rd.dtu.iap.buf,datalen); //将数据写入指定地址
-            
+            /**************************************************************
+            * Description  : 如果是续传，则第一次数据不保存。防止重复擦除
+            * Author       : 2018/8/28 星期二, by redmorningcn
+            */
+            if(sLocalIap.Continue == 1){
+                sLocalIap.Continue = 0;
+            }else{
+                BSP_FlashWriteBytes_Fast(sLocalIap.Addr,DtuCom->Rd.dtu.iap.buf,datalen); //将数据写入指定地址
+            }
             sLocalIap.Addr +=  datalen;
             
             u32 size = sLocalIap.Addr - USER_BACK_START_ADDR;   //已下载程序大小
@@ -246,11 +253,12 @@ void    app_iap_deal(void){
             */
             sLocalIap.Idx = 0;          //序号清零
             //存参数
+
             
             Chklen = (u32)&sLocalIap.Chk - (u32)&sLocalIap;
             crc16 = GetCrc16Chk((uint8 *)&sLocalIap,Chklen);
             sLocalIap.Chk = crc16;
-            
+
             sLocalIap.BackAddr = (u32)sLocalIap.BackAddr;                               //back区地址
             sLocalIap.storeCrc = GetCrc16Chk((uint8 *)&sLocalIap,sizeof(sLocalIap)-2);  //计算存储校验
             
